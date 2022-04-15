@@ -1,0 +1,74 @@
+plugins {
+    id 'com.android.library'
+    id 'org.jetbrains.kotlin.android'
+    id 'maven-publish'
+}
+
+android {
+    compileSdk 32
+    defaultConfig {
+        minSdk 21
+        targetSdk 32
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles "consumer-rules.pro"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+    gradle.projectsEvaluated {
+        tasks.withType(JavaCompile) {
+            Set<File> fileSet = options.bootstrapClasspath.getFiles()
+            List<File> newFileList = new ArrayList<>();
+            //JAVA语法，可连续调用，输入参数建议为相对路径
+//            newFileList.add(new File("libs/services.core.priorityboosted.jar"))
+            newFileList.add(new File("libs/classes.jar"))
+            //最后将原始参数添加
+            newFileList.addAll(fileSet)
+            options.bootstrapClasspath = files(newFileList.toArray())
+        }
+    }
+}
+
+dependencies {
+    implementation 'androidx.core:core-ktx:1.7.0'
+    implementation project(path: ':Android12')
+//    implementation 'com.android.android12:android12:1.0-20220411'
+    compileOnly files('libs/classes.jar')
+}
+afterEvaluate {
+    publishing {
+        publications {
+            def today = new Date().format('yyyyMMdd')
+            release(MavenPublication) {
+                from components.release
+                groupId = 'com.android.systemlib'
+                artifactId = 'systemlib'
+                version = "1.0-$today"
+            }
+            debug(MavenPublication) {
+                from components.debug
+                groupId = 'com.android.systemlib'
+                artifactId = 'systemlib'
+                version = "1.0-$today"
+            }
+        }
+        repositories {
+            mavenLocal()
+            maven {
+                url uri('D:\\code\\SystemFunction\\SystemLib_repository')
+            }
+        }
+    }
+}
+//gradlew publish
