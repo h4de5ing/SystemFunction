@@ -54,7 +54,7 @@ fun getDefaultLauncher(context: Context): String? {
 }
 
 /**
- * 判断AppLock是否是默认Launcher
+ * 判断传入上下文的应用是否是默认Launcher
  */
 fun isDefaultLauncher(context: Context): Boolean {
     val info =
@@ -130,46 +130,46 @@ fun getAllLaunchers(context: Context): MutableList<Pair<String, String>> {
 }
 
 /**
- * 设置AppLock为默认应用
+ * 设置szPkg为默认应用
  * szPkg 设置的应用的包名
  */
-fun setDefaultLauncher(context: Context, szPkg: String) {
-    try {
-        val pm = context.packageManager
-        val replacePreferredActivity = pm.javaClass.getMethod(
-            "replacePreferredActivity",
-            IntentFilter::class.java, Integer.TYPE,
-            Array<ComponentName>::class.java,
-            ComponentName::class.java
-        )
-        val filter = IntentFilter(Intent.ACTION_MAIN)
-        filter.addCategory(Intent.CATEGORY_HOME)
-        filter.addCategory(Intent.CATEGORY_DEFAULT)
-        val homeActivities = pm.queryIntentActivities(
-            Intent(Intent.ACTION_MAIN).addCategory(
-                Intent.CATEGORY_HOME
-            ), 0
-        )
-        val cnHomeSets = arrayOfNulls<ComponentName>(homeActivities.size)
-        var cnAppLock: ComponentName? = null
-        for (i in homeActivities.indices) {
-            val info = homeActivities[i].activityInfo
-            cnHomeSets[i] = ComponentName(info.packageName, info.name)
-            if (szPkg == info.packageName) {
-                cnAppLock = cnHomeSets[i]
-            }
-        }
-        if (cnAppLock != null) {
-            replacePreferredActivity.invoke(
-                pm, filter, Integer.valueOf(
-                    AccessibilityEventCompat.TYPE_TOUCH_INTERACTION_START
-                ), cnHomeSets, cnAppLock
-            )
-        }
-    } catch (e: Exception) {
-        e.printStackTrace()
-    }
-}
+//fun setDefaultLauncher(context: Context, szPkg: String) {
+//    try {
+//        val pm = context.packageManager
+//        val replacePreferredActivity = pm.javaClass.getMethod(
+//            "replacePreferredActivity",
+//            IntentFilter::class.java, Integer.TYPE,
+//            Array<ComponentName>::class.java,
+//            ComponentName::class.java
+//        )
+//        val filter = IntentFilter(Intent.ACTION_MAIN)
+//        filter.addCategory(Intent.CATEGORY_HOME)
+//        filter.addCategory(Intent.CATEGORY_DEFAULT)
+//        val homeActivities = pm.queryIntentActivities(
+//            Intent(Intent.ACTION_MAIN).addCategory(
+//                Intent.CATEGORY_HOME
+//            ), 0
+//        )
+//        val cnHomeSets = arrayOfNulls<ComponentName>(homeActivities.size)
+//        var cnAppLock: ComponentName? = null
+//        for (i in homeActivities.indices) {
+//            val info = homeActivities[i].activityInfo
+//            cnHomeSets[i] = ComponentName(info.packageName, info.name)
+//            if (szPkg == info.packageName) {
+//                cnAppLock = cnHomeSets[i]
+//            }
+//        }
+//        if (cnAppLock != null) {
+//            replacePreferredActivity.invoke(
+//                pm, filter, Integer.valueOf(
+//                    AccessibilityEventCompat.TYPE_TOUCH_INTERACTION_START
+//                ), cnHomeSets, cnAppLock
+//            )
+//        }
+//    } catch (e: Exception) {
+//        e.printStackTrace()
+//    }
+//}
 
 /**
  * 清空默认Launcher
@@ -213,7 +213,7 @@ fun setStatusBarInt(context: Context, status: Int) {
         val expand = statusBarManager.getMethod("disable", Int::class.java)
         expand.invoke(service, status)
     } catch (e: Exception) {
-        e.printStackTrace();
+        e.printStackTrace()
     }
 }
 

@@ -16,7 +16,7 @@ android {
     }
     signingConfigs {
         sign {
-            storeFile file("D:\\platform.jks")
+            storeFile file("D:\\emdoor\\AdvancedSignTool\\SignFiles\\T50\\platform.jks")
             storePassword('android')
             keyAlias('android')
             keyPassword('android')
@@ -48,5 +48,6 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.4.1'
     implementation 'com.google.android.material:material:1.5.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.3'
-    implementation 'com.android.systemlib:systemlib:1.0-20220411'
+//    implementation 'com.android.systemlib:systemlib:1.0-20220411'
+    implementation project(path: ':SystemLib')
 }

@@ -10,7 +10,7 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        maven { url 'D:\\code\\SystemFunction\\SystemLib_repository' }
+        maven { url 'https://github.com/h4de5ing/SystemFunction/raw/master/SystemLib_repository' }
     }
 }
 rootProject.name = "SystemFunction"
