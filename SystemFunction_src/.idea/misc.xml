@@ -4,7 +4,12 @@
     <option name="filePathToZoomLevelMap">
       <map>
         <entry key="..\:/code/AndroidCode/SystemFunction/app/src/main/res/layout/activity_main.xml" value="0.3536458333333333" />
-        <entry key="..\:/code/SystemFunction/SystemFunction_src/app/src/main/res/layout/activity_main.xml" value="0.33" />
+        <entry key="..\:/code/SystemFunction/SystemFunction_src/app/src/main/res/layout/activity_main.xml" value="0.5" />
+        <entry key="..\:/code/SystemFunction/SystemFunction_src/app/src/main/res/layout/toast.xml" value="0.33559782608695654" />
+        <entry key="..\:/code/SystemFunction/SystemFunction_src/app/src/main/res/xml/device_admin_encryption.xml" value="0.23822463768115942" />
+        <entry key="..\:/code/SystemFunction/SystemFunction_src/app/src/main/res/xml/device_admin_expiration.xml" value="0.3536458333333333" />
+        <entry key="..\:/code/SystemFunction/SystemFunction_src/app/src/main/res/xml/device_admin_general.xml" value="0.3536458333333333" />
+        <entry key="..\:/code/SystemFunction/SystemFunction_src/app/src/main/res/xml/device_admin_lock_wipe.xml" value="0.3536458333333333" />
       </map>
     </option>
   </component>

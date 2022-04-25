@@ -12,3 +12,15 @@ Android11 保存Android11特有接口
 ...  
 Android5 保存Android5特有接口  
 App依赖->SystemLib(抽象层)->(Android5、Android6、Android7、Android8、Android9、Android10、Android11、Android12)
+
+
+
+./base/core/java/android/app/admin/DevicePolicyManager.java
+./base/services/devicepolicy/java/com/android/server/devicepolicy/DevicePolicyManagerService.java
+
+
+config_defaultSupervisionProfileOwnerComponent
+frameworks\base\core\res\res\values\config.xml
+
+mdm配置
+config_defaultSupervisionProfileOwnerComponent

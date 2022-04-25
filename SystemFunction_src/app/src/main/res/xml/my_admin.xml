@@ -11,5 +11,6 @@
         <reset-password />
         <!--强制锁屏-->
         <force-lock />
+        <disable-camera />
     </uses-policies>
 </device-admin>

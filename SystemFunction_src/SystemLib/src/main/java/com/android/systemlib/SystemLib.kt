@@ -1,10 +1,8 @@
 package com.android.systemlib
 
 import android.annotation.SuppressLint
-import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
 import android.graphics.Bitmap
@@ -14,7 +12,6 @@ import android.os.ServiceManager
 import android.provider.Settings
 import android.text.TextUtils
 import android.view.View
-import androidx.core.view.accessibility.AccessibilityEventCompat
 import com.android.android12.Screenshooter12
 
 /**

@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.net.wifi.WifiConfiguration
+import android.net.wifi.WifiManager
 import android.os.IPowerManager
 import android.os.ServiceManager
 import androidx.core.view.accessibility.AccessibilityEventCompat
@@ -21,14 +22,21 @@ fun setHomeKeyDisabled(context: Context, isDisable: Boolean) {
 
 /**
  * 查询是否禁用Home键按键
+ * @see android.app.StatusBarManager
+ *
+ * ./base/core/java/android/app/StatusBarManager.java
+ * /base/services/core/java/com/android/server/statusbar/StatusBarManagerService.java
+ * ./base/services/devicepolicy/java/com/android/server/devicepolicy/DevicePolicyManagerService.java
  */
 @SuppressLint("WrongConstant")
 fun isHomeKeyDisable(context: Context): Boolean {
     var enabled = false
-    val service = context.getSystemService("statusbar") as StatusBarManager
+    val service = context.getSystemService(Context.STATUS_BAR_SERVICE) as StatusBarManager
+//    val service = context.getSystemService("statusbar") as StatusBarManager
     val info = service.getDisableInfo()
     "$info".split(" ").forEach {
-        if (it.contains("mNavigateHome")) enabled = (it.split("mNavigateHome=")[1] == "enabled")
+        if (it.contains("mNavigateHome"))
+            enabled = (it.split("mNavigateHome=")[1] == "enabled")
     }
     return enabled
 }
@@ -48,8 +56,11 @@ fun isRecentKeyDisable(context: Context): Boolean {
     val service = context.getSystemService("statusbar") as StatusBarManager
     val info = service.getDisableInfo()
     "$info".split(" ").forEach {
-        if (it.contains("mRecents")) enabled = (it.split("mRecents=")[1] == "enabled")
+        if (it.contains("mRecents"))
+            enabled = (it.split("mRecents=")[1] == "enabled")
     }
+//    var disable1 = info.toFlags() as android.util.Pair<Int, Int>
+//    println("mRecents=" + ((disable1.first and DISABLE_RECENT) == 0))
     return enabled
 }
 
@@ -63,7 +74,22 @@ fun setBackKeyDisable(context: Context, isDisable: Boolean) {
 /**
  * 查询是否禁用返回键
  */
+@SuppressLint("DiscouragedPrivateApi")
 fun isBackKeyDisable(context: Context): Boolean {
+    val service = context.getSystemService("statusbar") as StatusBarManager
+    val info = service.getDisableInfo()
+    println("$info")
+//无法获取back的值
+//    val method = service.javaClass.getDeclaredMethod("getService")
+//    method.isAccessible = true
+//    val getService = method.invoke(service) as IStatusBarService
+//    val result = getService.getDisableFlags(Binder(), 0)
+//    result.forEach { println(it) }
+//值正确
+//    var disable1 = info.toFlags() as android.util.Pair<Int, Int>
+//    println("DISABLE_BACK=" + ((disable1.first and DISABLE_RECENT) == 0))
+//反射    @interface 修改的属性
+
     return false
 }
 
@@ -84,7 +110,8 @@ fun isNavigaBarDisable(context: Context): Boolean {
     val info = service.getDisableInfo()
     println(info)
     "$info".split(" ").forEach {
-        if (it.contains("mRecents")) enabled = (it.split("mRecents=")[1] == "enabled")
+        if (it.contains("mRecents"))
+            enabled = (it.split("mRecents=")[1] == "enabled")
     }
     return enabled
 }
@@ -100,21 +127,42 @@ fun setStatusBarDisable(context: Context, isDisable: Boolean) {
  * 查询是否禁用状态栏
  */
 fun isStatusBarDisable(context: Context): Boolean {
-    return false
+    var enabled = false
+    val service = context.getSystemService("statusbar") as StatusBarManager
+    val info = service.getDisableInfo()
+    "$info".split(" ").forEach {
+        if (it.contains("mStatusBarExpansion"))
+            enabled = (it.split("mStatusBarExpansion=")[1] == "enabled")
+    }
+    return enabled
 }
 
 /**
  * 移除WIFI配置
  */
-fun removeWifiConfig(config: WifiConfiguration): Boolean {
-    return false
+fun removeWifiConfig(context: Context, config: WifiConfiguration): Boolean {
+    var removeResult = false
+    val wifiManager =
+        context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+    wifiManager.configuredNetworks.forEach {
+        if (config == it) removeResult = wifiManager.removeNetwork(it.networkId)
+    }
+    return removeResult
 }
 
 /**
  * 移除WIFI配置
  */
-fun removeWifiConfig(ssid: String): Boolean {
-    return false
+fun removeWifiConfig(context: Context, ssid: String): Boolean {
+    var removeResult = false
+    val wifiManager =
+        context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+    wifiManager.configuredNetworks.forEach {
+        if ("\"${ssid}\"" == it.SSID) {
+            removeResult = wifiManager.removeNetwork(it.networkId)
+        }
+    }
+    return removeResult
 }
 
 /**
@@ -177,10 +225,22 @@ fun clearDefaultLauncher(context: Context, packageName: String) {
     val pm = context.packageManager
     pm.queryIntentActivities(HOME_INTENT, 0).forEach { resolveInfo ->
         if (resolveInfo != null) {
-            if (packageName.equals(resolveInfo.activityInfo.packageName))
+            if (packageName == resolveInfo.activityInfo.packageName)
                 pm.clearPackagePreferredActivities(resolveInfo.activityInfo.packageName)
         }
     }
+}
+
+fun setMDM(context: Context, componentName: ComponentName): Boolean {
+    val dm = context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    //setProfileOwner
+    //setActiveProfileOwner
+    return dm.setActiveProfileOwner(componentName, "mdm")
+}
+
+fun removeMDM(context: Context, componentName: ComponentName) {
+    val dm = context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    dm.clearProfileOwner(componentName)
 }
 
 /**
@@ -274,7 +334,7 @@ fun removeDisallowedUninstallPackages(context: Context, packageNameList: List<St
  * 禁用设备截屏
  */
 fun setScreenShotDisabled(context: Context, isDisable: Boolean) {
-
+//    setScreenCaptureDisabled
 }
 
 /**
@@ -342,13 +402,22 @@ fun resetDevices(context: Context) {
 /**
  * 禁用设备个人热点
  */
-fun setHotSpotDisabled(context: Context, isDisable: Boolean) {}
+fun setHotSpotDisabled(context: Context, isDisable: Boolean) {
+    if (isDisable) {
+        val wifiManager =
+            context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+//        wifiManager.cancelLocalOnlyHotspotRequest()
+        wifiManager.stopSoftAp()
+    }
+}
 
 /**
  * 是否禁用设备个人热点
  */
 fun isHotSpotDisabled(context: Context): Boolean {
-    return false
+    val wifiManager =
+        context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+    return wifiManager.isWifiApEnabled()
 }
 
 /**
@@ -411,7 +480,11 @@ fun isMicrophoneDisable(context: Context) {
  * 禁止使用WIFI
  */
 fun setWifiDisabled(context: Context, isDisable: Boolean) {
-
+    val wifiManager =
+        context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+    if (isDisable)
+        if (wifiManager.isWifiEnabled) wifiManager.isWifiEnabled = false
+        else if (!wifiManager.isWifiEnabled) wifiManager.isWifiEnabled = true
 }
 
 /**

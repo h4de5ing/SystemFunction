@@ -7,4 +7,8 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="white_d5d5d5">#d5d5d5</color>
+    <color name="white_7d7e7e">#7D7E7E</color>
+    <color name="radiobutton_bg_selected">#7D7E7E</color>
+    <color name="radiobutton_bg_normal">#00d5d5d5</color>
 </resources>
