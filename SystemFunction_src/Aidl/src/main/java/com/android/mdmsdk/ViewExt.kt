@@ -1,8 +1,8 @@
-package com.android.systemfunction.utils
+package com.android.mdmsdk
 
 import androidx.appcompat.widget.AppCompatCheckBox
 
-fun AppCompatCheckBox.checked(change: ((Boolean) -> Unit)) {
+fun AppCompatCheckBox.change(change: ((Boolean) -> Unit)) {
     this.setOnCheckedChangeListener { _, isChecked ->
         change(isChecked)
     }

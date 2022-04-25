@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".MainActivity">
+
+    <LinearLayout
+        android:id="@+id/button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="6dp">
+
+        <androidx.appcompat.widget.AppCompatCheckBox
+            android:id="@+id/home"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="禁用HOME键" />
+
+        <androidx.appcompat.widget.AppCompatCheckBox
+            android:id="@+id/recent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="禁用Recent键" />
+
+        <androidx.appcompat.widget.AppCompatCheckBox
+            android:id="@+id/back"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="禁用Back键" />
+
+        <androidx.appcompat.widget.AppCompatCheckBox
+            android:id="@+id/navigation"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="禁用导航栏" />
+
+        <androidx.appcompat.widget.AppCompatCheckBox
+            android:id="@+id/status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="禁用状态栏" />
+
+        <androidx.appcompat.widget.AppCompatCheckBox
+            android:id="@+id/usb_data"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="禁用USB数据传输" />
+
+        <androidx.appcompat.widget.AppCompatCheckBox
+            android:id="@+id/bluetooth"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="禁用蓝牙" />
+
+        <androidx.appcompat.widget.AppCompatCheckBox
+            android:id="@+id/wifi"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="禁用WIFI" />
+
+        <androidx.appcompat.widget.AppCompatCheckBox
+            android:id="@+id/data"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="禁用数据流量" />
+
+        <androidx.appcompat.widget.AppCompatCheckBox
+            android:id="@+id/gps"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="禁用GPS" />
+
+        <androidx.appcompat.widget.AppCompatCheckBox
+            android:id="@+id/microphone"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="禁用麦克风" />
+
+        <androidx.appcompat.widget.AppCompatCheckBox
+            android:id="@+id/screen_shot"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="禁用截屏" />
+
+        <androidx.appcompat.widget.AppCompatCheckBox
+            android:id="@+id/screen_capture"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="禁用录屏" />
+
+        <androidx.appcompat.widget.AppCompatCheckBox
+            android:id="@+id/tf_card"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="禁用TF卡" />
+
+        <androidx.appcompat.widget.AppCompatCheckBox
+            android:id="@+id/phone_call"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="禁用打电话" />
+
+        <androidx.appcompat.widget.AppCompatCheckBox
+            android:id="@+id/hot_spot"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="禁用热点" />
+
+        <androidx.appcompat.widget.AppCompatCheckBox
+            android:id="@+id/sms"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="禁用短信" />
+
+        <androidx.appcompat.widget.AppCompatCheckBox
+            android:id="@+id/mms"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="禁用彩信" />
+
+        <androidx.appcompat.widget.AppCompatCheckBox
+            android:id="@+id/system_update"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="禁用系统升级" />
+
+        <androidx.appcompat.widget.AppCompatCheckBox
+            android:id="@+id/restore_factory"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="禁用恢复出厂设置" />
+    </LinearLayout>
+</ScrollView>

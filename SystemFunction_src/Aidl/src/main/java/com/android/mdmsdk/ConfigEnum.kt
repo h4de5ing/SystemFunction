@@ -1,4 +1,4 @@
-package com.android.systemfunction.enums
+package com.android.mdmsdk
 
 enum class ConfigEnum {
     DISABLE_HOME,
