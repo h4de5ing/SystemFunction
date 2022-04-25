@@ -35,11 +35,11 @@
         {
           "name": "mdmsdk-1.0-20220425.aar",
           "url": "mdmsdk-1.0-20220425.aar",
-          "size": 22250,
-          "sha512": "115ab09afca09374ece78aaa495a9086f813d3c9eb516bf04a76b6a052ffe1cea36cbecffbde79f55848aa90ed757cb49037b41b424eefe6e2d327bd68a4eb2e",
-          "sha256": "8b2f2b7e22cb62fd82a272b0b551271d4bf5162dadf97114211154e21bfc4d10",
-          "sha1": "e63da6acc22e7b1df2e29d31d0bdaa3c7eef6334",
-          "md5": "4b4d5d834a6c9ebf43aa78e9c33f415e"
+          "size": 22269,
+          "sha512": "9e7251a4ef6712f11398444d4c0294232cfacfab52f6f34732124e5e90fc25a8b44695e84555a68e2b18d6d87e0b70fa1619efe7e6f0a35f46fc31f789c6b9fb",
+          "sha256": "679a06da86c2cecbf79fc4e93a44fdd45060d6d2f4ab350a5e5386e10117375c",
+          "sha1": "413c994fc815f14ffddb6909ed806ecef7efc3d9",
+          "md5": "0c434a9a169cb5d6dedbbd528444c8b7"
         }
       ]
     },
@@ -71,11 +71,11 @@
         {
           "name": "mdmsdk-1.0-20220425.aar",
           "url": "mdmsdk-1.0-20220425.aar",
-          "size": 22250,
-          "sha512": "115ab09afca09374ece78aaa495a9086f813d3c9eb516bf04a76b6a052ffe1cea36cbecffbde79f55848aa90ed757cb49037b41b424eefe6e2d327bd68a4eb2e",
-          "sha256": "8b2f2b7e22cb62fd82a272b0b551271d4bf5162dadf97114211154e21bfc4d10",
-          "sha1": "e63da6acc22e7b1df2e29d31d0bdaa3c7eef6334",
-          "md5": "4b4d5d834a6c9ebf43aa78e9c33f415e"
+          "size": 22269,
+          "sha512": "9e7251a4ef6712f11398444d4c0294232cfacfab52f6f34732124e5e90fc25a8b44695e84555a68e2b18d6d87e0b70fa1619efe7e6f0a35f46fc31f789c6b9fb",
+          "sha256": "679a06da86c2cecbf79fc4e93a44fdd45060d6d2f4ab350a5e5386e10117375c",
+          "sha1": "413c994fc815f14ffddb6909ed806ecef7efc3d9",
+          "md5": "0c434a9a169cb5d6dedbbd528444c8b7"
         }
       ]
     }
