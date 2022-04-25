@@ -1,0 +1,90 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "com.android.systemlib",
+    "module": "systemlib",
+    "version": "1.0-20220425",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "7.2"
+    }
+  },
+  "variants": [
+    {
+      "name": "releaseVariantReleaseApiPublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-api"
+      },
+      "dependencies": [
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib-jdk8",
+          "version": {
+            "requires": "1.6.21"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "systemlib-1.0-20220425.aar",
+          "url": "systemlib-1.0-20220425.aar",
+          "size": 16170,
+          "sha512": "892820029dbbd4a222d9919cb656b2828119f20b77495dcf1bc22d2b663d5253a04d1b3da42b1598d9de441d8e3ea5b3a788aae938ddd3b5e09d9e2ab66f6405",
+          "sha256": "5fd36c152c25dd4bd8c7441a18ef4bde6f20ef27c38d3a4c9b97c6f836eb704d",
+          "sha1": "66744dc7aa5432e547306d61d5071d60e98ffc84",
+          "md5": "a83a6f65f434081ca89512fa898fb7de"
+        }
+      ]
+    },
+    {
+      "name": "releaseVariantReleaseRuntimePublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib-jdk8",
+          "version": {
+            "requires": "1.6.21"
+          }
+        },
+        {
+          "group": "androidx.core",
+          "module": "core-ktx",
+          "version": {
+            "requires": "1.7.0"
+          }
+        },
+        {
+          "group": "com.android.android12",
+          "module": "android12",
+          "version": {
+            "requires": "1.0-20220425"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "systemlib-1.0-20220425.aar",
+          "url": "systemlib-1.0-20220425.aar",
+          "size": 16170,
+          "sha512": "892820029dbbd4a222d9919cb656b2828119f20b77495dcf1bc22d2b663d5253a04d1b3da42b1598d9de441d8e3ea5b3a788aae938ddd3b5e09d9e2ab66f6405",
+          "sha256": "5fd36c152c25dd4bd8c7441a18ef4bde6f20ef27c38d3a4c9b97c6f836eb704d",
+          "sha1": "66744dc7aa5432e547306d61d5071d60e98ffc84",
+          "md5": "a83a6f65f434081ca89512fa898fb7de"
+        }
+      ]
+    }
+  ]
+}
