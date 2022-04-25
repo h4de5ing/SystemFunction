@@ -2,10 +2,10 @@ package com.android.systemfunction.utils
 
 import android.os.Build
 import androidx.annotation.RequiresApi
+import com.android.mdmsdk.ConfigEnum
 import com.android.systemfunction.app.App.Companion.systemDao
 import com.android.systemfunction.bean.KeyValue
 import com.android.systemfunction.db.Config
-import com.android.systemfunction.enums.ConfigEnum
 
 //TODO 可以重写这一部分
 var isDisableHome = false

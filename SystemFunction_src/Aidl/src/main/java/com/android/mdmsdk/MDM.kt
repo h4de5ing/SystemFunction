@@ -57,11 +57,11 @@ fun isRecentKeyDisable(): Boolean {
 }
 
 fun setBackKeyDisable(isDisable: Boolean) {
-    mService?.setDisable(ConfigEnum.DISABLE_RECENT.name, isDisable)
+    mService?.setDisable(ConfigEnum.DISABLE_BACK.name, isDisable)
 }
 
 fun isBackKeyDisable(): Boolean {
-    return mService!!.isDisable(ConfigEnum.DISABLE_RECENT.name)
+    return mService!!.isDisable(ConfigEnum.DISABLE_BACK.name)
 }
 
 fun setNavigaBarDisable(isDisable: Boolean) {

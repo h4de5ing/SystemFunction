@@ -53,13 +53,13 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun AppCompatCheckBox.change(change: ((Boolean) -> Unit)) {
+    private fun AppCompatCheckBox.change(change: ((Boolean) -> Unit)) {
         this.setOnCheckedChangeListener { _, isChecked ->
             change(isChecked)
         }
     }
 
-    fun delayed(delay: Long, block: () -> Unit) {
+    private fun delayed(delay: Long, block: () -> Unit) {
         Handler().postDelayed(delay) { block() }
     }
 }

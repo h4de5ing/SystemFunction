@@ -12,7 +12,6 @@ import android.database.ContentObserver
 import android.location.LocationManager
 import android.net.ConnectivityManager
 import android.net.wifi.WifiManager
-import android.os.Binder
 import android.os.Build
 import android.os.IBinder
 import android.provider.Settings
@@ -22,6 +21,7 @@ import androidx.annotation.RequiresApi
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
+import com.android.mdmsdk.IRemoteInterface
 import com.android.systemfunction.app.App.Companion.systemDao
 import com.android.systemfunction.utils.*
 import com.android.systemlib.*
@@ -31,7 +31,17 @@ class ForegroundService : Service(), LifecycleOwner {
 
     override fun onBind(intent: Intent): IBinder {
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
-        return Binder()
+        return MyBinder()
+    }
+
+    class MyBinder : IRemoteInterface.Stub() {
+        override fun setDisable(key: String?, disable: Boolean) {
+            updateKT("$key", if (disable) "0" else "1")
+        }
+
+        override fun isDisable(key: String?): Boolean {
+            return getKt("$key") == "0"
+        }
     }
 
     override fun onUnbind(intent: Intent?): Boolean {

@@ -10,7 +10,8 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import com.android.systemfunction.enums.ConfigEnum
+import com.android.mdmsdk.ConfigEnum
+import com.android.mdmsdk.change
 import com.android.systemfunction.utils.*
 import com.android.systemlib.removeMDM
 import com.android.systemlib.setMDM
@@ -26,7 +27,7 @@ class MainActivity : AppCompatActivity() {
         val componentName =
             ComponentName(BuildConfig.APPLICATION_ID, AdminReceiver::class.java.name)
 //        mdm.isChecked = false
-        mdm.checked { isChecked ->
+        mdm.change { isChecked ->
             val id = TestUtils.getInternalString()
             println("resources：" + resources.getString(id))
             if (isChecked) {
@@ -46,61 +47,61 @@ class MainActivity : AppCompatActivity() {
             }
         }
         home.isChecked = isDisableHome
-        home.checked { updateKT(ConfigEnum.DISABLE_HOME.name, if (it) "0" else "1") }
+        home.change { updateKT(ConfigEnum.DISABLE_HOME.name, if (it) "0" else "1") }
 
         recent.isChecked = isDisableRecent
-        recent.checked { updateKT(ConfigEnum.DISABLE_RECENT.name, if (it) "0" else "1") }
+        recent.change { updateKT(ConfigEnum.DISABLE_RECENT.name, if (it) "0" else "1") }
         back.isChecked = isDisableBack
-        back.checked { updateKT(ConfigEnum.DISABLE_BACK.name, if (it) "0" else "1") }
+        back.change { updateKT(ConfigEnum.DISABLE_BACK.name, if (it) "0" else "1") }
         navigation.isChecked = isDisableNavigation
-        navigation.checked { updateKT(ConfigEnum.DISABLE_NAVIGATION.name, if (it) "0" else "1") }
+        navigation.change { updateKT(ConfigEnum.DISABLE_NAVIGATION.name, if (it) "0" else "1") }
         status.isChecked = isDisableStatus
-        status.checked { updateKT(ConfigEnum.DISABLE_STATUS.name, if (it) "0" else "1") }
+        status.change { updateKT(ConfigEnum.DISABLE_STATUS.name, if (it) "0" else "1") }
         usb_data.isChecked = isDisableUSBData
-        usb_data.checked { updateKT(ConfigEnum.DISABLE_USB_DATA.name, if (it) "0" else "1") }
+        usb_data.change { updateKT(ConfigEnum.DISABLE_USB_DATA.name, if (it) "0" else "1") }
         bluetooth.isChecked = isDisableBluetooth
-        bluetooth.checked { updateKT(ConfigEnum.DISABLE_BLUETOOTH.name, if (it) "0" else "1") }
+        bluetooth.change { updateKT(ConfigEnum.DISABLE_BLUETOOTH.name, if (it) "0" else "1") }
         wifi.isChecked = isDisableWIFI
-        wifi.checked { updateKT(ConfigEnum.DISABLE_WIFI.name, if (it) "0" else "1") }
+        wifi.change { updateKT(ConfigEnum.DISABLE_WIFI.name, if (it) "0" else "1") }
         data.isChecked = isDisableData
-        data.checked { updateKT(ConfigEnum.DISABLE_DATA_CONNECTIVITY.name, if (it) "0" else "1") }
+        data.change { updateKT(ConfigEnum.DISABLE_DATA_CONNECTIVITY.name, if (it) "0" else "1") }
         gps.isChecked = isDisableGPS
-        gps.checked { updateKT(ConfigEnum.DISABLE_GPS.name, if (it) "0" else "1") }
+        gps.change { updateKT(ConfigEnum.DISABLE_GPS.name, if (it) "0" else "1") }
         microphone.isChecked = isDisableMicrophone
-        microphone.checked {
+        microphone.change {
             updateKT(
                 ConfigEnum.DISABLE_MICROPHONE.name,
                 if (it) "0" else "1"
             )
         }
         screen_shot.isChecked = isDisableScreenShot
-        screen_shot.checked { updateKT(ConfigEnum.DISABLE_SCREEN_SHOT.name, if (it) "0" else "1") }
+        screen_shot.change { updateKT(ConfigEnum.DISABLE_SCREEN_SHOT.name, if (it) "0" else "1") }
         screen_capture.isChecked = isDisableScreenCapture
-        screen_capture.checked {
+        screen_capture.change {
             updateKT(
                 ConfigEnum.DISABLE_SCREEN_CAPTURE.name,
                 if (it) "0" else "1"
             )
         }
         tf_card.isChecked = isDisableTFCard
-        tf_card.checked { updateKT(ConfigEnum.DISABLE_TF_CARD.name, if (it) "0" else "1") }
+        tf_card.change { updateKT(ConfigEnum.DISABLE_TF_CARD.name, if (it) "0" else "1") }
         phone_call.isChecked = isDisablePhoneCall
-        phone_call.checked { updateKT(ConfigEnum.DISABLE_PHONE_CALL.name, if (it) "0" else "1") }
+        phone_call.change { updateKT(ConfigEnum.DISABLE_PHONE_CALL.name, if (it) "0" else "1") }
         hot_spot.isChecked = isDisableHotSpot
-        hot_spot.checked { updateKT(ConfigEnum.DISABLE_HOT_SPOT.name, if (it) "0" else "1") }
+        hot_spot.change { updateKT(ConfigEnum.DISABLE_HOT_SPOT.name, if (it) "0" else "1") }
         sms.isChecked = isDisableSMS
-        sms.checked { updateKT(ConfigEnum.DISABLE_SMS.name, if (it) "0" else "1") }
+        sms.change { updateKT(ConfigEnum.DISABLE_SMS.name, if (it) "0" else "1") }
         mms.isChecked = isDisableMMS
-        mms.checked { updateKT(ConfigEnum.DISABLE_MMS.name, if (it) "0" else "1") }
+        mms.change { updateKT(ConfigEnum.DISABLE_MMS.name, if (it) "0" else "1") }
         system_update.isChecked = isDisableSystemUpdate
-        system_update.checked {
+        system_update.change {
             updateKT(
                 ConfigEnum.DISABLE_SYSTEM_UPDATE.name,
                 if (it) "0" else "1"
             )
         }
         restore_factory.isChecked = isDisableRestoreFactory
-        restore_factory.checked {
+        restore_factory.change {
             updateKT(
                 ConfigEnum.DISABLE_RESTORE_FACTORY.name,
                 if (it) "0" else "1"

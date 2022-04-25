@@ -47,7 +47,8 @@
             android:id="@+id/usb_data"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="禁用USB数据传输" />
+            android:text="禁用USB数据传输"
+            android:visibility="gone" />
 
         <androidx.appcompat.widget.AppCompatCheckBox
             android:id="@+id/bluetooth"
@@ -77,31 +78,36 @@
             android:id="@+id/microphone"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="禁用麦克风" />
+            android:text="禁用麦克风"
+            android:visibility="gone" />
 
         <androidx.appcompat.widget.AppCompatCheckBox
             android:id="@+id/screen_shot"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="禁用截屏" />
+            android:text="禁用截屏"
+            android:visibility="gone" />
 
         <androidx.appcompat.widget.AppCompatCheckBox
             android:id="@+id/screen_capture"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="禁用录屏" />
+            android:text="禁用录屏"
+            android:visibility="gone" />
 
         <androidx.appcompat.widget.AppCompatCheckBox
             android:id="@+id/tf_card"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="禁用TF卡" />
+            android:text="禁用TF卡"
+            android:visibility="gone" />
 
         <androidx.appcompat.widget.AppCompatCheckBox
             android:id="@+id/phone_call"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="禁用打电话" />
+            android:text="禁用打电话"
+            android:visibility="gone" />
 
         <androidx.appcompat.widget.AppCompatCheckBox
             android:id="@+id/hot_spot"
@@ -113,24 +119,28 @@
             android:id="@+id/sms"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="禁用短信" />
+            android:text="禁用短信"
+            android:visibility="gone" />
 
         <androidx.appcompat.widget.AppCompatCheckBox
             android:id="@+id/mms"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="禁用彩信" />
+            android:text="禁用彩信"
+            android:visibility="gone" />
 
         <androidx.appcompat.widget.AppCompatCheckBox
             android:id="@+id/system_update"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="禁用系统升级" />
+            android:text="禁用系统升级"
+            android:visibility="gone" />
 
         <androidx.appcompat.widget.AppCompatCheckBox
             android:id="@+id/restore_factory"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="禁用恢复出厂设置" />
+            android:text="禁用恢复出厂设置"
+            android:visibility="gone" />
     </LinearLayout>
 </ScrollView>

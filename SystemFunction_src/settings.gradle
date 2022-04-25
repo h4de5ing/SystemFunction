@@ -17,3 +17,5 @@ rootProject.name = "SystemFunction"
 include ':app'
 include ':SystemLib'
 include ':Android12'
+include ':Aidl'
+include ':mdmclient'
