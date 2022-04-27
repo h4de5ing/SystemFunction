@@ -1,6 +1,6 @@
 package com.android.mdmsdk
 
-enum class PackageManagerEnum {
+enum class PackageTypeEnum {
     DISABLE_INSTALL_ADD,
     DISABLE_INSTALL_REMOVE,
     INSTALL_ADD,
