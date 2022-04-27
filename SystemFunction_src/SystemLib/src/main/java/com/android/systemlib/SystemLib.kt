@@ -17,6 +17,7 @@ import com.android.android12.Screenshooter12
 /**
  * 系统截图
  * 参考 /frameworks/base/packages/Shell/src/com/android/shell/Screenshooter.java
+ * sdk\sources\android-30\com\android\systemui\screenshot\GlobalScreenshot.java
  * 12
  * 9 10 11
  * 7 8

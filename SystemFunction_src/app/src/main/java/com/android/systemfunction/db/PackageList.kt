@@ -11,10 +11,15 @@ import androidx.room.PrimaryKey
         unique = true
     )]
 )
-class PackageManagerList(
+class PackageList(
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "id")
     var id: Long,
     @ColumnInfo(name = "type") var type: Int,
     @ColumnInfo(name = "packageName") var packageName: String,
+    @ColumnInfo(name = "disable_install") var disable_install: Int,
+    @ColumnInfo(name = "install") var install: Int,
+    @ColumnInfo(name = "disable_uninstall") var disable_uninstall: Int,
+    @ColumnInfo(name = "persistent") var persistent: Int,
+    @ColumnInfo(name = "super_white") var super_white: Int,
 )

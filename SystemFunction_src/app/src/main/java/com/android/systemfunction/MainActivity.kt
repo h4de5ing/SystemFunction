@@ -5,132 +5,266 @@ import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.UserManager
+import android.provider.Settings
+import android.view.View
+import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
+import androidx.annotation.Nullable
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import com.android.mdmsdk.ConfigEnum
 import com.android.mdmsdk.change
+import com.android.systemfunction.services.OnePixelWindowService
+import com.android.systemfunction.ui.APPManagerActivity
 import com.android.systemfunction.utils.*
-import com.android.systemlib.removeMDM
-import com.android.systemlib.setMDM
+import com.android.systemlib.*
+import com.github.h4de5ing.baseui.alertConfirm
+import com.zhangyf.library.utils.TotpUtil
 import kotlinx.android.synthetic.main.activity_main.*
+import java.io.File
+import java.io.FileOutputStream
+
 
 class MainActivity : AppCompatActivity() {
+    private var dm: DevicePolicyManager? = null
+    private var componentName2 =
+        ComponentName(BuildConfig.APPLICATION_ID, AdminReceiver::class.java.name)
+
     @SuppressLint("MissingPermission")
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        val dm = getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-        val componentName =
-            ComponentName(BuildConfig.APPLICATION_ID, AdminReceiver::class.java.name)
-//        mdm.isChecked = false
+        dm = getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+        try {
+            if (!isActiveDeviceManager(this, componentName2)) setMDM(this, componentName2)
+        } catch (e: Exception) {
+            println("设置MDM失败")
+            e.printStackTrace()
+        }
+        updateUI()
         mdm.change { isChecked ->
-            val id = TestUtils.getInternalString()
-            println("resources：" + resources.getString(id))
             if (isChecked) {
                 try {
-                    println("设置结果:${setMDM(this, componentName)}")
+                    println("设置结果:${setMDM(this, componentName2)}")
                 } catch (e: Exception) {
                     Toast.makeText(this, "MDM设置失败:${e.message}", Toast.LENGTH_SHORT).show()
                     e.printStackTrace()
                 }
             } else {
                 try {
-                    removeMDM(this, componentName)
+                    removeMDM(this, componentName2)
                 } catch (e: Exception) {
                     Toast.makeText(this, "MDM取消失败:${e.message}", Toast.LENGTH_SHORT).show()
                     e.printStackTrace()
                 }
             }
         }
-        home.isChecked = isDisableHome
         home.change { updateKT(ConfigEnum.DISABLE_HOME.name, if (it) "0" else "1") }
-
-        recent.isChecked = isDisableRecent
         recent.change { updateKT(ConfigEnum.DISABLE_RECENT.name, if (it) "0" else "1") }
-        back.isChecked = isDisableBack
         back.change { updateKT(ConfigEnum.DISABLE_BACK.name, if (it) "0" else "1") }
-        navigation.isChecked = isDisableNavigation
         navigation.change { updateKT(ConfigEnum.DISABLE_NAVIGATION.name, if (it) "0" else "1") }
-        status.isChecked = isDisableStatus
         status.change { updateKT(ConfigEnum.DISABLE_STATUS.name, if (it) "0" else "1") }
-        usb_data.isChecked = isDisableUSBData
-        usb_data.change { updateKT(ConfigEnum.DISABLE_USB_DATA.name, if (it) "0" else "1") }
-        bluetooth.isChecked = isDisableBluetooth
+        adb.change { updateKT(ConfigEnum.DISABLE_USB_DATA.name, if (it) "0" else "1") }
         bluetooth.change { updateKT(ConfigEnum.DISABLE_BLUETOOTH.name, if (it) "0" else "1") }
-        wifi.isChecked = isDisableWIFI
         wifi.change { updateKT(ConfigEnum.DISABLE_WIFI.name, if (it) "0" else "1") }
-        data.isChecked = isDisableData
         data.change { updateKT(ConfigEnum.DISABLE_DATA_CONNECTIVITY.name, if (it) "0" else "1") }
-        gps.isChecked = isDisableGPS
         gps.change { updateKT(ConfigEnum.DISABLE_GPS.name, if (it) "0" else "1") }
-        microphone.isChecked = isDisableMicrophone
-        microphone.change {
-            updateKT(
-                ConfigEnum.DISABLE_MICROPHONE.name,
-                if (it) "0" else "1"
-            )
-        }
-        screen_shot.isChecked = isDisableScreenShot
+        microphone.change { updateKT(ConfigEnum.DISABLE_MICROPHONE.name, if (it) "0" else "1") }
         screen_shot.change { updateKT(ConfigEnum.DISABLE_SCREEN_SHOT.name, if (it) "0" else "1") }
-        screen_capture.isChecked = isDisableScreenCapture
         screen_capture.change {
             updateKT(
                 ConfigEnum.DISABLE_SCREEN_CAPTURE.name,
                 if (it) "0" else "1"
             )
         }
-        tf_card.isChecked = isDisableTFCard
         tf_card.change { updateKT(ConfigEnum.DISABLE_TF_CARD.name, if (it) "0" else "1") }
-        phone_call.isChecked = isDisablePhoneCall
         phone_call.change { updateKT(ConfigEnum.DISABLE_PHONE_CALL.name, if (it) "0" else "1") }
-        hot_spot.isChecked = isDisableHotSpot
         hot_spot.change { updateKT(ConfigEnum.DISABLE_HOT_SPOT.name, if (it) "0" else "1") }
-        sms.isChecked = isDisableSMS
         sms.change { updateKT(ConfigEnum.DISABLE_SMS.name, if (it) "0" else "1") }
-        mms.isChecked = isDisableMMS
         mms.change { updateKT(ConfigEnum.DISABLE_MMS.name, if (it) "0" else "1") }
-        system_update.isChecked = isDisableSystemUpdate
         system_update.change {
             updateKT(
                 ConfigEnum.DISABLE_SYSTEM_UPDATE.name,
                 if (it) "0" else "1"
             )
         }
-        restore_factory.isChecked = isDisableRestoreFactory
+        install_app.change {
+            updateKT(ConfigEnum.DISABLE_INSTALL_APP.name, if (it) "0" else "1")
+        }
+        uninstall_app.change {
+            updateKT(ConfigEnum.DISABLE_UNINSTALL_APP.name, if (it) "0" else "1")
+        }
         restore_factory.change {
-            updateKT(
-                ConfigEnum.DISABLE_RESTORE_FACTORY.name,
-                if (it) "0" else "1"
+            updateKT(ConfigEnum.DISABLE_RESTORE_FACTORY.name, if (it) "0" else "1")
+        }
+        device_manager.change {
+            if (it) activeDeviceManager(
+                this,
+                BuildConfig.APPLICATION_ID,
+                AdminReceiver::class.java.name
+            )
+            else removeActiveDeviceAdmin(
+                this,
+                BuildConfig.APPLICATION_ID,
+                AdminReceiver::class.java.name
             )
         }
-
-        //setBackKeyDisable(this, isToggle)
-        //dm.setCameraDisabled(componentName, isToggle)
-//        get.setOnClickListener {
-//            val componentName2 =
-//                ComponentName(
-//                    BuildConfig.APPLICATION_ID,
-//                    DeviceAdminSample.DeviceAdminSampleReceiver::class.java.name
-//                )
-//            if (dm.isAdminActive(componentName)) {
-//                startActivity(Intent(this, DeviceAdminSample::class.java))
-//            } else {
-//                val intent = Intent()
-//                intent.action = DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN
-//                intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, componentName)
-//                startActivity(intent)
-//            }
-//        }
-//        activateDeviceManager(MainActivity@ this, BuildConfig.APPLICATION_ID,AdminReceiver::class.java.name)
-        //if (dm.isAdminActive(componentName)) {
-        //将本应用设置为应用管理器
-        //activateDeviceManager(this, BuildConfig.APPLICATION_ID, AdminReceiver::class.java.name)
-        //}
+        reset.setOnClickListener { alertConfirm(this, "恢复出厂设置?") { if (it) resetDevices(this) } }
+        shut_down.setOnClickListener { alertConfirm(this, "关机?") { if (it) shutdown() } }
+        reboot.setOnClickListener { alertConfirm(this, "重启?") { if (it) rebootDevice() } }
+        shot.setOnClickListener { testShot() }
         startService(Intent(this, ForegroundService::class.java))
+        app_manager.setOnClickListener {
+            startActivity(
+                Intent(
+                    this,
+                    APPManagerActivity::class.java
+                )
+            )
+        }
         println("MDM包名:${getString(TestUtils.getInternalString())}")
+//        startOne()
+        timer(10 * 1000) {
+            opt = TotpUtil.generate()
+            runOnUiThread { show.text = opt }
+        }
+        password.change {
+            if (it.length == 6) {
+                if (opt == it) {
+                    val manager: InputMethodManager =
+                        getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+                    manager.hideSoftInputFromWindow(
+                        password.windowToken,
+                        InputMethodManager.HIDE_NOT_ALWAYS
+                    )
+                    password.setText("")
+                    mask.visibility = View.GONE
+                    scrollView.visibility = View.VISIBLE
+                } else {
+                    password.requestFocus()
+                    password.error = "password error"
+                }
+            } else {
+                if ("0123456789" == it) {
+                    val manager: InputMethodManager =
+                        getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+                    manager.hideSoftInputFromWindow(
+                        password.windowToken,
+                        InputMethodManager.HIDE_NOT_ALWAYS
+                    )
+                    password.setText("")
+                    mask.visibility = View.GONE
+                    scrollView.visibility = View.VISIBLE
+                }
+            }
+        }
+    }
+
+    private var opt = ""
+    private fun updateUI() {
+        try {
+            mdm.isChecked = dm!!.isAdminActive(componentName2)
+            home.isChecked = isDisableHome
+            recent.isChecked = isDisableRecent
+            back.isChecked = isDisableBack
+            navigation.isChecked = isDisableNavigation
+            status.isChecked = isDisableStatus
+            adb.isChecked = isDisableUSBData
+            bluetooth.isChecked = isDisableBluetooth
+            wifi.isChecked = isDisableWIFI
+            data.isChecked = isDisableData
+            gps.isChecked = isDisableGPS
+            microphone.isChecked = isDisableMicrophone
+            screen_shot.isChecked = isDisableScreenShot
+            screen_capture.isChecked = isDisableScreenCapture
+            tf_card.isChecked = isDisableTFCard
+            phone_call.isChecked = isDisablePhoneCall
+            hot_spot.isChecked = isDisableHotSpot
+            sms.isChecked = isDisableSMS
+            mms.isChecked = isDisableMMS
+            system_update.isChecked = isDisableSystemUpdate
+            restore_factory.isChecked = isDisableRestoreFactory
+            device_manager.isChecked =
+                isActiveDeviceManager(
+                    this,
+                    BuildConfig.APPLICATION_ID,
+                    AdminReceiver::class.java.name
+                )
+            install_app.isChecked = isDisable(UserManager.DISALLOW_INSTALL_APPS)
+            uninstall_app.isChecked = isDisable(UserManager.DISALLOW_UNINSTALL_APPS)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun disable(key: String, isDisable: Boolean) {
+        disableMDM(
+            this,
+            ComponentName(BuildConfig.APPLICATION_ID, AdminReceiver::class.java.name),
+            key, isDisable
+        )
+    }
+
+    private fun isDisable(key: String): Boolean = isDisableDMD(this, key)
+    private fun testShot() {
+        try {
+            val bitmap = takeScreenShot()
+            val file = File("/sdcard/Pictures/1.png")
+            val fos = FileOutputStream(file)
+            bitmap?.compress(Bitmap.CompressFormat.JPEG, 100, fos)
+            fos.flush()
+            fos.close()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private val REQUEST_CODE_FOR_OVERLAY_PERMISSION = 0x201
+    private fun startOne() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (Settings.canDrawOverlays(this@MainActivity)) {
+                startOnePixelWindowService()
+                //finish()
+            } else {
+                val intent: Intent = Intent(
+                    Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                    Uri.parse("package:$packageName")
+                )
+                startActivityForResult(intent, REQUEST_CODE_FOR_OVERLAY_PERMISSION)
+            }
+        } else {
+            startOnePixelWindowService()
+            //finish()
+        }
+    }
+
+    private fun startOnePixelWindowService() {
+        val intent = Intent(this@MainActivity, OnePixelWindowService::class.java)
+        startService(intent)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, @Nullable data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQUEST_CODE_FOR_OVERLAY_PERMISSION
+            && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
+            && Settings.canDrawOverlays(this@MainActivity)
+        ) {
+            startOnePixelWindowService()
+        }
+        //finish()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (!BuildConfig.DEBUG) {
+            mask.visibility = View.VISIBLE
+            scrollView.visibility = View.GONE
+        }
     }
 }

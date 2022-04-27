@@ -26,4 +26,22 @@ interface SystemDao {
 
     @Query("DELETE FROM config")
     fun deleteAllConfig()
+
+    @Query("SELECT * FROM packages order by id")
+    fun observerPackagesList(): LiveData<MutableList<PackageList>>
+
+    @Query("SELECT * FROM packages where type=(:type) order by id")
+    fun selectAllPackagesList(type: Int): MutableList<PackageList>
+
+    @Insert
+    fun insertPackages(vararg list: PackageList)
+
+    @Update
+    fun updatePackages(list: PackageList)
+
+    @Query("DELETE FROM packages where packageName=(:packageName)")
+    fun deletePackages(packageName: String)
+
+    @Query("DELETE FROM packages where type=(:type)")
+    fun deletePackages(type: Int)
 }

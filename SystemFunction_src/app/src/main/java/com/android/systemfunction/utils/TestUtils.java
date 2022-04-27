@@ -5,11 +5,6 @@ import android.annotation.SuppressLint;
 import java.lang.reflect.Field;
 
 public class TestUtils {
-    //    public static String getInternalString(Context context) {
-//        Resources systemResources = context.getResources().getSytem();
-//        long id = systemResources.getIdentifier("month", "id", "android");
-//
-//    }
     //https://www.cnblogs.com/pandans/p/3288847.html
     public static int getInternalString() {
         int id = -1;

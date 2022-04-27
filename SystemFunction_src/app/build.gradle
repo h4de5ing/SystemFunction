@@ -17,8 +17,8 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     signingConfigs {
-        sign {//Q865M_Q115M_android11
-            storeFile file("D:\\emdoor\\AdvancedSignTool\\SignFiles\\T50\\platform.jks")
+        sign {
+            storeFile file("D:\\emdoor\\AdvancedSignTool\\SignFiles\\Q865M_Q115M_android11\\platform.jks")
             storePassword('android')
             keyAlias('android')
             keyPassword('android')
@@ -65,4 +65,9 @@ dependencies {
     debugImplementation 'com.guolindev.glance:glance:1.1.0'
 //    implementation 'com.android.systemlib:systemlib:1.0-20220411'
     implementation project(path: ':SystemLib')
+    implementation 'commons-codec:commons-codec:1.15'
+    implementation('com.github.Yuphee:GoogleTotpAuth:v1.0.0', { exclude group: 'com.android.support', module: 'appcompat-v7' }) //https://totp.app/
+    implementation 'com.github.CymChad:BaseRecyclerViewAdapterHelper:3.0.4'
+    implementation 'com.github.h4de5ing.base:base:1.0-20211125'//基础工具
+    implementation 'com.github.h4de5ing.baseui:baseui:1.0-20211125'//基础UI工具
 }

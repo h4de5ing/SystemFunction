@@ -1,17 +1,23 @@
 package com.android.systemlib
 
-import android.annotation.SuppressLint
-import android.app.StatusBarManager
 import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.net.ConnectivityManager.EXTRA_REASON
 import android.net.wifi.WifiConfiguration
 import android.net.wifi.WifiManager
 import android.os.IPowerManager
 import android.os.ServiceManager
+import android.os.UserManager
+import android.provider.Settings
+import android.telephony.TelephonyManager
 import androidx.core.view.accessibility.AccessibilityEventCompat
+import java.io.BufferedWriter
+import java.io.File
+import java.io.FileWriter
+import java.io.IOException
 
 
 /**
@@ -45,7 +51,7 @@ fun removeWifiConfig(context: Context, ssid: String): Boolean {
 /**
  * 静默激活设备管理器
  */
-fun activateDeviceManager(context: Context, packageName: String, className: String) {
+fun activeDeviceManager(context: Context, packageName: String, className: String) {
     (context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
         .setActiveAdmin(ComponentName(packageName, className), true)
 }
@@ -56,6 +62,19 @@ fun activateDeviceManager(context: Context, packageName: String, className: Stri
 fun removeActiveDeviceAdmin(context: Context, packageName: String, className: String) {
     (context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
         .removeActiveAdmin(ComponentName(packageName, className))
+}
+
+fun isActiveDeviceManager(context: Context, componentName: ComponentName): Boolean {
+    return (context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
+        .isAdminActive(componentName)
+}
+
+/**
+ * 判断是否激活设备管理器
+ */
+fun isActiveDeviceManager(context: Context, packageName: String, className: String): Boolean {
+    return (context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
+        .isAdminActive(ComponentName(packageName, className))
 }
 
 /**
@@ -120,32 +139,67 @@ fun removeMDM(context: Context, componentName: ComponentName) {
     dm.clearProfileOwner(componentName)
 }
 
-/**
- * 禁用设备蓝牙
- */
-fun setBluetoothDisable(context: Context, isDisable: Boolean): Boolean {
-    return false
+fun disableMDM(
+    context: Context,
+    componentName: ComponentName,
+    key: String,
+    isDisable: Boolean
+): Boolean {
+    var setResult = false
+    try {
+        val dm =
+            context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+        if (isDisable)
+            dm.addUserRestriction(componentName, key)
+        else
+            dm.clearUserRestriction(componentName, key)
+        setResult = true
+    } catch (e: Exception) {
+        setResult = false
+        e.printStackTrace()
+    }
+    return setResult
 }
 
-/**
- * 查询是否禁用蓝牙设备
- */
-fun isBluetoothDisabled(context: Context): Boolean {
-    return false
+fun isDisableDMD(context: Context, key: String): Boolean {
+    return (context.applicationContext.getSystemService(Context.USER_SERVICE) as UserManager)
+        .userRestrictions.getBoolean(key)
 }
 
 /**
  * 禁用USB数据传输
  */
 fun setUSBDataDisabled(context: Context, isDisable: Boolean) {
+    Settings.Global.putInt(
+        context.contentResolver,
+        Settings.Global.ADB_ENABLED,
+        if (isDisable) 0 else 1
+    )
+    setSwitch(if (isDisable) 1 else 0)
+}
 
+private const val USB_STATE_PATH = "ro.vendor.usb.hdmi_state.property"
+private const val USB_SWITCH_PATH = "ro.vendor.usb.switch.property"
+private fun setSwitch(i: Int) {
+    try {
+        val path = getSystemPropertyString(USB_SWITCH_PATH)
+        if (File(path).exists()) {
+            val bufferedWriter = BufferedWriter(FileWriter(path))
+            bufferedWriter.write(i.toString())
+            bufferedWriter.close()
+        } else {
+            println("$USB_SWITCH_PATH is not exists")
+        }
+    } catch (e: IOException) {
+        e.printStackTrace()
+    }
 }
 
 /**
  * 查询是否禁用USB数据传输
  */
-fun isUSBDataDisabled(): Boolean {
-    return false
+fun isUSBDataDisabled(context: Context): Boolean {
+    return Settings.Global.getInt(context.contentResolver, Settings.Global.ADB_ENABLED, 0) == 1
 }
 
 /**
@@ -192,7 +246,9 @@ fun removeInstallPackageTrustList(context: Context, packageNameList: List<String
  * 添加禁止卸载应用列表
  */
 fun addDisallowedUninstallPackages(context: Context, packageNameList: List<String>) {
-
+//    val dm =
+//        context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+//    dm.setUninstallBlocked(componentName2, "com.guoshi.httpcanary", true)
 }
 
 /**
@@ -208,72 +264,55 @@ fun getDisallowedUninstallPackageList(context: Context): List<String> {
 fun removeDisallowedUninstallPackages(context: Context, packageNameList: List<String>) {}
 
 /**
- * 禁用设备截屏
- */
-fun setScreenShotDisabled(context: Context, isDisable: Boolean) {
-//    setScreenCaptureDisabled
-}
-
-/**
- * 查询是否禁用设备截屏
- */
-fun isScreenShotDisabled(context: Context): Boolean {
-    return false
-}
-
-/**
- * 禁用设备TF卡存储
- */
-fun setTFCardDisabled(context: Context, isDisable: Boolean) {}
-
-/**
- * 查询是否禁用TF卡存储
- */
-fun isTFCardDisabled(context: Context): Boolean {
-    return false
-}
-
-/**
- * 禁用拨打电话
- */
-fun setCallPhoneDisabled(context: Context, isDisable: Boolean) {
-
-}
-
-/**
- * 是否禁用拨打电话
- */
-fun isCallPhoneDisabled(context: Context): Boolean {
-    return false
-}
-
-/**
  * 关机设备
  */
-fun shutdown(context: Context) {
+fun shutdown() {
     val pm = IPowerManager.Stub.asInterface(ServiceManager.getService(Context.POWER_SERVICE))
-    pm.shutdown(true, "shutdown", false)
+    pm.shutdown(false, "shutdown", false)
+//    val dm = context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+//    dm.reboot(packageName,className)
 }
 
 /**
  * 重启设备
  */
-fun rebootDevice(context: Context) {
+fun rebootDevice() {
     val pm = IPowerManager.Stub.asInterface(ServiceManager.getService(Context.POWER_SERVICE))
-    pm.reboot(true, "shutdown", false)
+    pm.reboot(false, "shutdown", false)
 }
 
 /**
  * 恢复出厂设置
+ * Can't perform master clear/factory reset
  */
 fun resetDevices(context: Context) {
-    val intent = Intent("android.intent.action.FACTORY_RESET")
+//    val intent = Intent("android.intent.action.FACTORY_RESET")
+//    intent.setPackage("android")
+//    intent.addFlags(Intent.FLAG_RECEIVER_FOREGROUND)
+//    intent.putExtra("android.intent.extra.REASON", "MasterClearConfirm")
+//    intent.putExtra("android.intent.extra.WIPE_EXTERNAL_STORAGE", false /*mEraseSdCard*/)
+//    intent.putExtra("com.android.internal.intent.extra.WIPE_ESIMS", false /*mEraseEsims*/)
+//    context.sendBroadcast(intent)
+
+    val intent = Intent(Intent.ACTION_FACTORY_RESET)
     intent.setPackage("android")
     intent.addFlags(Intent.FLAG_RECEIVER_FOREGROUND)
-    intent.putExtra("android.intent.extra.REASON", "MasterClearConfirm")
-    intent.putExtra("android.intent.extra.WIPE_EXTERNAL_STORAGE", false /*mEraseSdCard*/)
-    intent.putExtra("com.android.internal.intent.extra.WIPE_ESIMS", true /*mEraseEsims*/)
+    intent.putExtra(Intent.EXTRA_REASON, "MasterClearConfirm")
+    intent.putExtra(Intent.EXTRA_WIPE_EXTERNAL_STORAGE, false/*mEraseSdCard*/)
+    intent.putExtra(Intent.EXTRA_WIPE_ESIMS, true/*mEraseEsims*/)
     context.sendBroadcast(intent)
+}
+
+/**
+static final int WIPE_EUICC = 4;
+public static final int WIPE_EXTERNAL_STORAGE = 1;
+public static final int WIPE_RESET_PROTECTION_DATA = 2;
+public static final int WIPE_SILENTLY = 8;
+ */
+fun wipeDate(context: Context) {
+    val dm =
+        context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    dm.wipeData(DevicePolicyManager.WIPE_EXTERNAL_STORAGE)
 }
 
 /**
@@ -283,7 +322,6 @@ fun setHotSpotDisabled(context: Context, isDisable: Boolean) {
     if (isDisable) {
         val wifiManager =
             context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
-//        wifiManager.cancelLocalOnlyHotspotRequest()
         wifiManager.stopSoftAp()
     }
 }
@@ -297,19 +335,6 @@ fun isHotSpotDisabled(context: Context): Boolean {
     return wifiManager.isWifiApEnabled()
 }
 
-/**
- * 禁用短信
- */
-fun disableSms(context: Context, isDisable: Boolean) {
-
-}
-
-/**
- * 查询是否禁用短信
- */
-fun isSmsDisable(context: Context): Boolean {
-    return false
-}
 
 /**
  * 禁用彩信
@@ -340,38 +365,6 @@ fun isSystemUpdateDisabled(context: Context): Boolean {
 }
 
 /**
- * 禁用录音功能
- */
-fun setMicrophoneDisable(context: Context, isDisable: Boolean) {
-
-}
-
-/**
- * 查询录音功能禁用状态
- */
-fun isMicrophoneDisable(context: Context) {
-
-}
-
-/**
- * 禁止使用WIFI
- */
-fun setWifiDisabled(context: Context, isDisable: Boolean) {
-    val wifiManager =
-        context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
-    if (isDisable)
-        if (wifiManager.isWifiEnabled) wifiManager.isWifiEnabled = false
-        else if (!wifiManager.isWifiEnabled) wifiManager.isWifiEnabled = true
-}
-
-/**
- * 查询是否禁止使用WiFi
- */
-fun isWifiDisabled(context: Context): Boolean {
-    return false
-}
-
-/**
  * 添加系统应用保活白名单
  */
 fun addPersistentApp(context: Context, packageNameList: List<String>) {}
@@ -395,54 +388,14 @@ fun remoteSuperWhiteListForSystem(context: Context, packageNameList: List<String
 
 }
 
-/**
- * 禁用或允许设备录屏
- */
-fun setScreenCaptureDisabled(context: Context, isDisable: Boolean) {}
-
-/**
- * 查询是否禁用设备录屏
- */
-fun isScreenCaptureDisabled(context: Context, isDisable: Boolean): Boolean {
-    return false
+//启用 禁用数据流量  //TODO 没有测试通过
+fun mobile_data(context: Context, isDisable: Boolean) {
+    val tm =
+        context.applicationContext.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+    if (isDisable) tm.enableDataConnectivity() else tm.disableDataConnectivity()
 }
 
-/**
- * 禁止设备GPS功能
- */
-fun setGPSDisabled(context: Context, isDisable: Boolean) {}
-
-/**
- * 查询是否禁用设备GPS
- */
-fun isGPSDisable(context: Context): Boolean {
-    return false
-}
-
-/**
- * 禁止设备恢复出厂设备
- */
-fun setRestoreFactoryDisabled(context: Context) {
-
-}
-
-/**
- * 查询是否禁用设备恢复出厂设备
- */
-fun isRestoreFactoryDisable(context: Context): Boolean {
-    return false
-}
-
-/**
- * 禁止设备移动数据网络
- */
-fun setDataConnectivityDisabled(context: Context, isDisable: Boolean) {
-
-}
-
-/**
- * 查询是否禁用移动数据网络
- */
-fun isDataConnectivityDisabled(context: Context): Boolean {
-    return false
+fun getSettings(context: Context) {
+    val mSettings: Settings = Settings()
+    mSettings
 }

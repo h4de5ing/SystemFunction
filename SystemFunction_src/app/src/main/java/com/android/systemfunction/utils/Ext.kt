@@ -1,13 +1,40 @@
 package com.android.systemfunction.utils
 
+import android.annotation.SuppressLint
+import android.app.admin.DevicePolicyManager
+import android.content.ComponentName
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageInfo
+import android.content.pm.PackageManager
+import android.content.pm.ResolveInfo
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Canvas
+import android.graphics.PixelFormat
+import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.Drawable
 import android.os.Build
+import android.text.TextUtils
 import androidx.annotation.RequiresApi
+import androidx.core.widget.addTextChangedListener
+import androidx.core.widget.doOnTextChanged
 import com.android.mdmsdk.ConfigEnum
+import com.android.systemfunction.BuildConfig
+import com.android.systemfunction.app.App
 import com.android.systemfunction.app.App.Companion.systemDao
+import com.android.systemfunction.bean.AppBean
 import com.android.systemfunction.bean.KeyValue
 import com.android.systemfunction.db.Config
+import com.android.systemfunction.db.DBEnum
+import com.android.systemfunction.db.PackageList
+import com.google.android.material.textfield.TextInputEditText
+import java.io.ByteArrayOutputStream
+import java.util.*
+import kotlin.properties.Delegates
 
-//TODO 可以重写这一部分
+//TODO 将一部分工具方法放在lib中去
+//TODO 可以重写这一部分,不毕保存每一个选项的值，通过数据库来跟踪即可
 var isDisableHome = false
 var isDisableRecent = false
 var isDisableBack = false
@@ -28,6 +55,8 @@ var isDisableSMS = false
 var isDisableMMS = false
 var isDisableSystemUpdate = false
 var isDisableRestoreFactory = false
+var isDisableInstallApp = false
+var isDisableUnInstallApp = false
 
 //保存所有的配置项目
 private val configs = mutableListOf<Config>()
@@ -39,6 +68,48 @@ fun updateKT(key: String, value: String) {
         this.update()
     } ?: Config(0, key, value).insert()
 }
+
+var allDBPackages = mutableListOf<PackageList>()
+fun updatePackage(key: Int, value: Int, packageName: String) {
+//    var d_install = 0
+//    var install = 0
+//    var d_uninstall = 0
+//    var p = 0
+//    var s = 0
+//    when (key) {
+//        DBEnum.D_INSTALL.ordinal -> d_install = value
+//        DBEnum.INSTALL.ordinal -> install = value
+//        DBEnum.D_UNINSTALL.ordinal -> d_uninstall = value
+//        DBEnum.P.ordinal -> p = value
+//        DBEnum.S.ordinal -> s = value
+//    }
+//    allDBPackages.firstOrNull { it.packageName == packageName }?.apply {
+//        when (key) {
+//            DBEnum.D_INSTALL.ordinal -> this.disable_install = value
+//            DBEnum.INSTALL.ordinal -> this.install = value
+//            DBEnum.D_UNINSTALL.ordinal -> this.disable_uninstall = value
+//            DBEnum.P.ordinal -> this.persistent = value
+//            DBEnum.S.ordinal -> this.super_white = value
+//        }
+//        this.packageName = packageName
+//        this.update()
+//    } ?: PackageList(0, 0, packageName, d_install, install, d_uninstall, p, s).insert()
+}
+
+fun getPackage(key: Int, packageName: String): Boolean {
+    val bean = allDBPackages.firstOrNull { it.packageName == packageName }
+    return when (key) {
+        DBEnum.D_INSTALL.ordinal -> bean?.disable_install == 1
+        DBEnum.INSTALL.ordinal -> bean?.install == 1
+        DBEnum.D_UNINSTALL.ordinal -> bean?.disable_uninstall == 1
+        DBEnum.P.ordinal -> bean?.persistent == 1
+        DBEnum.S.ordinal -> bean?.super_white == 1
+        else -> false
+    }
+}
+
+private fun PackageList.update() = systemDao.updatePackages(this)
+private fun PackageList.insert() = systemDao.insertPackages(this)
 
 @RequiresApi(Build.VERSION_CODES.N)
 fun import2DB(list: List<KeyValue>) = list.forEach { updateKT(it.key, it.value) }
@@ -89,4 +160,240 @@ fun firstUpdate(data: List<Config>) {
         configs.firstOrNull { it.key == ConfigEnum.DISABLE_SYSTEM_UPDATE.name }?.value.toString() == "0"
     isDisableRestoreFactory =
         configs.firstOrNull { it.key == ConfigEnum.DISABLE_RESTORE_FACTORY.name }?.value.toString() == "0"
+}
+
+interface ChangeBoolean {
+    fun change(boolean: Boolean)
+}
+
+var changeBoolean: ChangeBoolean? = null
+var isDisableScreenShotReceivedChange: Boolean by Delegates.observable(false) { _, _, new ->
+    changeBoolean?.change(new)
+}
+
+fun setBooleanChange(change: ((Boolean) -> Unit)) {
+    changeBoolean = object : ChangeBoolean {
+        override fun change(boolean: Boolean) {
+            change(boolean)
+        }
+    }
+}
+
+fun TextInputEditText.change(change: ((String) -> Unit)) {
+    this.addTextChangedListener { doOnTextChanged { text, _, _, _ -> change("$text") } }
+}
+
+fun timer(delay: Long, block: () -> Unit) {
+    Timer().schedule(object : TimerTask() {
+        override fun run() {
+            block()
+        }
+    }, 0, delay)
+}
+
+@SuppressLint("WrongConstant")
+fun getAllApp(): List<AppBean> {
+    val list = mutableListOf<AppBean>()
+    val pm = App.application.packageManager
+    //查询所有已经安装的app
+    val installedPackages: List<PackageInfo> = pm.getInstalledPackages(0)
+    //查询所有有启动界面的activity
+    val intent = Intent(Intent.ACTION_MAIN)
+    intent.addCategory(Intent.CATEGORY_LAUNCHER)
+    intent.flags = Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED or Intent.FLAG_ACTIVITY_NEW_TASK
+    val queryIntentActivities: List<ResolveInfo> =
+        pm.queryIntentActivities(intent, PackageManager.GET_ACTIVITIES)
+    queryIntentActivities.forEach { resolveInfo ->
+        val packageInfo =
+            installedPackages.firstOrNull { it.packageName == resolveInfo.activityInfo.packageName }
+        if (packageInfo != null && !TextUtils.isEmpty(resolveInfo.activityInfo.name)) {
+            val mainActivity = resolveInfo.activityInfo.name
+            val packageName = packageInfo.packageName
+            val applicationInfo = pm.getApplicationInfo(packageName, 0)
+            val appName = pm.getApplicationLabel(applicationInfo)
+            val icon = applicationInfo.loadIcon(pm)
+            //println("app:${appName}")
+            if (!packageName.equals(BuildConfig.APPLICATION_ID)) {//排除自身
+                val app = AppBean(
+                    "$appName",
+                    packageName,
+                    mainActivity,
+                    drawable2ByteArray(icon)
+                )
+                list.add(app)
+            }
+        }
+    }
+    return list.distinctBy { it.packageName }
+}
+
+private fun drawable2Bitmap(icon: Drawable): Bitmap {
+    val bitmap =
+        Bitmap.createBitmap(
+            icon.intrinsicWidth,
+            icon.intrinsicHeight,
+            if (icon.opacity == PixelFormat.OPAQUE) Bitmap.Config.RGB_565 else Bitmap.Config.ARGB_8888
+        )
+    val canvas = Canvas(bitmap)
+    icon.setBounds(0, 0, icon.intrinsicWidth, icon.intrinsicHeight)
+    icon.draw(canvas)
+    return bitmap
+}
+
+//序列化 Drawable->Bitmap->ByteArray
+fun drawable2ByteArray(icon: Drawable): ByteArray {
+    return bitmap2ByteArray(drawable2Bitmap(icon))
+}
+
+private fun bitmap2ByteArray(bitmap: Bitmap): ByteArray {
+    val baos = ByteArrayOutputStream()
+    bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos)
+    return baos.toByteArray()
+}
+
+//反序列化 ByteArray->Bitmap->Drawable
+fun byteArray2Drawable(byteArray: ByteArray): Drawable? {
+    val bitmap = byteArray2Bitmap(byteArray)
+    return if (bitmap == null) null else BitmapDrawable(bitmap)
+}
+
+private fun byteArray2Bitmap(byteArray: ByteArray): Bitmap? {
+    return if (byteArray.isNotEmpty()) BitmapFactory.decodeByteArray(
+        byteArray,
+        0,
+        byteArray.size
+    ) else null
+}
+
+/**
+ * 禁止卸载单个应用
+ */
+fun disUninstallAPP(
+    context: Context,
+    componentName: ComponentName,
+    packageName: String,
+    isDisable: Boolean
+) {
+    try {
+        val dm =
+            context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+        dm.setUninstallBlocked(componentName, packageName, isDisable)
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+}
+
+fun isUninstallAPP(
+    context: Context,
+    componentName: ComponentName,
+    packageName: String,
+): Boolean {
+    return try {
+        return (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE)
+                as DevicePolicyManager).isUninstallBlocked(
+            componentName,
+            packageName
+        )
+    } catch (e: Exception) {
+        return false
+    }
+}
+
+/**
+ * 暂停应用，可以看到图标，但是不能使用
+ */
+@RequiresApi(Build.VERSION_CODES.N)
+fun suspendedAPP(
+    context: Context,
+    componentName: ComponentName,
+    packageName: String,
+    isDisable: Boolean
+) {
+    try {
+        (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
+            .setPackagesSuspended(componentName, arrayOf(packageName), isDisable)
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.N)
+fun isSuspendedAPP(
+    context: Context,
+    componentName: ComponentName,
+    packageName: String,
+): Boolean {
+    return try {
+        return (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE)
+                as DevicePolicyManager).isPackageSuspended(
+            componentName,
+            packageName
+        )
+    } catch (e: Exception) {
+        return false
+    }
+}
+
+/**
+ * 隐藏应用
+ */
+fun hiddenAPP(
+    context: Context,
+    componentName: ComponentName,
+    packageName: String,
+    isDisable: Boolean
+) {
+    try {
+        (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
+            .setApplicationHidden(componentName, packageName, isDisable)
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+}
+
+fun isHiddenAPP(
+    context: Context,
+    componentName: ComponentName,
+    packageName: String,
+): Boolean {
+    return try {
+        return (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE)
+                as DevicePolicyManager).isApplicationHidden(
+            componentName,
+            packageName
+        )
+    } catch (e: Exception) {
+        return false
+    }
+}
+
+/**
+ * 禁止截图
+ */
+fun setScreenCaptureDisabled(
+    context: Context,
+    componentName: ComponentName,
+    isDisable: Boolean
+) {
+    try {
+        (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager).setScreenCaptureDisabled(
+            componentName,
+            isDisable
+        )
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+
+}
+
+/**
+ * 是否禁止截图
+ */
+fun getScreenCaptureDisabled(context: Context, componentName: ComponentName): Boolean {
+    return try {
+        return (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE)
+                as DevicePolicyManager).getScreenCaptureDisabled(componentName)
+    } catch (e: Exception) {
+        return false
+    }
 }

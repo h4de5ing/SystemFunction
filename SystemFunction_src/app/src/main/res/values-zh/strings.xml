@@ -1,3 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="sample_device_admin">MDM</string>
+    <string name="sample_device_admin_description">设备管理器</string>
+    <string name="app_manager">应用管理</string>
 </resources>

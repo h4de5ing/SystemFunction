@@ -6,8 +6,11 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 
 @Database(
-    entities = [Config::class],
-    version = 1,
+    entities = [
+        Config::class,
+        PackageList::class
+    ],
+    version = 3,
     exportSchema = false
 )
 abstract class SystemDatabase : RoomDatabase() {

@@ -4,28 +4,29 @@ import android.annotation.SuppressLint
 import android.app.Service
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
+import android.content.*
 import android.database.ContentObserver
 import android.location.LocationManager
 import android.net.ConnectivityManager
 import android.net.wifi.WifiManager
 import android.os.Build
 import android.os.IBinder
+import android.os.UserManager
 import android.provider.Settings
 import android.telephony.TelephonyManager
 import android.util.Log
+import android.view.WindowManager
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
 import com.android.mdmsdk.IRemoteInterface
+import com.android.systemfunction.app.App
 import com.android.systemfunction.app.App.Companion.systemDao
 import com.android.systemfunction.utils.*
 import com.android.systemlib.*
 
+//https://blog.csdn.net/qq_35501560/article/details/105948631
 @RequiresApi(Build.VERSION_CODES.O)
 class ForegroundService : Service(), LifecycleOwner {
 
@@ -41,6 +42,42 @@ class ForegroundService : Service(), LifecycleOwner {
 
         override fun isDisable(key: String?): Boolean {
             return getKt("$key") == "0"
+        }
+
+        override fun removeWifi(ssid: String?) {
+            removeWifiConfig(App.application, "$ssid")
+        }
+
+        override fun deviceManager(packageName: String?, className: String?, isRemove: Boolean) {
+            if (isRemove) removeActiveDeviceAdmin(App.application, "$packageName", "$className")
+            else activeDeviceManager(App.application, "$packageName", "$className")
+        }
+
+        override fun defaultLauncher(packageName: String?, isClean: Boolean) {
+            if (isClean) clearDefaultLauncher(App.application, "$packageName")
+            else setDefaultLauncher(App.application, "$packageName")
+        }
+
+        override fun shutdown(isReboot: Boolean) {
+            if (isReboot) rebootDevice() else shutdown()
+        }
+
+        override fun resetDevice() {
+            resetDevices(App.application)
+//            wipeDate(App.application)
+        }
+
+        //添加移除包
+        override fun packageManager(list: Array<out String>, type: Int) {
+//            systemDao.deletePackages(type)
+//            val dbList = mutableListOf<PackageList>()
+//            list.forEach { dbList.add(PackageList(0, type, it)) }
+//            systemDao.insertPackages(*dbList.toTypedArray())
+        }
+
+        //获取包
+        override fun getPackages(type: Int): Array<String> {
+            return systemDao.selectAllPackagesList(type).map { it.packageName }.toTypedArray()
         }
     }
 
@@ -60,6 +97,7 @@ class ForegroundService : Service(), LifecycleOwner {
     private var mLocationManager: LocationManager? = null
     private var cm: ConnectivityManager? = null
     private var tm: TelephonyManager? = null
+    private var windowManager: WindowManager? = null
     private var WIFI_AP_STATE_CHANGED_ACTION = "android.net.wifi.WIFI_AP_STATE_CHANGED"
     override fun onCreate() {
         super.onCreate()
@@ -70,23 +108,44 @@ class ForegroundService : Service(), LifecycleOwner {
         mLocationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
         cm = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         tm = getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+        windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
         systemDao.observerConfigChange().observe(this) {
             println("MDM服务监控到数据库更新了")
             firstUpdate(systemDao.selectAllConfig())
             updateAllState()
         }
+        systemDao.observerPackagesList().observe(this) { updateAPP() }
         initReceiver()
-        contentResolver.registerContentObserver(
-            Settings.Secure.getUriFor("mobile_data"),
-            false,
-            dataMonitor
-        )
+        observer("mobile_data") { updateData() }
+        observer("adb_enabled") { updateADB() }
+        //startService(Intent(this, OnePixelWindowService::class.java))
+        if (BuildConfig.DEBUG)
+            Settings.System.putInt(contentResolver, "screen_off_timeout", Int.MAX_VALUE)
+        loadApp()
+        updateAllState()
     }
 
-    private val dataMonitor = object : ContentObserver(null) {
-        override fun onChange(selfChange: Boolean) {
-            super.onChange(selfChange)
-            updateData()
+    private fun updateAPP() {
+
+    }
+
+    private fun loadApp() {
+
+    }
+
+    private fun observer(name: String, block: (Boolean) -> Unit) {
+        contentResolver.registerContentObserver(
+            Settings.Secure.getUriFor(name),
+            false,
+            oo { block(it) })
+    }
+
+    private fun oo(block: (Boolean) -> Unit): ContentObserver {
+        return object : ContentObserver(null) {
+            override fun onChange(selfChange: Boolean) {
+                super.onChange(selfChange)
+                block(selfChange)
+            }
         }
     }
 
@@ -98,8 +157,7 @@ class ForegroundService : Service(), LifecycleOwner {
                 ConnectivityManager.CONNECTIVITY_ACTION -> updateData()
                 //热点状态
                 WIFI_AP_STATE_CHANGED_ACTION -> updateAP()
-                WifiManager.NETWORK_STATE_CHANGED_ACTION -> {
-                }
+                WifiManager.NETWORK_STATE_CHANGED_ACTION -> {}
                 //wifi状态
                 WifiManager.WIFI_STATE_CHANGED_ACTION ->
                     updateWIFI(intent.getIntExtra(WifiManager.EXTRA_WIFI_STATE, 0))
@@ -169,6 +227,7 @@ class ForegroundService : Service(), LifecycleOwner {
         val state = Settings.Secure.getInt(contentResolver, "mobile_data", 0) == 1
         if (state && isDisableData) {
             tm?.isDataEnabled = false
+//            mobile_data(this,true)
             showToast("根据安全策略，禁止使用数据流量")
         }
     }
@@ -177,6 +236,22 @@ class ForegroundService : Service(), LifecycleOwner {
         if (isHotSpotDisabled(this) && isDisableHotSpot) {
             setHotSpotDisabled(this, true)
             showToast("根据安全策略，禁止使用热点")
+        }
+    }
+
+    private fun updateADB() {
+        if (isUSBDataDisabled(this) && isDisableUSBData) {
+            setUSBDataDisabled(this, true)
+            showToast("根据安全策略，禁止使用adb")
+        }
+    }
+
+    private fun updateWindow() {
+        if (isDisableScreenShot || isDisableScreenCapture) {
+            isDisableScreenShotReceivedChange = true
+            showToast("根据安全策略，禁止使用截屏")
+        } else {
+            isDisableScreenShotReceivedChange = false
         }
     }
 
@@ -190,7 +265,6 @@ class ForegroundService : Service(), LifecycleOwner {
         return lifecycleRegistry
     }
 
-    //TODO 测试监听广播以及各种状态是否有漏监听
     private fun updateAllState() {
         updateStatusBar()
         updateWIFI(wifiManager!!.wifiState)
@@ -198,7 +272,48 @@ class ForegroundService : Service(), LifecycleOwner {
         updateGPS()
         updateData()
         updateAP()
+        updateADB()
+        updateWindow()
+        try {
+            disable(UserManager.DISALLOW_USB_FILE_TRANSFER, isDisableUSBData)
+
+            disable(UserManager.DISALLOW_BLUETOOTH, isDisableBluetooth)
+            disable(UserManager.DISALLOW_CONFIG_BLUETOOTH, isDisableBluetooth)
+
+            disable(UserManager.DISALLOW_CONFIG_WIFI, isDisableWIFI)
+            disable(UserManager.DISALLOW_CONFIG_MOBILE_NETWORKS, isDisableData)
+            disable(UserManager.DISALLOW_CONFIG_LOCATION, isDisableGPS)
+
+            disable(UserManager.DISALLOW_MICROPHONE_TOGGLE, isDisableMicrophone)
+            disable(UserManager.DISALLOW_UNMUTE_MICROPHONE, isDisableMicrophone)
+
+            disable(UserManager.DISALLOW_MOUNT_PHYSICAL_MEDIA, isDisableTFCard)
+            disable(UserManager.DISALLOW_OUTGOING_CALLS, isDisablePhoneCall)
+            disable(UserManager.DISALLOW_CONFIG_TETHERING, isDisableHotSpot)
+            disable(UserManager.DISALLOW_SMS, isDisableSMS)
+            disable(UserManager.DISALLOW_FACTORY_RESET, isDisableRestoreFactory)
+            disable(UserManager.DISALLOW_INSTALL_APPS, isDisableInstallApp)
+            disable(UserManager.DISALLOW_INSTALL_APPS, isDisableUnInstallApp)
+            disable(UserManager.DISALLOW_CONTENT_CAPTURE, isDisableScreenShot)
+            setScreenCaptureDisabled(this, App.componentName2, isDisableScreenShot)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
+
+    private fun disable(key: String, isDisable: Boolean) {
+        try {
+            disableMDM(
+                this,
+                ComponentName(BuildConfig.APPLICATION_ID, AdminReceiver::class.java.name),
+                key, isDisable
+            )
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun isDisable(key: String): Boolean = isDisableDMD(this, key)
 
     //更新状态栏
     private fun updateStatusBar() {
@@ -214,7 +329,7 @@ class ForegroundService : Service(), LifecycleOwner {
     private fun showToast(message: String) {
         println(message)
 //        Looper.prepare()
-//        RealtimeToast.makeText(this, message, Toast.LENGTH_SHORT).show()
+        //RealtimeToast.makeText(this, message, Toast.LENGTH_SHORT).show()
 //        Looper.loop()
     }
 }

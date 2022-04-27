@@ -1,142 +1,234 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    tools:context=".MainActivity">
+    android:layout_height="match_parent">
 
-    <LinearLayout
-        android:id="@+id/button"
+    <ScrollView
+        android:id="@+id/scrollView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:orientation="vertical"
-        android:padding="6dp">
+        tools:context=".MainActivity"
+        tools:visibility="gone">
 
-        <androidx.appcompat.widget.AppCompatCheckBox
-            android:id="@+id/mdm"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:id="@+id/button"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="启用MDM" />
+            android:orientation="vertical"
+            android:padding="6dp">
 
-        <androidx.appcompat.widget.AppCompatCheckBox
-            android:id="@+id/home"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="禁用HOME键" />
+            <androidx.appcompat.widget.AppCompatCheckBox
+                android:id="@+id/mdm"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="启用MDM" />
 
-        <androidx.appcompat.widget.AppCompatCheckBox
-            android:id="@+id/recent"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="禁用Recent键" />
+            <androidx.appcompat.widget.AppCompatCheckBox
+                android:id="@+id/home"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="禁用HOME键" />
 
-        <androidx.appcompat.widget.AppCompatCheckBox
-            android:id="@+id/back"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="禁用Back键" />
+            <androidx.appcompat.widget.AppCompatCheckBox
+                android:id="@+id/recent"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="禁用Recent键" />
 
-        <androidx.appcompat.widget.AppCompatCheckBox
-            android:id="@+id/navigation"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="禁用导航栏" />
+            <androidx.appcompat.widget.AppCompatCheckBox
+                android:id="@+id/back"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="禁用Back键" />
 
-        <androidx.appcompat.widget.AppCompatCheckBox
-            android:id="@+id/status"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="禁用状态栏" />
+            <androidx.appcompat.widget.AppCompatCheckBox
+                android:id="@+id/navigation"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="禁用导航栏" />
 
-        <androidx.appcompat.widget.AppCompatCheckBox
-            android:id="@+id/usb_data"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="禁用USB数据传输" />
+            <androidx.appcompat.widget.AppCompatCheckBox
+                android:id="@+id/status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="禁用状态栏" />
 
-        <androidx.appcompat.widget.AppCompatCheckBox
-            android:id="@+id/bluetooth"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="禁用蓝牙" />
+            <androidx.appcompat.widget.AppCompatCheckBox
+                android:id="@+id/adb"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="禁用USB数据传输" />
 
-        <androidx.appcompat.widget.AppCompatCheckBox
-            android:id="@+id/wifi"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="禁用WIFI" />
+            <androidx.appcompat.widget.AppCompatCheckBox
+                android:id="@+id/bluetooth"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="禁用蓝牙" />
 
-        <androidx.appcompat.widget.AppCompatCheckBox
-            android:id="@+id/data"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="禁用数据流量" />
+            <androidx.appcompat.widget.AppCompatCheckBox
+                android:id="@+id/wifi"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="禁用WIFI" />
 
-        <androidx.appcompat.widget.AppCompatCheckBox
-            android:id="@+id/gps"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="禁用GPS" />
+            <androidx.appcompat.widget.AppCompatCheckBox
+                android:id="@+id/data"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="禁用数据流量" />
 
-        <androidx.appcompat.widget.AppCompatCheckBox
-            android:id="@+id/microphone"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="禁用麦克风" />
+            <androidx.appcompat.widget.AppCompatCheckBox
+                android:id="@+id/gps"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="禁用GPS" />
 
-        <androidx.appcompat.widget.AppCompatCheckBox
-            android:id="@+id/screen_shot"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="禁用截屏" />
+            <androidx.appcompat.widget.AppCompatCheckBox
+                android:id="@+id/microphone"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="禁用麦克风" />
 
-        <androidx.appcompat.widget.AppCompatCheckBox
-            android:id="@+id/screen_capture"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="禁用录屏" />
+            <androidx.appcompat.widget.AppCompatCheckBox
+                android:id="@+id/screen_shot"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="禁用截屏" />
 
-        <androidx.appcompat.widget.AppCompatCheckBox
-            android:id="@+id/tf_card"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="禁用TF卡" />
+            <androidx.appcompat.widget.AppCompatCheckBox
+                android:id="@+id/screen_capture"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="禁用录屏" />
 
-        <androidx.appcompat.widget.AppCompatCheckBox
-            android:id="@+id/phone_call"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="禁用打电话" />
+            <androidx.appcompat.widget.AppCompatCheckBox
+                android:id="@+id/tf_card"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="禁用TF卡" />
 
-        <androidx.appcompat.widget.AppCompatCheckBox
-            android:id="@+id/hot_spot"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="禁用热点" />
+            <androidx.appcompat.widget.AppCompatCheckBox
+                android:id="@+id/phone_call"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="禁用打电话" />
 
-        <androidx.appcompat.widget.AppCompatCheckBox
-            android:id="@+id/sms"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="禁用短信" />
+            <androidx.appcompat.widget.AppCompatCheckBox
+                android:id="@+id/hot_spot"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="禁用热点" />
 
-        <androidx.appcompat.widget.AppCompatCheckBox
-            android:id="@+id/mms"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="禁用彩信" />
+            <androidx.appcompat.widget.AppCompatCheckBox
+                android:id="@+id/sms"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="禁用短信" />
 
-        <androidx.appcompat.widget.AppCompatCheckBox
-            android:id="@+id/system_update"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="禁用系统升级" />
+            <androidx.appcompat.widget.AppCompatCheckBox
+                android:id="@+id/mms"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="禁用彩信" />
 
-        <androidx.appcompat.widget.AppCompatCheckBox
-            android:id="@+id/restore_factory"
-            android:layout_width="wrap_content"
+            <androidx.appcompat.widget.AppCompatCheckBox
+                android:id="@+id/system_update"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:enabled="false"
+                android:text="禁用系统升级" />
+
+            <androidx.appcompat.widget.AppCompatCheckBox
+                android:id="@+id/install_app"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="禁用安装应用" />
+
+            <androidx.appcompat.widget.AppCompatCheckBox
+                android:id="@+id/uninstall_app"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="禁用卸载应用" />
+
+            <androidx.appcompat.widget.AppCompatCheckBox
+                android:id="@+id/restore_factory"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="禁用恢复出厂设置" />
+
+            <androidx.appcompat.widget.AppCompatCheckBox
+                android:id="@+id/device_manager"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="激活设备管理器" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/reset"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="恢复出厂设置" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/shut_down"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="关机" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/reboot"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="重启" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/shot"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="截图" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/app_manager"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="应用管理" />
+        </LinearLayout>
+    </ScrollView>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/mask"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        tools:visibility="visible">
+
+        <TextView
+            android:id="@+id/show"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="禁用恢复出厂设置" />
-    </LinearLayout>
-</ScrollView>
+            android:gravity="center"
+            android:textColor="@color/white"
+            android:textSize="23sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="123456" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/password"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="请输入密码"
+                android:inputType="number" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
