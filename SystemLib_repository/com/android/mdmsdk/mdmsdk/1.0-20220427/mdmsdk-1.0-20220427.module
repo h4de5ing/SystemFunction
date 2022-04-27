@@ -1,0 +1,83 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "com.android.mdmsdk",
+    "module": "mdmsdk",
+    "version": "1.0-20220427",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "7.2"
+    }
+  },
+  "variants": [
+    {
+      "name": "releaseVariantReleaseApiPublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-api"
+      },
+      "dependencies": [
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib-jdk8",
+          "version": {
+            "requires": "1.6.21"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "mdmsdk-1.0-20220427.aar",
+          "url": "mdmsdk-1.0-20220427.aar",
+          "size": 29170,
+          "sha512": "8a4a377f3d99b0287ef17779e8d00b6185f5774df8fd78e1b04de7f00ba782e163a83a4a3b24d491b94b9339dea6a5d44f17d3e2d3d738fcce468d66433775fd",
+          "sha256": "f4b82dd3c5f13bd58c6e1a519ac6fc61291cd27aaa2f184b1509e3a45b8e8a8b",
+          "sha1": "32821be41ce3cff326f6fbe9c3bb0fdb8ee1c6e1",
+          "md5": "093dbed16897acececfe846fbe6b4c34"
+        }
+      ]
+    },
+    {
+      "name": "releaseVariantReleaseRuntimePublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib-jdk8",
+          "version": {
+            "requires": "1.6.21"
+          }
+        },
+        {
+          "group": "androidx.appcompat",
+          "module": "appcompat",
+          "version": {
+            "requires": "1.4.1"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "mdmsdk-1.0-20220427.aar",
+          "url": "mdmsdk-1.0-20220427.aar",
+          "size": 29170,
+          "sha512": "8a4a377f3d99b0287ef17779e8d00b6185f5774df8fd78e1b04de7f00ba782e163a83a4a3b24d491b94b9339dea6a5d44f17d3e2d3d738fcce468d66433775fd",
+          "sha256": "f4b82dd3c5f13bd58c6e1a519ac6fc61291cd27aaa2f184b1509e3a45b8e8a8b",
+          "sha1": "32821be41ce3cff326f6fbe9c3bb0fdb8ee1c6e1",
+          "md5": "093dbed16897acececfe846fbe6b4c34"
+        }
+      ]
+    }
+  ]
+}
