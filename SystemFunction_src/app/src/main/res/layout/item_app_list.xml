@@ -62,13 +62,18 @@
             <androidx.constraintlayout.helper.widget.Flow
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                app:constraint_referenced_ids="disable_install,install,disable_uninstall,persistent,super_white,suspended,hidden"
+                app:constraint_referenced_ids="uninstall,disable_install,install,disable_uninstall,persistent,super_white,suspended,hidden"
                 app:flow_horizontalGap="10dp"
                 app:flow_wrapMode="chain"
                 app:layout_constraintLeft_toLeftOf="parent"
                 app:layout_constraintRight_toRightOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/uninstall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="静默卸载" />
 
             <androidx.appcompat.widget.AppCompatCheckBox
                 android:id="@+id/disable_install"

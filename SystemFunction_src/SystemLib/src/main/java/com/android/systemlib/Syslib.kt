@@ -486,3 +486,11 @@ private fun closeQuietly(c: Closeable?) {
         }
     }
 }
+
+fun uninstall(context: Context, packageName: String) {
+    val intent = Intent()
+    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+    val sender = PendingIntent.getActivity(context, 0, intent, 0)
+    val packageInstaller: PackageInstaller = context.packageManager.packageInstaller
+    packageInstaller.uninstall(packageName, sender.intentSender)
+}

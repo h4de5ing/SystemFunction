@@ -6,20 +6,16 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.UserManager
-import android.provider.Settings
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
-import androidx.annotation.Nullable
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import com.android.mdmsdk.ConfigEnum
 import com.android.mdmsdk.change
-import com.android.systemfunction.services.OnePixelWindowService
 import com.android.systemfunction.ui.APPManagerActivity
 import com.android.systemfunction.utils.*
 import com.android.systemlib.*
@@ -128,8 +124,8 @@ class MainActivity : AppCompatActivity() {
                 )
             )
         }
+        install.setOnClickListener { installAPK(this, "/sdcard/app.apk") }
         println("MDM包名:${getString(TestUtils.getInternalString())}")
-//        startOne()
         timer(10 * 1000) {
             opt = TotpUtil.generate()
             runOnUiThread { show.text = opt }
@@ -223,41 +219,6 @@ class MainActivity : AppCompatActivity() {
         } catch (e: Exception) {
             e.printStackTrace()
         }
-    }
-
-    private val REQUEST_CODE_FOR_OVERLAY_PERMISSION = 0x201
-    private fun startOne() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (Settings.canDrawOverlays(this@MainActivity)) {
-                startOnePixelWindowService()
-                //finish()
-            } else {
-                val intent: Intent = Intent(
-                    Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                    Uri.parse("package:$packageName")
-                )
-                startActivityForResult(intent, REQUEST_CODE_FOR_OVERLAY_PERMISSION)
-            }
-        } else {
-            startOnePixelWindowService()
-            //finish()
-        }
-    }
-
-    private fun startOnePixelWindowService() {
-        val intent = Intent(this@MainActivity, OnePixelWindowService::class.java)
-        startService(intent)
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, @Nullable data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == REQUEST_CODE_FOR_OVERLAY_PERMISSION
-            && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
-            && Settings.canDrawOverlays(this@MainActivity)
-        ) {
-            startOnePixelWindowService()
-        }
-        //finish()
     }
 
     override fun onResume() {

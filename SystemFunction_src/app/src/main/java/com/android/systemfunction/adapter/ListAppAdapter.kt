@@ -1,6 +1,7 @@
 package com.android.systemfunction.adapter
 
 import android.os.Build
+import android.widget.Button
 import androidx.annotation.RequiresApi
 import androidx.appcompat.widget.AppCompatCheckBox
 import com.android.mdmsdk.change
@@ -8,6 +9,7 @@ import com.android.systemfunction.R
 import com.android.systemfunction.app.App
 import com.android.systemfunction.bean.AppBean
 import com.android.systemfunction.utils.*
+import com.android.systemlib.uninstall
 import com.chad.library.adapter.base.BaseQuickAdapter
 import com.chad.library.adapter.base.viewholder.BaseViewHolder
 
@@ -18,6 +20,8 @@ class ListAppAdapter(layoutRes: Int = R.layout.item_app_list) :
         holder.setText(R.id.app_name, item.name)
         holder.setText(R.id.app_package, item.packageName)
         holder.setImageDrawable(R.id.icon, byteArray2Drawable(item.icon))
+        holder.getView<Button>(R.id.uninstall)
+            .setOnClickListener { uninstall(context, item.packageName) }
         val disableUninstall = holder.getView<AppCompatCheckBox>(R.id.disable_uninstall)
         disableUninstall.isChecked =
             isUninstallAPP(context, App.componentName2, item.packageName)
