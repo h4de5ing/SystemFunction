@@ -1,23 +1,20 @@
 package com.android.systemlib
 
+import android.app.PendingIntent
 import android.app.admin.DevicePolicyManager
-import android.content.ComponentName
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
-import android.net.ConnectivityManager.EXTRA_REASON
+import android.content.*
+import android.content.pm.PackageInstaller
 import android.net.wifi.WifiConfiguration
 import android.net.wifi.WifiManager
+import android.os.Build
 import android.os.IPowerManager
 import android.os.ServiceManager
 import android.os.UserManager
 import android.provider.Settings
 import android.telephony.TelephonyManager
+import androidx.annotation.RequiresApi
 import androidx.core.view.accessibility.AccessibilityEventCompat
-import java.io.BufferedWriter
-import java.io.File
-import java.io.FileWriter
-import java.io.IOException
+import java.io.*
 
 
 /**
@@ -395,7 +392,97 @@ fun mobile_data(context: Context, isDisable: Boolean) {
     if (isDisable) tm.enableDataConnectivity() else tm.disableDataConnectivity()
 }
 
-fun getSettings(context: Context) {
-    val mSettings: Settings = Settings()
-    mSettings
+fun installAPK(context: Context, apkFilePath: String) {
+    try {
+        val apkFile = File(apkFilePath);
+        val packageInstaller = context.packageManager.packageInstaller
+        val sessionParams =
+            PackageInstaller.SessionParams(PackageInstaller.SessionParams.MODE_FULL_INSTALL)
+        sessionParams.setSize(apkFile.length())
+        val sessionId = packageInstaller.createSession(sessionParams)
+        if (sessionId != -1) {
+            val copySuccess = copyInstallFile(packageInstaller, sessionId, apkFilePath)
+            if (copySuccess) {
+                execInstallCommand(context, packageInstaller, sessionId)
+            }
+        }
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+}
+
+@RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+private fun copyInstallFile(
+    packageInstaller: PackageInstaller,
+    sessionId: Int, apkFilePath: String
+): Boolean {
+    var `in`: InputStream? = null
+    var out: OutputStream? = null
+    var session: PackageInstaller.Session? = null
+    var success = false
+    try {
+        val apkFile = File(apkFilePath)
+        session = packageInstaller.openSession(sessionId)
+        out = session.openWrite("base.apk", 0, apkFile.length())
+        `in` = FileInputStream(apkFile)
+        var total = 0
+        var c: Int
+        val buffer = ByteArray(65536)
+        while (`in`.read(buffer).also { c = it } != -1) {
+            total += c
+            out.write(buffer, 0, c)
+        }
+        session.fsync(out)
+        success = true
+    } catch (e: IOException) {
+        e.printStackTrace()
+    } finally {
+        closeQuietly(out)
+        closeQuietly(`in`)
+        closeQuietly(session)
+    }
+    return success
+}
+
+@RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+private fun execInstallCommand(
+    context: Context,
+    packageInstaller: PackageInstaller,
+    sessionId: Int
+) {
+    var session: PackageInstaller.Session? = null
+    try {
+        session = packageInstaller.openSession(sessionId)
+        val intent = Intent(context, InstallResultReceiver::class.java)
+        val pendingIntent: PendingIntent =
+            PendingIntent.getBroadcast(context, 1, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+        session.commit(pendingIntent.intentSender)
+    } catch (e: IOException) {
+        e.printStackTrace()
+    } finally {
+        closeQuietly(session)
+    }
+}
+
+class InstallResultReceiver : BroadcastReceiver() {
+    override fun onReceive(context: Context?, intent: Intent?) {
+        println(
+            "${
+                intent?.getIntExtra(
+                    PackageInstaller.EXTRA_STATUS,
+                    PackageInstaller.STATUS_FAILURE
+                )
+            }"
+        )
+    }
+}
+
+private fun closeQuietly(c: Closeable?) {
+    if (c != null) {
+        try {
+            c.close()
+        } catch (ignored: IOException) {
+            ignored.printStackTrace()
+        }
+    }
 }
