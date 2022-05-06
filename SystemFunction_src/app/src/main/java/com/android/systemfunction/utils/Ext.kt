@@ -5,7 +5,6 @@ import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
 import android.graphics.Bitmap
@@ -15,21 +14,24 @@ import android.graphics.PixelFormat
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.os.Build
-import android.text.TextUtils
 import androidx.annotation.RequiresApi
 import androidx.core.widget.addTextChangedListener
 import androidx.core.widget.doOnTextChanged
+import com.android.mdmsdk.BuildConfig
 import com.android.mdmsdk.ConfigEnum
-import com.android.systemfunction.BuildConfig
+import com.android.mdmsdk.PackageTypeEnum
 import com.android.systemfunction.app.App
+import com.android.systemfunction.app.App.Companion.application
 import com.android.systemfunction.app.App.Companion.systemDao
 import com.android.systemfunction.bean.AppBean
 import com.android.systemfunction.bean.KeyValue
 import com.android.systemfunction.db.Config
-import com.android.systemfunction.db.DBEnum
 import com.android.systemfunction.db.PackageList
+import com.github.h4de5ing.base.delayed
+import com.github.h4de5ing.baseui.logD
 import com.google.android.material.textfield.TextInputEditText
 import java.io.ByteArrayOutputStream
+import java.io.File
 import java.util.*
 import kotlin.properties.Delegates
 
@@ -70,42 +72,71 @@ fun updateKT(key: String, value: String) {
 }
 
 var allDBPackages = mutableListOf<PackageList>()
-fun updatePackage(key: Int, value: Int, packageName: String) {
-//    var d_install = 0
-//    var install = 0
-//    var d_uninstall = 0
-//    var p = 0
-//    var s = 0
-//    when (key) {
-//        DBEnum.D_INSTALL.ordinal -> d_install = value
-//        DBEnum.INSTALL.ordinal -> install = value
-//        DBEnum.D_UNINSTALL.ordinal -> d_uninstall = value
-//        DBEnum.P.ordinal -> p = value
-//        DBEnum.S.ordinal -> s = value
-//    }
-//    allDBPackages.firstOrNull { it.packageName == packageName }?.apply {
-//        when (key) {
-//            DBEnum.D_INSTALL.ordinal -> this.disable_install = value
-//            DBEnum.INSTALL.ordinal -> this.install = value
-//            DBEnum.D_UNINSTALL.ordinal -> this.disable_uninstall = value
-//            DBEnum.P.ordinal -> this.persistent = value
-//            DBEnum.S.ordinal -> this.super_white = value
-//        }
-//        this.packageName = packageName
-//        this.update()
-//    } ?: PackageList(0, 0, packageName, d_install, install, d_uninstall, p, s).insert()
+fun updatePackageDB(type: Int, isAdd: Boolean, list: List<String>) {
+    allDBPackages.firstOrNull { it.type == type }?.apply {
+        if (isAdd) {
+            this.packages = this.getPackageList().union(list).toString()
+        } else {
+            this.packages = this.getPackageList().subtract(list).toString()
+        }
+        this.update()
+    } ?: PackageList(0, type, list.toString()).insert()
 }
 
-fun getPackage(key: Int, packageName: String): Boolean {
-    val bean = allDBPackages.firstOrNull { it.packageName == packageName }
-    return when (key) {
-        DBEnum.D_INSTALL.ordinal -> bean?.disable_install == 1
-        DBEnum.INSTALL.ordinal -> bean?.install == 1
-        DBEnum.D_UNINSTALL.ordinal -> bean?.disable_uninstall == 1
-        DBEnum.P.ordinal -> bean?.persistent == 1
-        DBEnum.S.ordinal -> bean?.super_white == 1
-        else -> false
+//处理APP的禁止安装卸载 等操作
+fun updateAPP(type: Int, isAdd: Boolean, list: List<String>) {
+    val dbList =
+        allDBPackages.firstOrNull { it.type == type }?.let { it.getPackageList() } ?: emptyList()
+    when (type) {
+        PackageTypeEnum.DISABLE_UNINSTALL.ordinal -> {//禁止卸载
+            if (isAdd) {
+                "禁止卸载 add:${dbList} ->${list} =${dbList.union(list)}".logD()
+                dbList.union(list).subtract(dbList).forEach {
+                    ("禁止卸载 add：${it}").logD()
+                    disUninstallAPP(application, App.componentName2, it, true)
+                }
+            } else {
+                ("禁止卸载 remove:${dbList} ->${list} =${dbList.subtract(list)}").logD()
+                dbList.intersect(list).forEach {
+                    ("禁止卸载 remove：${it}").logD()
+                    disUninstallAPP(application, App.componentName2, it, false)
+                }
+            }
+        }
+        PackageTypeEnum.DISABLE_INSTALL.ordinal -> {//禁止安装
+            if (isAdd) {
+                "禁止安装 add:${dbList} ->${list} =${dbList.union(list)}".logD()
+                dbList.union(list).subtract(dbList).forEach {
+                    ("禁止安装 add：${it}").logD()
+                    if (isHiddenAPP(application, App.componentName2, it))
+                        hiddenAPP(application, App.componentName2, it, true)
+                }
+            } else {
+                ("禁止安装 remove:${dbList} ->${list} =${dbList.subtract(list)}").logD()
+                dbList.intersect(list).forEach {
+                    ("禁止安装 remove：${it}").logD()
+                    if (isHiddenAPP(application, App.componentName2, it))
+                        hiddenAPP(application, App.componentName2, it, false)
+                }
+            }
+        }
     }
+}
+
+fun updateInstallAPK() {
+    delayed(1000) {//延迟1秒钟处理禁止安装列表
+        allDBPackages.firstOrNull { it.type == PackageTypeEnum.DISABLE_INSTALL.ordinal }?.let {
+            it.getPackageList().forEach { packageName ->
+                packageName.logD()
+                hiddenAPP(application, App.componentName2, packageName, true)
+            }
+        }
+    }
+}
+
+fun firstUpdatePackage(data: MutableList<PackageList>) {
+    allDBPackages.clear()
+    allDBPackages.addAll(data)
 }
 
 private fun PackageList.update() = systemDao.updatePackages(this)
@@ -166,6 +197,8 @@ interface ChangeBoolean {
     fun change(boolean: Boolean)
 }
 
+fun isDebug(): Boolean = BuildConfig.DEBUG || File("/sdcard/debug").exists()
+
 var changeBoolean: ChangeBoolean? = null
 var isDisableScreenShotReceivedChange: Boolean by Delegates.observable(false) { _, _, new ->
     changeBoolean?.change(new)
@@ -192,38 +225,30 @@ fun timer(delay: Long, block: () -> Unit) {
 }
 
 @SuppressLint("WrongConstant")
-fun getAllApp(): List<AppBean> {
+fun getInstallApp(): List<AppBean> {
     val list = mutableListOf<AppBean>()
-    val pm = App.application.packageManager
-    //查询所有已经安装的app
-    val installedPackages: List<PackageInfo> = pm.getInstalledPackages(0)
-    //查询所有有启动界面的activity
+    val pm = application.packageManager
     val intent = Intent(Intent.ACTION_MAIN)
     intent.addCategory(Intent.CATEGORY_LAUNCHER)
     intent.flags = Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED or Intent.FLAG_ACTIVITY_NEW_TASK
     val queryIntentActivities: List<ResolveInfo> =
-        pm.queryIntentActivities(intent, PackageManager.GET_ACTIVITIES)
-    queryIntentActivities.forEach { resolveInfo ->
-        val packageInfo =
-            installedPackages.firstOrNull { it.packageName == resolveInfo.activityInfo.packageName }
-        if (packageInfo != null && !TextUtils.isEmpty(resolveInfo.activityInfo.name)) {
-            val mainActivity = resolveInfo.activityInfo.name
-            val packageName = packageInfo.packageName
-            val applicationInfo = pm.getApplicationInfo(packageName, 0)
-            val appName = pm.getApplicationLabel(applicationInfo)
-            val icon = applicationInfo.loadIcon(pm)
-            //println("app:${appName}")
-            if (!packageName.equals(BuildConfig.APPLICATION_ID)) {//排除自身
-                val app = AppBean(
-                    "$appName",
-                    packageName,
-                    mainActivity,
-                    drawable2ByteArray(icon)
+        pm.queryIntentActivities(intent, PackageManager.GET_UNINSTALLED_PACKAGES)
+    queryIntentActivities.forEach {
+        if (application.packageName != it.activityInfo.packageName) {
+            try {
+                list.add(
+                    AppBean(
+                        "${it.loadLabel(pm)}",
+                        it.activityInfo.packageName,
+                        it.activityInfo.name,
+                        drawable2ByteArray(it.loadIcon(pm))
+                    )
                 )
-                list.add(app)
+            } catch (e: Exception) {
             }
         }
     }
+    "应用个数:${queryIntentActivities.size}".logD()
     return list.distinctBy { it.packageName }
 }
 
@@ -275,25 +300,21 @@ fun disUninstallAPP(
     isDisable: Boolean
 ) {
     try {
-        val dm =
-            context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-        dm.setUninstallBlocked(componentName, packageName, isDisable)
+        (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
+            .setUninstallBlocked(componentName, packageName, isDisable)
     } catch (e: Exception) {
         e.printStackTrace()
     }
 }
 
-fun isUninstallAPP(
+fun isDisUninstallAPP(
     context: Context,
     componentName: ComponentName,
     packageName: String,
 ): Boolean {
     return try {
-        return (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE)
-                as DevicePolicyManager).isUninstallBlocked(
-            componentName,
-            packageName
-        )
+        return (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
+            .isUninstallBlocked(componentName, packageName)
     } catch (e: Exception) {
         return false
     }
@@ -324,11 +345,8 @@ fun isSuspendedAPP(
     packageName: String,
 ): Boolean {
     return try {
-        return (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE)
-                as DevicePolicyManager).isPackageSuspended(
-            componentName,
-            packageName
-        )
+        return (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
+            .isPackageSuspended(componentName, packageName)
     } catch (e: Exception) {
         return false
     }
@@ -336,6 +354,7 @@ fun isSuspendedAPP(
 
 /**
  * 隐藏应用
+ * pm list packages 无法显示包名
  */
 fun hiddenAPP(
     context: Context,
@@ -357,11 +376,8 @@ fun isHiddenAPP(
     packageName: String,
 ): Boolean {
     return try {
-        return (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE)
-                as DevicePolicyManager).isApplicationHidden(
-            componentName,
-            packageName
-        )
+        return (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
+            .isApplicationHidden(componentName, packageName)
     } catch (e: Exception) {
         return false
     }
@@ -376,14 +392,11 @@ fun setScreenCaptureDisabled(
     isDisable: Boolean
 ) {
     try {
-        (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager).setScreenCaptureDisabled(
-            componentName,
-            isDisable
-        )
+        (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
+            .setScreenCaptureDisabled(componentName, isDisable)
     } catch (e: Exception) {
         e.printStackTrace()
     }
-
 }
 
 /**
@@ -391,8 +404,8 @@ fun setScreenCaptureDisabled(
  */
 fun getScreenCaptureDisabled(context: Context, componentName: ComponentName): Boolean {
     return try {
-        return (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE)
-                as DevicePolicyManager).getScreenCaptureDisabled(componentName)
+        return (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
+            .getScreenCaptureDisabled(componentName)
     } catch (e: Exception) {
         return false
     }

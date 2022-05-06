@@ -8,7 +8,7 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 
 /**
- * 设备管理器 主要用户防止用户停止和卸载APP
+ * 设备管理器 主要用户防止用户停止和卸载本应用
  */
 public class AdminReceiver extends DeviceAdminReceiver {
     @Override

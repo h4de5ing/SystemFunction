@@ -11,6 +11,6 @@ interface IRemoteInterface {
     void defaultLauncher(in String packageName,in boolean isClean);
     void shutdown(in boolean isReboot);
     void resetDevice();
-    void packageManager(in String[] list,in int type);
+    void packageManager(in String[] list,in boolean isAdd,in int type);
     String[] getPackages(in int type);
 }

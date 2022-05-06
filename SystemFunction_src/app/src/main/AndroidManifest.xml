@@ -32,6 +32,8 @@
     <uses-permission android:name="android.permission.SYSTEM_OVERLAY_WINDOW" />
     <uses-permission android:name="android.permission.INSTALL_PACKAGES" />
     <uses-permission android:name="android.permission.DELETE_PACKAGES" />
+    <uses-permission android:name="android.permission.RESTART_PACKAGES" />
+
     <application
         android:name=".app.App"
         android:allowBackup="true"
@@ -42,6 +44,7 @@
         android:theme="@style/Theme.SystemFunction">
         <activity
             android:name=".ui.APPManagerActivity"
+            android:excludeFromRecents="true"
             android:exported="true"
             android:label="@string/app_manager" />
 
@@ -53,6 +56,7 @@
 
         <activity
             android:name=".MainActivity"
+            android:excludeFromRecents="true"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

@@ -14,7 +14,6 @@ import android.os.IBinder
 import android.os.UserManager
 import android.provider.Settings
 import android.telephony.TelephonyManager
-import android.util.Log
 import android.view.WindowManager
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.Lifecycle
@@ -25,6 +24,7 @@ import com.android.systemfunction.app.App
 import com.android.systemfunction.app.App.Companion.systemDao
 import com.android.systemfunction.utils.*
 import com.android.systemlib.*
+import com.github.h4de5ing.baseui.logD
 
 //https://blog.csdn.net/qq_35501560/article/details/105948631
 @RequiresApi(Build.VERSION_CODES.O)
@@ -68,16 +68,14 @@ class ForegroundService : Service(), LifecycleOwner {
         }
 
         //添加移除包
-        override fun packageManager(list: Array<out String>, type: Int) {
-//            systemDao.deletePackages(type)
-//            val dbList = mutableListOf<PackageList>()
-//            list.forEach { dbList.add(PackageList(0, type, it)) }
-//            systemDao.insertPackages(*dbList.toTypedArray())
+        override fun packageManager(list: Array<out String>, isAdd: Boolean, type: Int) {
+            updateAPP(type, isAdd, list.toList())
+            updatePackageDB(type, isAdd, list.toList())
         }
 
         //获取包
         override fun getPackages(type: Int): Array<String> {
-            return systemDao.selectAllPackagesList(type).map { it.packageName }.toTypedArray()
+            return systemDao.selectAllPackagesList(type)[0].getPackageList().toTypedArray()
         }
     }
 
@@ -102,7 +100,7 @@ class ForegroundService : Service(), LifecycleOwner {
     override fun onCreate() {
         super.onCreate()
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
-        Log.i("gh0st", "MDM ForegroundService 启动了")
+        "MDM ForegroundService 启动了".logD()
         wifiManager = applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
         mLocationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
@@ -110,11 +108,15 @@ class ForegroundService : Service(), LifecycleOwner {
         tm = getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
         windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
         systemDao.observerConfigChange().observe(this) {
-            println("MDM服务监控到数据库更新了")
+            "MDM服务监控到config更新了".logD()
             firstUpdate(systemDao.selectAllConfig())
             updateAllState()
         }
-        systemDao.observerPackagesList().observe(this) { updateAPP() }
+        systemDao.observerPackagesList()
+            .observe(this) {
+                "MDM服务监控到packages更新了".logD()
+                firstUpdatePackage(systemDao.selectAllPackages())
+            }
         initReceiver()
         observer("mobile_data") { updateData() }
         observer("adb_enabled") { updateADB() }
@@ -123,10 +125,6 @@ class ForegroundService : Service(), LifecycleOwner {
             Settings.System.putInt(contentResolver, "screen_off_timeout", Int.MAX_VALUE)
         loadApp()
         updateAllState()
-    }
-
-    private fun updateAPP() {
-
     }
 
     private fun loadApp() {
@@ -151,7 +149,7 @@ class ForegroundService : Service(), LifecycleOwner {
 
     private val stateReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-            println("接受到广播:${intent?.action}")
+            "接受到广播:${intent?.action}".logD()
             when (intent?.action) {
                 //数据流量状态
                 ConnectivityManager.CONNECTIVITY_ACTION -> updateData()
@@ -166,6 +164,11 @@ class ForegroundService : Service(), LifecycleOwner {
                     updateBluetooth(intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, 0))
                 //gps状态
                 LocationManager.PROVIDERS_CHANGED_ACTION -> updateGPS()
+                Intent.ACTION_PACKAGE_ADDED -> updateInstallAPK()
+                Intent.ACTION_PACKAGE_REMOVED -> updateInstallAPK()
+                Intent.ACTION_PACKAGE_REPLACED -> updateInstallAPK()
+                Intent.ACTION_PACKAGE_CHANGED -> updateInstallAPK()
+                Intent.ACTION_PACKAGE_FULLY_REMOVED -> updateInstallAPK()
             }
         }
     }
@@ -180,6 +183,12 @@ class ForegroundService : Service(), LifecycleOwner {
         filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED)
         filter.addAction(LocationManager.PROVIDERS_CHANGED_ACTION)
         filter.addAction(WIFI_AP_STATE_CHANGED_ACTION)
+        filter.addAction(Intent.ACTION_PACKAGE_ADDED)
+        filter.addAction(Intent.ACTION_PACKAGE_REMOVED)
+        filter.addAction(Intent.ACTION_PACKAGE_REPLACED)
+        filter.addAction(Intent.ACTION_PACKAGE_CHANGED)
+        filter.addAction(Intent.ACTION_PACKAGE_FULLY_REMOVED)
+        filter.addDataScheme("package")
         registerReceiver(stateReceiver, filter)
     }
 
@@ -273,6 +282,7 @@ class ForegroundService : Service(), LifecycleOwner {
         updateData()
         updateAP()
         updateADB()
+        updateInstallAPK()
         updateWindow()
         try {
             disable(UserManager.DISALLOW_USB_FILE_TRANSFER, isDisableUSBData)
@@ -327,7 +337,7 @@ class ForegroundService : Service(), LifecycleOwner {
     }
 
     private fun showToast(message: String) {
-        println(message)
+        message.logD()
 //        Looper.prepare()
         //RealtimeToast.makeText(this, message, Toast.LENGTH_SHORT).show()
 //        Looper.loop()

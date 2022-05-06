@@ -1,6 +1,7 @@
 package com.android.systemfunction.adapter
 
 import android.os.Build
+import android.view.View
 import android.widget.Button
 import androidx.annotation.RequiresApi
 import androidx.appcompat.widget.AppCompatCheckBox
@@ -9,9 +10,12 @@ import com.android.systemfunction.R
 import com.android.systemfunction.app.App
 import com.android.systemfunction.bean.AppBean
 import com.android.systemfunction.utils.*
+import com.android.systemlib.canUninstall
+import com.android.systemlib.isSystemAPP
 import com.android.systemlib.uninstall
 import com.chad.library.adapter.base.BaseQuickAdapter
 import com.chad.library.adapter.base.viewholder.BaseViewHolder
+import com.github.h4de5ing.baseui.alertConfirm
 
 @RequiresApi(Build.VERSION_CODES.N)
 class ListAppAdapter(layoutRes: Int = R.layout.item_app_list) :
@@ -20,11 +24,13 @@ class ListAppAdapter(layoutRes: Int = R.layout.item_app_list) :
         holder.setText(R.id.app_name, item.name)
         holder.setText(R.id.app_package, item.packageName)
         holder.setImageDrawable(R.id.icon, byteArray2Drawable(item.icon))
-        holder.getView<Button>(R.id.uninstall)
-            .setOnClickListener { uninstall(context, item.packageName) }
+        val uninstall = holder.getView<Button>(R.id.uninstall)
+        uninstall.setOnClickListener {
+            alertConfirm(context, "卸载${item.name}?") {
+                if (it) uninstall(context, item.packageName)
+            }
+        }
         val disableUninstall = holder.getView<AppCompatCheckBox>(R.id.disable_uninstall)
-        disableUninstall.isChecked =
-            isUninstallAPP(context, App.componentName2, item.packageName)
         disableUninstall.change {
             disUninstallAPP(
                 context,
@@ -33,11 +39,9 @@ class ListAppAdapter(layoutRes: Int = R.layout.item_app_list) :
                 it
             )
             disableUninstall.isChecked =
-                isUninstallAPP(context, App.componentName2, item.packageName)
+                isDisUninstallAPP(context, App.componentName2, item.packageName)
         }
         val suspended = holder.getView<AppCompatCheckBox>(R.id.suspended)
-        suspended.isChecked =
-            isSuspendedAPP(context, App.componentName2, item.packageName)
         suspended.change {
             suspendedAPP(
                 context,
@@ -49,8 +53,6 @@ class ListAppAdapter(layoutRes: Int = R.layout.item_app_list) :
                 isSuspendedAPP(context, App.componentName2, item.packageName)
         }
         val hidden = holder.getView<AppCompatCheckBox>(R.id.hidden)
-        hidden.isChecked =
-            isHiddenAPP(context, App.componentName2, item.packageName)
         hidden.change {
             hiddenAPP(
                 context,
@@ -61,11 +63,30 @@ class ListAppAdapter(layoutRes: Int = R.layout.item_app_list) :
             hidden.isChecked =
                 isHiddenAPP(context, App.componentName2, item.packageName)
         }
-    }
-
-    private fun updateUI() {
-        allDBPackages.clear()
-        allDBPackages.addAll(App.systemDao.selectAllPackagesList(0))
+        try {
+            println(
+                "${item.name} ${
+                    canUninstall(
+                        context,
+                        item.packageName
+                    )
+                }"
+            )
+            disableUninstall.visibility =
+                if (isSystemAPP(context, item.packageName)) View.GONE else View.VISIBLE
+            uninstall.visibility =
+                if (isSystemAPP(context, item.packageName)) View.GONE else View.VISIBLE
+            if (isSystemAPP(context, item.packageName)) {
+                disableUninstall.isChecked =
+                    isDisUninstallAPP(context, App.componentName2, item.packageName)
+            }
+            suspended.isChecked =
+                isSuspendedAPP(context, App.componentName2, item.packageName)
+            hidden.isChecked =
+                isHiddenAPP(context, App.componentName2, item.packageName)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     fun setChange(change: (AppBean) -> Unit) {

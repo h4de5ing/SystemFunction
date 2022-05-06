@@ -8,7 +8,6 @@ import androidx.room.Update
 
 @Dao
 interface SystemDao {
-    //配置文件
     @Query("SELECT * FROM config order by id")
     fun selectAllConfig(): MutableList<Config>
 
@@ -30,6 +29,9 @@ interface SystemDao {
     @Query("SELECT * FROM packages order by id")
     fun observerPackagesList(): LiveData<MutableList<PackageList>>
 
+    @Query("SELECT * FROM packages order by id")
+    fun selectAllPackages(): MutableList<PackageList>
+
     @Query("SELECT * FROM packages where type=(:type) order by id")
     fun selectAllPackagesList(type: Int): MutableList<PackageList>
 
@@ -38,9 +40,6 @@ interface SystemDao {
 
     @Update
     fun updatePackages(list: PackageList)
-
-    @Query("DELETE FROM packages where packageName=(:packageName)")
-    fun deletePackages(packageName: String)
 
     @Query("DELETE FROM packages where type=(:type)")
     fun deletePackages(type: Int)

@@ -20,6 +20,8 @@ import com.android.systemfunction.ui.APPManagerActivity
 import com.android.systemfunction.utils.*
 import com.android.systemlib.*
 import com.github.h4de5ing.baseui.alertConfirm
+import com.github.h4de5ing.baseui.logD
+import com.github.h4de5ing.filepicker.DialogUtils
 import com.zhangyf.library.utils.TotpUtil
 import kotlinx.android.synthetic.main.activity_main.*
 import java.io.File
@@ -40,14 +42,14 @@ class MainActivity : AppCompatActivity() {
         try {
             if (!isActiveDeviceManager(this, componentName2)) setMDM(this, componentName2)
         } catch (e: Exception) {
-            println("设置MDM失败")
+            "设置MDM失败".logD()
             e.printStackTrace()
         }
         updateUI()
         mdm.change { isChecked ->
             if (isChecked) {
                 try {
-                    println("设置结果:${setMDM(this, componentName2)}")
+                    "设置结果:${setMDM(this, componentName2)}".logD()
                 } catch (e: Exception) {
                     Toast.makeText(this, "MDM设置失败:${e.message}", Toast.LENGTH_SHORT).show()
                     e.printStackTrace()
@@ -124,8 +126,15 @@ class MainActivity : AppCompatActivity() {
                 )
             )
         }
-        install.setOnClickListener { installAPK(this, "/sdcard/app.apk") }
-        println("MDM包名:${getString(TestUtils.getInternalString())}")
+        install.setOnClickListener {
+            DialogUtils.selectFile(this, "请选择一个APK") {
+                installAPK(
+                    this,
+                    it[0]
+                )
+            }
+        }
+        ("MDM包名:${getString(TestUtils.getInternalString())}").logD()
         timer(10 * 1000) {
             opt = TotpUtil.generate()
             runOnUiThread { show.text = opt }

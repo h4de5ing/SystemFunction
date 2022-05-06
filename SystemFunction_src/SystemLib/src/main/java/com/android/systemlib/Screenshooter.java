@@ -27,7 +27,7 @@ import android.view.SurfaceControl;
 /**
  * Helper class used to take screenshots.
  * <p>
- * TODO: logic below was copied and pasted from UiAutomation; it should be refactored into a common
+ * logic below was copied and pasted from UiAutomation; it should be refactored into a common
  * component that could be used by both (Shell and UiAutomation).
  */
 final class Screenshooter {

@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/item_card"
     android:layout_width="match_parent"
-    android:layout_height="150dp"
+    android:layout_height="200dp"
     android:layout_centerInParent="true"
     android:layout_marginBottom="0.5dp"
     app:cardCornerRadius="0dp"
@@ -28,6 +28,7 @@
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:gravity="start"
             android:orientation="vertical"
             app:layout_constraintStart_toEndOf="@+id/icon"
             app:layout_constraintTop_toTopOf="parent">
@@ -36,7 +37,7 @@
                 android:id="@+id/app_name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
+                android:layout_gravity="start"
                 android:lines="1"
                 android:textSize="18sp"
                 tools:text="应用名称" />
@@ -45,7 +46,7 @@
                 android:id="@+id/app_package"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
+                android:layout_gravity="start"
                 android:lines="1"
                 android:textSize="16sp"
                 tools:text="包名" />
@@ -62,7 +63,7 @@
             <androidx.constraintlayout.helper.widget.Flow
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                app:constraint_referenced_ids="uninstall,disable_install,install,disable_uninstall,persistent,super_white,suspended,hidden"
+                app:constraint_referenced_ids="uninstall,disable_uninstall,persistent,super_white,suspended,hidden"
                 app:flow_horizontalGap="10dp"
                 app:flow_wrapMode="chain"
                 app:layout_constraintLeft_toLeftOf="parent"
@@ -71,23 +72,10 @@
 
             <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/uninstall"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="静默卸载" />
-
-            <androidx.appcompat.widget.AppCompatCheckBox
-                android:id="@+id/disable_install"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:enabled="false"
-                android:text="禁止安装" />
-
-            <androidx.appcompat.widget.AppCompatCheckBox
-                android:id="@+id/install"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:enabled="false"
-                android:text="安装白名单" />
 
             <androidx.appcompat.widget.AppCompatCheckBox
                 android:id="@+id/disable_uninstall"

@@ -217,7 +217,6 @@ fun setStatusBarInt(context: Context, status: Int) {
 
 /**
  * 启用adb
- * TODO 如果是高通系列，需要写入一个节点
  */
 fun enable_adb(context: Context, enable: Boolean) {
     Settings.Global.putInt(

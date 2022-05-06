@@ -10,7 +10,7 @@ import androidx.room.RoomDatabase
         Config::class,
         PackageList::class
     ],
-    version = 3,
+    version = 4,
     exportSchema = false
 )
 abstract class SystemDatabase : RoomDatabase() {

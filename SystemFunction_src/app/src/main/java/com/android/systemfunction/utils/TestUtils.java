@@ -6,6 +6,7 @@ import java.lang.reflect.Field;
 
 public class TestUtils {
     //https://www.cnblogs.com/pandans/p/3288847.html
+    //获取系统默认配置文件里面的mdm的包名
     public static int getInternalString() {
         int id = -1;
         try {

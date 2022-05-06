@@ -21,12 +21,6 @@
             android:padding="6dp">
 
             <androidx.appcompat.widget.AppCompatCheckBox
-                android:id="@+id/mdm"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="启用MDM" />
-
-            <androidx.appcompat.widget.AppCompatCheckBox
                 android:id="@+id/home"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -158,6 +152,12 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="禁用恢复出厂设置" />
+
+            <androidx.appcompat.widget.AppCompatCheckBox
+                android:id="@+id/mdm"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="启用MDM" />
 
             <androidx.appcompat.widget.AppCompatCheckBox
                 android:id="@+id/device_manager"

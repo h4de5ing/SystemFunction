@@ -60,7 +60,7 @@ fun setHomeKeyDisabled(isDisable: Boolean) {
  * 查询是否禁用Home键按键
  */
 fun isHomeKeyDisable(): Boolean {
-    return mService!!.isDisable(ConfigEnum.DISABLE_HOME.name)
+    return mService?.isDisable(ConfigEnum.DISABLE_HOME.name) ?: false
 }
 
 /**
@@ -74,7 +74,7 @@ fun setRecentKeyDisable(isDisable: Boolean) {
  * 查询是否禁用最近应用键按键
  */
 fun isRecentKeyDisable(): Boolean {
-    return mService!!.isDisable(ConfigEnum.DISABLE_RECENT.name)
+    return mService?.isDisable(ConfigEnum.DISABLE_RECENT.name) ?: false
 }
 
 /**
@@ -88,7 +88,7 @@ fun setBackKeyDisable(isDisable: Boolean) {
  * 查询是否禁用返回键
  */
 fun isBackKeyDisable(): Boolean {
-    return mService!!.isDisable(ConfigEnum.DISABLE_BACK.name)
+    return mService?.isDisable(ConfigEnum.DISABLE_BACK.name) ?: false
 }
 
 /**
@@ -102,7 +102,7 @@ fun setNavigaBarDisable(isDisable: Boolean) {
  * 查询是否禁用导航栏
  */
 fun isNavigaBarDisable(): Boolean {
-    return mService!!.isDisable(ConfigEnum.DISABLE_NAVIGATION.name)
+    return mService?.isDisable(ConfigEnum.DISABLE_NAVIGATION.name) ?: false
 }
 
 /**
@@ -116,7 +116,7 @@ fun setStatusBarDisable(isDisable: Boolean) {
  * 查询是否禁用状态栏
  */
 fun isStatusBarDisable(): Boolean {
-    return mService!!.isDisable(ConfigEnum.DISABLE_STATUS.name)
+    return mService?.isDisable(ConfigEnum.DISABLE_STATUS.name) ?: false
 }
 
 /**
@@ -130,7 +130,7 @@ fun setBluetoothDisable(isDisable: Boolean) {
  * 查询是否禁用蓝牙设备
  */
 fun isBluetoothDisabled(): Boolean {
-    return mService!!.isDisable(ConfigEnum.DISABLE_BLUETOOTH.name)
+    return mService?.isDisable(ConfigEnum.DISABLE_BLUETOOTH.name) ?: false
 }
 
 /**
@@ -144,7 +144,7 @@ fun setHotSpotDisabled(isDisable: Boolean) {
  * 是否禁用设备个人热点
  */
 fun isHotSpotDisabled(): Boolean {
-    return mService!!.isDisable(ConfigEnum.DISABLE_HOT_SPOT.name)
+    return mService?.isDisable(ConfigEnum.DISABLE_HOT_SPOT.name) ?: false
 }
 
 /**
@@ -158,7 +158,7 @@ fun setWifiDisabled(isDisable: Boolean) {
  * 查询是否禁止使用WiFi
  */
 fun isWifiDisabled(): Boolean {
-    return mService!!.isDisable(ConfigEnum.DISABLE_WIFI.name)
+    return mService?.isDisable(ConfigEnum.DISABLE_WIFI.name) ?: false
 }
 
 /**
@@ -172,7 +172,7 @@ fun setGPSDisabled(isDisable: Boolean) {
  * 查询是否禁用设备GPS
  */
 fun isGPSDisable(): Boolean {
-    return mService!!.isDisable(ConfigEnum.DISABLE_GPS.name)
+    return mService?.isDisable(ConfigEnum.DISABLE_GPS.name) ?: false
 }
 
 /**
@@ -186,7 +186,7 @@ fun setUSBDataDisabled(isDisable: Boolean) {
  * 查询是否禁用USB数据传输
  */
 fun isUSBDataDisabled(): Boolean {
-    return mService!!.isDisable(ConfigEnum.DISABLE_USB_DATA.name)
+    return mService?.isDisable(ConfigEnum.DISABLE_USB_DATA.name) ?: false
 }
 
 
@@ -201,7 +201,7 @@ fun setDataConnectivityDisabled(isDisable: Boolean) {
  * 查询是否禁用移动数据网络
  */
 fun isDataConnectivityDisabled(): Boolean {
-    return mService!!.isDisable(ConfigEnum.DISABLE_DATA_CONNECTIVITY.name)
+    return mService?.isDisable(ConfigEnum.DISABLE_DATA_CONNECTIVITY.name) ?: false
 }
 
 /**
@@ -215,7 +215,7 @@ fun setScreenShotDisable(isDisable: Boolean) {
  * 是否禁用设备截屏
  */
 fun isScreenShot(): Boolean {
-    return mService!!.isDisable(ConfigEnum.DISABLE_SCREEN_SHOT.name)
+    return mService?.isDisable(ConfigEnum.DISABLE_SCREEN_SHOT.name) ?: false
 }
 
 /**
@@ -229,7 +229,7 @@ fun setScreenCaptureDisabled(isDisable: Boolean) {
  * 是否禁用设备录屏
  */
 fun isScreenCaptureDisabled(): Boolean {
-    return mService!!.isDisable(ConfigEnum.DISABLE_SCREEN_CAPTURE.name)
+    return mService?.isDisable(ConfigEnum.DISABLE_SCREEN_CAPTURE.name) ?: false
 }
 
 /**
@@ -243,7 +243,7 @@ fun setTFCardDisabled(isDisable: Boolean) {
  * 查询是否禁用TF卡存储
  */
 fun isTFCardDisabled(): Boolean {
-    return mService!!.isDisable(ConfigEnum.DISABLE_TF_CARD.name)
+    return mService?.isDisable(ConfigEnum.DISABLE_TF_CARD.name) ?: false
 }
 
 /**
@@ -257,7 +257,7 @@ fun setCallPhoneDisabled(isDisable: Boolean) {
  * 是否禁用拨打电话
  */
 fun isCallPhoneDisabled(): Boolean {
-    return mService!!.isDisable(ConfigEnum.DISABLE_PHONE_CALL.name)
+    return mService?.isDisable(ConfigEnum.DISABLE_PHONE_CALL.name) ?: false
 }
 
 /**
@@ -271,7 +271,7 @@ fun disableSms(isDisable: Boolean) {
  * 查询是否禁用短信
  */
 fun isSmsDisable(): Boolean {
-    return mService!!.isDisable(ConfigEnum.DISABLE_SMS.name)
+    return mService?.isDisable(ConfigEnum.DISABLE_SMS.name) ?: false
 }
 
 /**
@@ -285,7 +285,7 @@ fun setMicrophoneDisable(isDisable: Boolean) {
  * 查询录音功能禁用状态
  */
 fun isMicrophoneDisable(): Boolean {
-    return mService!!.isDisable(ConfigEnum.DISABLE_MICROPHONE.name)
+    return mService?.isDisable(ConfigEnum.DISABLE_MICROPHONE.name) ?: false
 }
 
 /**
@@ -299,7 +299,7 @@ fun setRestoreFactoryDisabled(isDisable: Boolean) {
  * 查询是否禁用设备恢复出厂设备
  */
 fun isRestoreFactoryDisable(): Boolean {
-    return mService!!.isDisable(ConfigEnum.DISABLE_RESTORE_FACTORY.name)
+    return mService?.isDisable(ConfigEnum.DISABLE_RESTORE_FACTORY.name) ?: false
 }
 
 /**
@@ -313,7 +313,7 @@ fun setSystemUpdateDisabled(isDisable: Boolean) {
  * 查询系统升级功能禁用状态
  */
 fun isSystemUpdateDisabled(): Boolean {
-    return mService!!.isDisable(ConfigEnum.DISABLE_SYSTEM_UPDATE.name)
+    return mService?.isDisable(ConfigEnum.DISABLE_SYSTEM_UPDATE.name) ?: false
 }
 
 /**
@@ -327,7 +327,7 @@ fun setInstallDisabled(isDisable: Boolean) {
  * 是否禁止安装应用
  */
 fun isInstallDisabled(): Boolean {
-    return mService!!.isDisable(ConfigEnum.DISABLE_INSTALL_APP.name)
+    return mService?.isDisable(ConfigEnum.DISABLE_INSTALL_APP.name) ?: false
 }
 
 /**
@@ -392,7 +392,8 @@ fun clearDefaultLauncher(packageName: String) {
 fun addForbiddenInstallApp(packageNameList: List<String>) {
     mService?.packageManager(
         packageNameList.toTypedArray(),
-        PackageTypeEnum.DISABLE_INSTALL_ADD.ordinal
+        true,
+        PackageTypeEnum.DISABLE_INSTALL.ordinal
     )
 }
 
@@ -402,7 +403,8 @@ fun addForbiddenInstallApp(packageNameList: List<String>) {
 fun removeForbiddenInstallApp(packageNameList: List<String>) {
     mService?.packageManager(
         packageNameList.toTypedArray(),
-        PackageTypeEnum.DISABLE_INSTALL_REMOVE.ordinal
+        false,
+        PackageTypeEnum.DISABLE_INSTALL.ordinal
     )
 }
 
@@ -410,7 +412,11 @@ fun removeForbiddenInstallApp(packageNameList: List<String>) {
  * 获取被禁止安装应用列表接口
  */
 fun getForbiddenInstallAppList(): List<String> {
-    return mService?.getPackages(PackageTypeEnum.DISABLE_INSTALL_ADD.ordinal)!!.toMutableList()
+    return try {
+        mService?.getPackages(PackageTypeEnum.DISABLE_INSTALL.ordinal)!!.toMutableList()
+    } catch (e: Exception) {
+        emptyList()
+    }
 }
 
 /**
@@ -419,7 +425,8 @@ fun getForbiddenInstallAppList(): List<String> {
 fun addInstallPackageTrustList(packageNameList: List<String>) {
     mService?.packageManager(
         packageNameList.toTypedArray(),
-        PackageTypeEnum.INSTALL_ADD.ordinal
+        true,
+        PackageTypeEnum.INSTALL.ordinal
     )
 }
 
@@ -429,7 +436,8 @@ fun addInstallPackageTrustList(packageNameList: List<String>) {
 fun removeInstallPackageTrustList(packageNameList: List<String>) {
     mService?.packageManager(
         packageNameList.toTypedArray(),
-        PackageTypeEnum.INSTALL_REMOVE.ordinal
+        false,
+        PackageTypeEnum.INSTALL.ordinal
     )
 }
 
@@ -437,7 +445,7 @@ fun removeInstallPackageTrustList(packageNameList: List<String>) {
  * 获取应用安装白名单
  */
 fun getInstallPackageTrustList(): List<String> {
-    return mService?.getPackages(PackageTypeEnum.INSTALL_ADD.ordinal)!!.toMutableList()
+    return mService?.getPackages(PackageTypeEnum.INSTALL.ordinal)?.toMutableList() ?: emptyList()
 }
 
 
@@ -447,7 +455,8 @@ fun getInstallPackageTrustList(): List<String> {
 fun addDisallowedUninstallPackages(packageNameList: List<String>) {
     mService?.packageManager(
         packageNameList.toTypedArray(),
-        PackageTypeEnum.DISABLE_UNINSTALL_ADD.ordinal
+        true,
+        PackageTypeEnum.DISABLE_UNINSTALL.ordinal
     )
 }
 
@@ -457,7 +466,8 @@ fun addDisallowedUninstallPackages(packageNameList: List<String>) {
 fun removeDisallowedUninstallPackages(packageNameList: List<String>) {
     mService?.packageManager(
         packageNameList.toTypedArray(),
-        PackageTypeEnum.DISABLE_UNINSTALL_REMOVE.ordinal
+        false,
+        PackageTypeEnum.DISABLE_UNINSTALL.ordinal
     )
 }
 
@@ -465,7 +475,8 @@ fun removeDisallowedUninstallPackages(packageNameList: List<String>) {
  * 获取被禁止卸载应用列表
  */
 fun getDisallowedUninstallPackageList(): List<String> {
-    return mService?.getPackages(PackageTypeEnum.DISABLE_UNINSTALL_ADD.ordinal)!!.toMutableList()
+    return mService?.getPackages(PackageTypeEnum.DISABLE_UNINSTALL.ordinal)?.toMutableList()
+        ?: emptyList()
 }
 
 
@@ -475,7 +486,8 @@ fun getDisallowedUninstallPackageList(): List<String> {
 fun addPersistentApp(packageNameList: List<String>) {
     mService?.packageManager(
         packageNameList.toTypedArray(),
-        PackageTypeEnum.PERSISTENT_ADD.ordinal
+        true,
+        PackageTypeEnum.PERSISTENT.ordinal
     )
 }
 
@@ -485,7 +497,8 @@ fun addPersistentApp(packageNameList: List<String>) {
 fun removePersistentApp(packageNameList: List<String>) {
     mService?.packageManager(
         packageNameList.toTypedArray(),
-        PackageTypeEnum.PERSISTENT_REMOVE.ordinal
+        false,
+        PackageTypeEnum.PERSISTENT.ordinal
     )
 }
 
@@ -493,7 +506,7 @@ fun removePersistentApp(packageNameList: List<String>) {
  * 获取系统应用保活白名单
  */
 fun getPersistentApp(): List<String> {
-    return mService?.getPackages(PackageTypeEnum.PERSISTENT_ADD.ordinal)!!.toMutableList()
+    return mService?.getPackages(PackageTypeEnum.PERSISTENT.ordinal)?.toMutableList() ?: emptyList()
 }
 
 
@@ -503,7 +516,8 @@ fun getPersistentApp(): List<String> {
 fun setSuperWhiteListForSystem(packageNameList: List<String>) {
     mService?.packageManager(
         packageNameList.toTypedArray(),
-        PackageTypeEnum.SUPER_WHITE_ADD.ordinal
+        true,
+        PackageTypeEnum.SUPER_WHITE.ordinal
     )
 }
 
@@ -513,7 +527,8 @@ fun setSuperWhiteListForSystem(packageNameList: List<String>) {
 fun removeSuperWhiteListForSystem(packageNameList: List<String>) {
     mService?.packageManager(
         packageNameList.toTypedArray(),
-        PackageTypeEnum.SUPER_WHITE_REMOVE.ordinal
+        false,
+        PackageTypeEnum.SUPER_WHITE.ordinal
     )
 }
 
@@ -521,5 +536,6 @@ fun removeSuperWhiteListForSystem(packageNameList: List<String>) {
  * 获取受信任应用白名单
  */
 fun getSuperWhiteListForSystem(): List<String> {
-    return mService?.getPackages(PackageTypeEnum.SUPER_WHITE_ADD.ordinal)!!.toMutableList()
+    return mService?.getPackages(PackageTypeEnum.SUPER_WHITE.ordinal)
+        ?.toMutableList() ?: emptyList()
 }

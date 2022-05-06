@@ -1,14 +1,17 @@
 package com.android.systemfunction.ui
 
+import android.os.Build
 import android.os.Bundle
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.android.systemfunction.R
 import com.android.systemfunction.adapter.ListAppAdapter
-import com.android.systemfunction.app.App
 import com.android.systemfunction.bean.AppBean
+import com.android.systemfunction.utils.getInstallApp
 import kotlinx.android.synthetic.main.activity_appmanager.*
 
+@RequiresApi(Build.VERSION_CODES.N)
 class APPManagerActivity : AppCompatActivity() {
     private val adapter = ListAppAdapter()
     private val appList = mutableListOf<AppBean>()
@@ -19,13 +22,12 @@ class APPManagerActivity : AppCompatActivity() {
         recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.adapter = adapter
         adapter.setNewInstance(appList)
-//        adapter.setChange(ApplicationClass.dao::updateApp)
-        loadData()
     }
 
-    private fun loadData(){
+    override fun onResume() {
+        super.onResume()
         appList.clear()
-        appList.addAll(App.list)
+        appList.addAll(getInstallApp())
         adapter.notifyDataSetChanged()
     }
 }

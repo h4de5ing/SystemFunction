@@ -5,4 +5,8 @@ data class AppBean(
     val packageName: String,
     val mainActivity: String,
     val icon: ByteArray
-)
+) {
+    override fun toString(): String {
+        return "AppBean(name='$name', packageName='$packageName', mainActivity='$mainActivity')"
+    }
+}

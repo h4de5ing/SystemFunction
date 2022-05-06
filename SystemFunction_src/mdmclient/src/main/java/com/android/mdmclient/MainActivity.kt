@@ -36,6 +36,62 @@ class MainActivity : AppCompatActivity() {
         hot_spot.change { setHotSpotDisabled(it) }
         sms.change { disableSms(it) }
         restore_factory.change { setRestoreFactoryDisabled(it) }
+        val addList = listOf(
+            "com.guoshi.httpcanary",
+            "com.zhihu.android",
+            "com.coolapk.market"
+        )
+        val removeList = listOf("com.guoshi.httpcanary")
+        dis_install.change {
+            if (it)
+                addForbiddenInstallApp(addList)
+            else
+                removeForbiddenInstallApp(removeList)
+        }
+        get_dis_install.setOnClickListener {
+            text_dis_install.text = "禁止安装列表 ${getForbiddenInstallAppList()}"
+        }
+
+        install.change {
+            if (it)
+                addInstallPackageTrustList(addList)
+            else
+                removeInstallPackageTrustList(removeList)
+        }
+        get_install.setOnClickListener {
+            text_install.text = "允许安装列表 ${getInstallPackageTrustList()}"
+        }
+
+        dis_uninstall.change {
+            if (it)
+                addDisallowedUninstallPackages(addList)
+            else
+                removeDisallowedUninstallPackages(removeList)
+        }
+        get_dis_uninstall.setOnClickListener {
+            text_uninstall.text = "禁止卸载列表 ${getDisallowedUninstallPackageList()}"
+        }
+
+        persistent.change {
+            if (it)
+                addPersistentApp(addList)
+            else
+                removePersistentApp(removeList)
+        }
+        get_persistent.setOnClickListener {
+            text_persistent.text = "保活列表 ${getPersistentApp()}"
+        }
+
+        super_white.change {
+            if (it)
+                setSuperWhiteListForSystem(addList)
+            else
+                removeSuperWhiteListForSystem(removeList)
+        }
+        get_super_white.setOnClickListener {
+            text_super.text = "受信任列表 ${getSuperWhiteListForSystem()}"
+        }
+
         delayed(1000) { runOnUiThread { updateUI() } }
     }
 
@@ -59,6 +115,7 @@ class MainActivity : AppCompatActivity() {
             hot_spot.isChecked = isHotSpotDisabled()
             sms.isChecked = isSmsDisable()
             restore_factory.isChecked = isRestoreFactoryDisable()
+
         }
 
     }

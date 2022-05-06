@@ -4,10 +4,13 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import com.github.h4de5ing.gsoncommon.JsonUtils
+import com.github.h4de5ing.gsoncommon.fromJson
+import com.github.h4de5ing.gsoncommon.toJson
 
 @Entity(
     tableName = "packages", indices = [Index(
-        value = ["type", "packageName"],
+        value = ["type"],
         unique = true
     )]
 )
@@ -16,10 +19,19 @@ class PackageList(
     @ColumnInfo(name = "id")
     var id: Long,
     @ColumnInfo(name = "type") var type: Int,
-    @ColumnInfo(name = "packageName") var packageName: String,
-    @ColumnInfo(name = "disable_install") var disable_install: Int,
-    @ColumnInfo(name = "install") var install: Int,
-    @ColumnInfo(name = "disable_uninstall") var disable_uninstall: Int,
-    @ColumnInfo(name = "persistent") var persistent: Int,
-    @ColumnInfo(name = "super_white") var super_white: Int,
-)
+    @ColumnInfo(name = "packages") var packages: String,//存储包名列表
+) {
+    //获取包名列表
+    fun getPackageList(): List<String> {
+        try {
+            return JsonUtils.getJsonParser().fromJson<List<String>>(packages)
+        } catch (e: Exception) {
+        }
+        return emptyList()
+    }
+
+    fun setPackageList(list: List<String>): PackageList {
+        this.packages = list.toJson()
+        return this
+    }
+}
