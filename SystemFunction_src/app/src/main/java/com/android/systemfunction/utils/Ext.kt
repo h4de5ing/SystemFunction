@@ -130,12 +130,12 @@ fun updateAPP(type: Int, isAdd: Boolean, list: List<String>) {
                 "应用保活 add:${applist} ->${list} =${applist.union(list)}".logD()
                 applist.union(list).subtract(applist).forEach {
                     ("应用保活 add：${it}").logD()
-                    if (isPowerSaveWhitelistApp(application, it))
+                    if (!isPowerSaveWhitelistApp(application, it))
                         addPowerSaveWhitelistApp(application, it)
                 }
             } else {
-                "应用保活 add:${applist} ->${list} =${applist.union(list)}".logD()
-                applist.union(list).subtract(applist).forEach {
+                "应用保活 remove:${applist} ->${list} =${applist.union(list)}".logD()
+                applist.intersect(list).forEach {
                     ("应用保活 remove：${it}").logD()
                     if (isPowerSaveWhitelistApp(application, it))
                         removePowerSaveWhitelistApp(application, it)
