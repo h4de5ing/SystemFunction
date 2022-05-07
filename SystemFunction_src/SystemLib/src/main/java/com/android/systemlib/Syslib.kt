@@ -8,10 +8,7 @@ import android.content.pm.PackageInstaller
 import android.content.pm.PackageManager
 import android.net.wifi.WifiConfiguration
 import android.net.wifi.WifiManager
-import android.os.Build
-import android.os.IPowerManager
-import android.os.ServiceManager
-import android.os.UserManager
+import android.os.*
 import android.provider.Settings
 import android.telephony.TelephonyManager
 import android.text.TextUtils
@@ -210,6 +207,11 @@ fun shutdown() {
     pm.shutdown(false, "shutdown", false)
 //    val dm = context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
 //    dm.reboot(packageName,className)
+}
+
+fun shutdown(context: Context) {
+    (context.applicationContext.getSystemService(Context.POWER_SERVICE) as PowerManager)
+        .shutdown(false, "shutdown", false)
 }
 
 /**
@@ -519,4 +521,76 @@ fun getPkgList(): MutableList<String> {
         t.printStackTrace()
     }
     return packages
+}
+
+/**
+ * 添加应用白名单
+ */
+fun addPowerSaveWhitelistApp(context: Context, packageName: String) {
+    try {
+        val deviceIdleManager =
+            context.applicationContext.getSystemService(DeviceIdleManager::class.java)
+        val manager = Class.forName("android.os.DeviceIdleManager")
+        val mServiceField = manager.getDeclaredField("mService")
+        mServiceField.isAccessible = true
+        val mService = mServiceField.get(deviceIdleManager)
+        val iDeviceIdleController = mService as IDeviceIdleController
+        iDeviceIdleController.addPowerSaveWhitelistApp(packageName)
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+}
+
+/**
+ * 移除应用白名单
+ */
+fun removePowerSaveWhitelistApp(context: Context, packageName: String) {
+    try {
+        val deviceIdleManager =
+            context.applicationContext.getSystemService(DeviceIdleManager::class.java)
+        val manager = Class.forName("android.os.DeviceIdleManager")
+        val mServiceField = manager.getDeclaredField("mService")
+        mServiceField.isAccessible = true
+        val mService = mServiceField.get(deviceIdleManager)
+        val iDeviceIdleController = mService as IDeviceIdleController
+        iDeviceIdleController.removePowerSaveWhitelistApp(packageName)
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+}
+
+/**
+ * 判断应用是否在白名单里面
+ */
+fun isPowerSaveWhitelistApp(context: Context, packageName: String): Boolean {
+    return try {
+        val deviceIdleManager =
+            context.applicationContext.getSystemService(DeviceIdleManager::class.java)
+        val manager = Class.forName("android.os.DeviceIdleManager")
+        val mServiceField = manager.getDeclaredField("mService")
+        mServiceField.isAccessible = true
+        val mService = mServiceField.get(deviceIdleManager)
+        val iDeviceIdleController = mService as IDeviceIdleController
+        iDeviceIdleController.isPowerSaveWhitelistApp(packageName)
+    } catch (e: Exception) {
+        false
+    }
+}
+
+/**
+ * 获取应用白名单
+ */
+fun getPowerSaveWhitelistApp(context: Context): List<String> {
+    return try {
+        val deviceIdleManager =
+            context.applicationContext.getSystemService(DeviceIdleManager::class.java)
+        val manager = Class.forName("android.os.DeviceIdleManager")
+        val mServiceField = manager.getDeclaredField("mService")
+        mServiceField.isAccessible = true
+        val mService = mServiceField.get(deviceIdleManager)
+        val iDeviceIdleController = mService as IDeviceIdleController
+        iDeviceIdleController.userPowerWhitelist.toList()
+    } catch (e: Exception) {
+        emptyList()
+    }
 }

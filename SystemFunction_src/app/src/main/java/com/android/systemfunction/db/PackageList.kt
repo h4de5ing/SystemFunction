@@ -23,11 +23,11 @@ class PackageList(
 ) {
     //获取包名列表
     fun getPackageList(): List<String> {
-        try {
-            return JsonUtils.getJsonParser().fromJson<List<String>>(packages)
+        return try {
+            JsonUtils.getJsonParser().fromJson(packages)
         } catch (e: Exception) {
+            emptyList()
         }
-        return emptyList()
     }
 
     fun setPackageList(list: List<String>): PackageList {

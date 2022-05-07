@@ -24,3 +24,6 @@ frameworks\base\core\res\res\values\config.xml
 
 mdm配置
 config_defaultSupervisionProfileOwnerComponent
+
+PackageManager 
+isAutoRevokeWhitelisted  撤销权限

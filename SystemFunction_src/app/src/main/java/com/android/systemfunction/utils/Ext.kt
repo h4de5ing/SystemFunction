@@ -27,6 +27,10 @@ import com.android.systemfunction.bean.AppBean
 import com.android.systemfunction.bean.KeyValue
 import com.android.systemfunction.db.Config
 import com.android.systemfunction.db.PackageList
+import com.android.systemlib.addPowerSaveWhitelistApp
+import com.android.systemlib.getPowerSaveWhitelistApp
+import com.android.systemlib.isPowerSaveWhitelistApp
+import com.android.systemlib.removePowerSaveWhitelistApp
 import com.github.h4de5ing.base.delayed
 import com.github.h4de5ing.baseui.logD
 import com.google.android.material.textfield.TextInputEditText
@@ -117,6 +121,24 @@ fun updateAPP(type: Int, isAdd: Boolean, list: List<String>) {
                     ("禁止安装 remove：${it}").logD()
                     if (isHiddenAPP(application, App.componentName2, it))
                         hiddenAPP(application, App.componentName2, it, false)
+                }
+            }
+        }
+        PackageTypeEnum.PERSISTENT.ordinal -> {//应用保活
+            val applist = getPowerSaveWhitelistApp(application)
+            if (isAdd) {
+                "应用保活 add:${applist} ->${list} =${applist.union(list)}".logD()
+                applist.union(list).subtract(applist).forEach {
+                    ("应用保活 add：${it}").logD()
+                    if (isPowerSaveWhitelistApp(application, it))
+                        addPowerSaveWhitelistApp(application, it)
+                }
+            } else {
+                "应用保活 add:${applist} ->${list} =${applist.union(list)}".logD()
+                applist.union(list).subtract(applist).forEach {
+                    ("应用保活 remove：${it}").logD()
+                    if (isPowerSaveWhitelistApp(application, it))
+                        removePowerSaveWhitelistApp(application, it)
                 }
             }
         }

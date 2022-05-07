@@ -11,6 +11,7 @@ import android.net.ConnectivityManager
 import android.net.wifi.WifiManager
 import android.os.Build
 import android.os.IBinder
+import android.os.UserHandle
 import android.os.UserManager
 import android.provider.Settings
 import android.telephony.TelephonyManager
@@ -96,7 +97,10 @@ class ForegroundService : Service(), LifecycleOwner {
     private var cm: ConnectivityManager? = null
     private var tm: TelephonyManager? = null
     private var windowManager: WindowManager? = null
+    private var userManager: UserManager? = null
     private var WIFI_AP_STATE_CHANGED_ACTION = "android.net.wifi.WIFI_AP_STATE_CHANGED"
+
+    @RequiresApi(Build.VERSION_CODES.R)
     override fun onCreate() {
         super.onCreate()
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
@@ -107,6 +111,7 @@ class ForegroundService : Service(), LifecycleOwner {
         cm = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         tm = getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
         windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        userManager = getSystemService(Context.USER_SERVICE) as UserManager
         systemDao.observerConfigChange().observe(this) {
             "MDM服务监控到config更新了".logD()
             firstUpdate(systemDao.selectAllConfig())
@@ -125,6 +130,21 @@ class ForegroundService : Service(), LifecycleOwner {
             Settings.System.putInt(contentResolver, "screen_off_timeout", Int.MAX_VALUE)
         loadApp()
         updateAllState()
+        val test = "用户策略:" +
+                "isDemoUser:${userManager?.isDemoUser} " +
+                "isManagedProfile:${userManager?.isManagedProfile} " +
+                "isDemoUser:${userManager?.isDemoUser} " +
+                "isSystemUser：${userManager?.isSystemUser} " +
+                "isUserAGoat：${userManager?.isUserAGoat} " +
+                "isUserUnlocked：${userManager?.isUserUnlocked} " +
+                "isQuietModeEnabled：${
+                    userManager?.isQuietModeEnabled(
+                        UserHandle.getUserHandleForUid(
+                            0
+                        )
+                    )
+                }"
+        test.logD()
     }
 
     private fun loadApp() {
@@ -292,7 +312,9 @@ class ForegroundService : Service(), LifecycleOwner {
 
             disable(UserManager.DISALLOW_CONFIG_WIFI, isDisableWIFI)
             disable(UserManager.DISALLOW_CONFIG_MOBILE_NETWORKS, isDisableData)
+
             disable(UserManager.DISALLOW_CONFIG_LOCATION, isDisableGPS)
+            disable(UserManager.DISALLOW_SHARE_LOCATION, isDisableGPS)
 
             disable(UserManager.DISALLOW_MICROPHONE_TOGGLE, isDisableMicrophone)
             disable(UserManager.DISALLOW_UNMUTE_MICROPHONE, isDisableMicrophone)
