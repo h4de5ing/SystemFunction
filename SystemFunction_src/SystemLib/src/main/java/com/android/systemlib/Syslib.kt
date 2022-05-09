@@ -1,11 +1,10 @@
 package com.android.systemlib
 
+import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.app.admin.DevicePolicyManager
 import android.content.*
-import android.content.pm.ApplicationInfo
-import android.content.pm.PackageInstaller
-import android.content.pm.PackageManager
+import android.content.pm.*
 import android.net.wifi.WifiConfiguration
 import android.net.wifi.WifiManager
 import android.os.*
@@ -200,7 +199,7 @@ fun isUSBDataDisabled(context: Context): Boolean {
 }
 
 /**
- * 关机设备
+ * 关机
  */
 fun shutdown() {
     val pm = IPowerManager.Stub.asInterface(ServiceManager.getService(Context.POWER_SERVICE))
@@ -212,21 +211,25 @@ fun shutdown() {
 fun shutdown(context: Context) {
     (context.applicationContext.getSystemService(Context.POWER_SERVICE) as PowerManager)
         .shutdown(false, "shutdown", false)
+//    val intent = Intent("com.android.internal.intent.action.REQUEST_SHUTDOWN")
+//    intent.putExtra("com.android.internal.intent.action.REQUEST_SHUTDOWN", false)
+//    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+//    context.startActivity(intent)
 }
 
 /**
- * 重启设备
+ * 重启
  */
-fun rebootDevice() {
+fun reboot() {
     val pm = IPowerManager.Stub.asInterface(ServiceManager.getService(Context.POWER_SERVICE))
-    pm.reboot(false, "shutdown", false)
+    pm.reboot(false, "reboot", false)
 }
 
 /**
  * 恢复出厂设置
  * Can't perform master clear/factory reset
  */
-fun resetDevices(context: Context) {
+fun reset(context: Context) {
 //    val intent = Intent("android.intent.action.FACTORY_RESET")
 //    intent.setPackage("android")
 //    intent.addFlags(Intent.FLAG_RECEIVER_FOREGROUND)
@@ -283,6 +286,9 @@ fun mobile_data(context: Context, isDisable: Boolean) {
     if (isDisable) tm.enableDataConnectivity() else tm.disableDataConnectivity()
 }
 
+/**
+ * 静默安装apk
+ */
 fun installAPK(context: Context, apkFilePath: String) {
     try {
         val apkFile = File(apkFilePath);
@@ -438,7 +444,6 @@ fun isSuspended(context: Context, packageName: String): Boolean {
     } catch (e: Exception) {
         false
     }
-
 }
 
 /**
@@ -481,6 +486,194 @@ fun disableApp(context: Context, componentName: ComponentName, isDisable: Boolea
     )
 }
 
+/**
+ * 禁止卸载应用
+ */
+@Deprecated("调用下面不需要dpm权限的disUninstallAPP方法", ReplaceWith(""), DeprecationLevel.WARNING)
+fun disUninstallAPP(
+    context: Context,
+    componentName: ComponentName,
+    packageName: String,
+    isDisable: Boolean
+) {
+    try {
+        (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
+            .setUninstallBlocked(componentName, packageName, isDisable)
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+}
+
+/**
+ * 是否是禁止卸载
+ */
+@Deprecated("调用下面不需要dpm权限的isDisUninstallAPP方法", ReplaceWith(""), DeprecationLevel.WARNING)
+fun isDisUninstallAPP(
+    context: Context,
+    componentName: ComponentName,
+    packageName: String,
+): Boolean {
+    return try {
+        return (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
+            .isUninstallBlocked(componentName, packageName)
+    } catch (e: Exception) {
+        return false
+    }
+}
+
+/**
+ * 禁止卸载应用
+ */
+fun disUninstallAPP(context: Context, packageName: String, isDisable: Boolean) {
+    val mIPackageManager = IPackageManager.Stub.asInterface(ServiceManager.getService("package"))
+    mIPackageManager.setBlockUninstallForUser(packageName, isDisable, 0)
+}
+
+/**
+ * 是否是禁止卸载
+ */
+fun isDisUninstallAPP(context: Context, packageName: String): Boolean {
+    val mIPackageManager = IPackageManager.Stub.asInterface(ServiceManager.getService("package"))
+    return mIPackageManager.getBlockUninstallForUser(packageName, 0)
+}
+
+/**
+ * 隐藏应用
+ * pm list packages 无法显示包名
+ */
+@Deprecated("调用下面不需要dpm权限的hiddenAPP方法", ReplaceWith(""), DeprecationLevel.WARNING)
+fun hiddenAPP(
+    context: Context,
+    componentName: ComponentName,
+    packageName: String,
+    isDisable: Boolean
+) {
+    try {
+        (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
+            .setApplicationHidden(componentName, packageName, isDisable)
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+}
+
+/**
+ * 是否是隐藏应用
+ */
+@Deprecated("调用下面不需要dpm权限的isHiddenAPP方法", ReplaceWith(""), DeprecationLevel.WARNING)
+fun isHiddenAPP(
+    context: Context,
+    componentName: ComponentName,
+    packageName: String,
+): Boolean {
+    return try {
+        return (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
+            .isApplicationHidden(componentName, packageName)
+    } catch (e: Exception) {
+        return false
+    }
+}
+
+/**
+ * 隐藏app
+ */
+fun hiddenAPP(context: Context, packageName: String, isHidden: Boolean) {
+    val pm = context.applicationContext.packageManager
+    pm.setApplicationHiddenSettingAsUser(packageName, isHidden, UserHandle.getUserHandleForUid(0))
+}
+
+/**
+ * 是否是隐藏app
+ */
+fun isHiddenAPP(context: Context, packageName: String): Boolean {
+    val pm = context.applicationContext.packageManager
+    return pm.getApplicationHiddenSettingAsUser(packageName, UserHandle.getUserHandleForUid(0))
+}
+
+/**
+ * 暂停应用，可以看到图标，但是不能使用
+ */
+@Deprecated("调用下面不需要dpm权限的suspendedAPP方法", ReplaceWith(""), DeprecationLevel.WARNING)
+@RequiresApi(Build.VERSION_CODES.N)
+fun suspendedAPP(
+    context: Context,
+    componentName: ComponentName,
+    packageName: String,
+    isDisable: Boolean
+) {
+    try {
+        (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
+            .setPackagesSuspended(componentName, arrayOf(packageName), isDisable)
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+}
+
+/**
+ * 应用是否被暂停
+ */
+@Deprecated("调用下面不需要dpm权限的isSuspendedAPP方法", ReplaceWith(""), DeprecationLevel.WARNING)
+@RequiresApi(Build.VERSION_CODES.N)
+fun isSuspendedAPP(
+    context: Context,
+    componentName: ComponentName,
+    packageName: String,
+): Boolean {
+    return try {
+        return (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
+            .isPackageSuspended(componentName, packageName)
+    } catch (e: Exception) {
+        return false
+    }
+}
+
+fun suspendedAPP(context: Context, packageName: String, isHidden: Boolean) {
+    val mIPackageManager = IPackageManager.Stub.asInterface(ServiceManager.getService("package"))
+    mIPackageManager.setPackagesSuspendedAsUser(
+        arrayOf(packageName),
+        isHidden,
+        null,
+        null,
+        null,
+        "android",
+        0
+    )
+}
+
+/**
+ * 应用是否被暂停
+ */
+fun isSuspendedAPP(context: Context, packageName: String): Boolean {
+    val pm = context.applicationContext.packageManager
+    return pm.isPackageSuspended(packageName)
+}
+
+/**
+ * 禁止截图
+ */
+fun setScreenCaptureDisabled(
+    context: Context,
+    componentName: ComponentName,
+    isDisable: Boolean
+) {
+    try {
+        (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
+            .setScreenCaptureDisabled(componentName, isDisable)
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+}
+
+/**
+ * 是否禁止截图
+ */
+fun getScreenCaptureDisabled(context: Context, componentName: ComponentName): Boolean {
+    return try {
+        return (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
+            .getScreenCaptureDisabled(componentName)
+    } catch (e: Exception) {
+        return false
+    }
+}
 //fun getStatusBarHeight(context: Context): Int {
 //    return if (Build.VERSION.SDK_INT >= 30) {
 //        val wm = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
@@ -526,8 +719,10 @@ fun getPkgList(): MutableList<String> {
 /**
  * 添加应用白名单
  */
+@SuppressLint("WrongConstant")
 fun addPowerSaveWhitelistApp(context: Context, packageName: String) {
     try {
+//      val deviceIdleManager=  context.getSystemService("deviceidle")//未测试
         val deviceIdleManager =
             context.applicationContext.getSystemService(DeviceIdleManager::class.java)
         val manager = Class.forName("android.os.DeviceIdleManager")
@@ -579,6 +774,10 @@ fun isPowerSaveWhitelistApp(context: Context, packageName: String): Boolean {
 
 /**
  * 获取应用白名单
+ * 系统预设白名单
+ * frameworks\base\data\etc\platform.xml
+ * vendor\mediatek\proprietary\frameworks\base\data\etc\platform.xml
+ * vendor\partner_gms\etc\sysconfig\google.xml
  */
 fun getPowerSaveWhitelistApp(context: Context): List<String> {
     return try {
@@ -593,4 +792,10 @@ fun getPowerSaveWhitelistApp(context: Context): List<String> {
     } catch (e: Exception) {
         emptyList()
     }
+}
+
+fun backup(context: Context) {
+//    val mBackupManager = IBackupManager.Stub.asInterface(ServiceManager.getService("backup"))
+//    mBackupManager.requestBackup(arrayOf("com.android.systemfunction"), null, null, 0)
+//    mBackupManager.backupNow()
 }

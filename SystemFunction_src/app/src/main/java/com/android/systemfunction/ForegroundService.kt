@@ -60,11 +60,11 @@ class ForegroundService : Service(), LifecycleOwner {
         }
 
         override fun shutdown(isReboot: Boolean) {
-            if (isReboot) rebootDevice() else shutdown()
+            if (isReboot) reboot() else shutdown()
         }
 
         override fun resetDevice() {
-            resetDevices(App.application)
+            reset(App.application)
 //            wipeDate(App.application)
         }
 

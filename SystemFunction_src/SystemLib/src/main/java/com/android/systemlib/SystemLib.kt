@@ -7,8 +7,6 @@ import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
 import android.graphics.Bitmap
 import android.os.Build
-import android.os.IPowerManager
-import android.os.ServiceManager
 import android.provider.Settings
 import android.text.TextUtils
 import android.view.View
@@ -24,18 +22,6 @@ import com.android.android12.Screenshooter12
  */
 fun takeScreenShot(): Bitmap? =
     if (Build.VERSION.SDK_INT >= 31) Screenshooter12.takeScreenshot() else Screenshooter.takeScreenshot()
-
-/**
- * 关机
- * @param context 调用的上下文
- * @param isConfirm 是否需要确认弹窗
- */
-fun powerOff(context: Context, isConfirm: Boolean) {
-    val intent = Intent("com.android.internal.intent.action.REQUEST_SHUTDOWN")
-    intent.putExtra("com.android.internal.intent.action.REQUEST_SHUTDOWN", isConfirm)
-    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-    context.startActivity(intent)
-}
 
 val HOME_INTENT = Intent("android.intent.action.MAIN")
     .addCategory("android.intent.category.HOME")
@@ -207,6 +193,7 @@ const val HIDE_NAVIGATION =
 fun setStatusBarInt(context: Context, status: Int) {
     val service = context.getSystemService("statusbar")
     try {
+//        (service as StatusBarManager).disable(status)
         val statusBarManager = Class.forName("android.app.StatusBarManager")
         val expand = statusBarManager.getMethod("disable", Int::class.java)
         expand.invoke(service, status)
@@ -257,12 +244,6 @@ fun set(context: Context, enable: Boolean) {
 //    context.startActivity(Intent(Settings.Panel.ACTION_WIFI))
 }
 
-fun getAllList(context: Context) {
-    val pm = context.packageManager
-    val mainIntent = Intent(Intent.ACTION_MAIN, null)
-    mainIntent.addCategory(Intent.CATEGORY_LAUNCHER)
-    val activities = pm.queryIntentActivities(mainIntent, 0)
-}
 
 /**
  * 开启本应用的辅助权限
@@ -289,14 +270,4 @@ fun getSystemPropertyString(key: String): String? {
 
 fun setSystemPropertyString(key: String, value: String) {
     android.os.SystemProperties.set(key, value)
-}
-
-fun test() {
-    val pm = IPowerManager.Stub.asInterface(ServiceManager.getService(Context.POWER_SERVICE))
-    try {
-        //pm.reboot(true,null,false)
-        pm.shutdown(true, "我想关机", false)
-    } catch (e: Exception) {
-        e.printStackTrace()
-    }
 }

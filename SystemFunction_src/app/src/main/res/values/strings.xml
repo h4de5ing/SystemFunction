@@ -119,4 +119,7 @@
     <string name="admin_receiver_status_disable_warning">
         This is an optional message to warn the user about disabling.</string>
     <string name="app_manager">APPManager</string>
+    <string name="lable_shortcut_static_search_disable">disable</string>
+    <string name="lable_shortcut_static_search_long">app manager</string>
+    <string name="lable_shortcut_static_search_short">app manager</string>
 </resources>

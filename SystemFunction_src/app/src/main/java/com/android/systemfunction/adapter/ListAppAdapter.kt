@@ -7,12 +7,9 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.widget.AppCompatCheckBox
 import com.android.mdmsdk.change
 import com.android.systemfunction.R
-import com.android.systemfunction.app.App
 import com.android.systemfunction.bean.AppBean
-import com.android.systemfunction.utils.*
-import com.android.systemlib.canUninstall
-import com.android.systemlib.isSystemAPP
-import com.android.systemlib.uninstall
+import com.android.systemfunction.utils.byteArray2Drawable
+import com.android.systemlib.*
 import com.chad.library.adapter.base.BaseQuickAdapter
 import com.chad.library.adapter.base.viewholder.BaseViewHolder
 import com.github.h4de5ing.baseui.alertConfirm
@@ -32,36 +29,18 @@ class ListAppAdapter(layoutRes: Int = R.layout.item_app_list) :
         }
         val disableUninstall = holder.getView<AppCompatCheckBox>(R.id.disable_uninstall)
         disableUninstall.change {
-            disUninstallAPP(
-                context,
-                App.componentName2,
-                item.packageName,
-                it
-            )
-            disableUninstall.isChecked =
-                isDisUninstallAPP(context, App.componentName2, item.packageName)
+            disUninstallAPP(context, item.packageName, it)
+            disableUninstall.isChecked = isDisUninstallAPP(context, item.packageName)
         }
         val suspended = holder.getView<AppCompatCheckBox>(R.id.suspended)
         suspended.change {
-            suspendedAPP(
-                context,
-                App.componentName2,
-                item.packageName,
-                it
-            )
-            suspended.isChecked =
-                isSuspendedAPP(context, App.componentName2, item.packageName)
+            suspendedAPP(context, item.packageName, it)
+            suspended.isChecked = isSuspendedAPP(context, item.packageName)
         }
         val hidden = holder.getView<AppCompatCheckBox>(R.id.hidden)
         hidden.change {
-            hiddenAPP(
-                context,
-                App.componentName2,
-                item.packageName,
-                it
-            )
-            hidden.isChecked =
-                isHiddenAPP(context, App.componentName2, item.packageName)
+            hiddenAPP(context, item.packageName, it)
+            hidden.isChecked = isHiddenAPP(context, item.packageName)
         }
         try {
             println(
@@ -77,13 +56,10 @@ class ListAppAdapter(layoutRes: Int = R.layout.item_app_list) :
             uninstall.visibility =
                 if (isSystemAPP(context, item.packageName)) View.GONE else View.VISIBLE
             if (isSystemAPP(context, item.packageName)) {
-                disableUninstall.isChecked =
-                    isDisUninstallAPP(context, App.componentName2, item.packageName)
+                disableUninstall.isChecked = isDisUninstallAPP(context, item.packageName)
             }
-            suspended.isChecked =
-                isSuspendedAPP(context, App.componentName2, item.packageName)
-            hidden.isChecked =
-                isHiddenAPP(context, App.componentName2, item.packageName)
+            suspended.isChecked = isSuspendedAPP(context, item.packageName)
+            hidden.isChecked = isHiddenAPP(context, item.packageName)
         } catch (e: Exception) {
             e.printStackTrace()
         }

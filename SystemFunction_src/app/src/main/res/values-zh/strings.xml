@@ -3,4 +3,7 @@
     <string name="sample_device_admin">MDM</string>
     <string name="sample_device_admin_description">设备管理器</string>
     <string name="app_manager">应用管理</string>
+    <string name="lable_shortcut_static_search_disable">被禁用</string>
+    <string name="lable_shortcut_static_search_long">应用管理</string>
+    <string name="lable_shortcut_static_search_short">应用管理</string>
 </resources>

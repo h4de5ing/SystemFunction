@@ -113,9 +113,9 @@ class MainActivity : AppCompatActivity() {
                 AdminReceiver::class.java.name
             )
         }
-        reset.setOnClickListener { alertConfirm(this, "恢复出厂设置?") { if (it) resetDevices(this) } }
+        reset.setOnClickListener { alertConfirm(this, "恢复出厂设置?") { if (it) reset(this) } }
         shut_down.setOnClickListener { alertConfirm(this, "关机?") { if (it) shutdown() } }
-        reboot.setOnClickListener { alertConfirm(this, "重启?") { if (it) rebootDevice() } }
+        reboot.setOnClickListener { alertConfirm(this, "重启?") { if (it) reboot() } }
         shot.setOnClickListener { testShot() }
         startService(Intent(this, ForegroundService::class.java))
         app_manager.setOnClickListener {
@@ -134,6 +134,9 @@ class MainActivity : AppCompatActivity() {
                 )
             }
         }
+        net_manager.setOnClickListener {
+
+        }
         ("MDM包名:${getString(TestUtils.getInternalString())}").logD()
         timer(10 * 1000) {
             opt = TotpUtil.generate()
@@ -150,7 +153,7 @@ class MainActivity : AppCompatActivity() {
                     )
                     password.setText("")
                     mask.visibility = View.GONE
-                    scrollView.visibility = View.VISIBLE
+//                    scrollView.visibility = View.VISIBLE
                 } else {
                     password.requestFocus()
                     password.error = "password error"
@@ -165,7 +168,7 @@ class MainActivity : AppCompatActivity() {
                     )
                     password.setText("")
                     mask.visibility = View.GONE
-                    scrollView.visibility = View.VISIBLE
+//                    scrollView.visibility = View.VISIBLE
                 }
             }
         }
@@ -225,7 +228,9 @@ class MainActivity : AppCompatActivity() {
             bitmap?.compress(Bitmap.CompressFormat.JPEG, 100, fos)
             fos.flush()
             fos.close()
+            toast("/sdcard/Pictures/1.png success")
         } catch (e: Exception) {
+            toast("/sdcard/Pictures/1.png fail")
             e.printStackTrace()
         }
     }
@@ -234,7 +239,7 @@ class MainActivity : AppCompatActivity() {
         super.onResume()
         if (!BuildConfig.DEBUG) {
             mask.visibility = View.VISIBLE
-            scrollView.visibility = View.GONE
+//            scrollView.visibility = View.GONE
         }
     }
 }

@@ -1,11 +1,8 @@
 package com.android.systemfunction.utils
 
 import android.annotation.SuppressLint
-import android.app.admin.DevicePolicyManager
-import android.content.ComponentName
-import android.content.Context
+import android.app.Activity
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -14,6 +11,7 @@ import android.graphics.PixelFormat
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.os.Build
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.widget.addTextChangedListener
 import androidx.core.widget.doOnTextChanged
@@ -27,10 +25,7 @@ import com.android.systemfunction.bean.AppBean
 import com.android.systemfunction.bean.KeyValue
 import com.android.systemfunction.db.Config
 import com.android.systemfunction.db.PackageList
-import com.android.systemlib.addPowerSaveWhitelistApp
-import com.android.systemlib.getPowerSaveWhitelistApp
-import com.android.systemlib.isPowerSaveWhitelistApp
-import com.android.systemlib.removePowerSaveWhitelistApp
+import com.android.systemlib.*
 import com.github.h4de5ing.base.delayed
 import com.github.h4de5ing.baseui.logD
 import com.google.android.material.textfield.TextInputEditText
@@ -246,7 +241,7 @@ fun timer(delay: Long, block: () -> Unit) {
     }, 0, delay)
 }
 
-@SuppressLint("WrongConstant")
+@SuppressLint("WrongConstant", "QueryPermissionsNeeded")
 fun getInstallApp(): List<AppBean> {
     val list = mutableListOf<AppBean>()
     val pm = application.packageManager
@@ -254,7 +249,9 @@ fun getInstallApp(): List<AppBean> {
     intent.addCategory(Intent.CATEGORY_LAUNCHER)
     intent.flags = Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED or Intent.FLAG_ACTIVITY_NEW_TASK
     val queryIntentActivities: List<ResolveInfo> =
-        pm.queryIntentActivities(intent, PackageManager.GET_UNINSTALLED_PACKAGES)
+        pm.queryIntentActivities(intent, 0x00002000)
+//    PackageManager.MATCH_UNINSTALLED_PACKAGES
+//    PackageManager.MATCH_DISABLED_COMPONENTS
     queryIntentActivities.forEach {
         if (application.packageName != it.activityInfo.packageName) {
             try {
@@ -312,123 +309,6 @@ private fun byteArray2Bitmap(byteArray: ByteArray): Bitmap? {
     ) else null
 }
 
-/**
- * 禁止卸载单个应用
- */
-fun disUninstallAPP(
-    context: Context,
-    componentName: ComponentName,
-    packageName: String,
-    isDisable: Boolean
-) {
-    try {
-        (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
-            .setUninstallBlocked(componentName, packageName, isDisable)
-    } catch (e: Exception) {
-        e.printStackTrace()
-    }
-}
-
-fun isDisUninstallAPP(
-    context: Context,
-    componentName: ComponentName,
-    packageName: String,
-): Boolean {
-    return try {
-        return (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
-            .isUninstallBlocked(componentName, packageName)
-    } catch (e: Exception) {
-        return false
-    }
-}
-
-/**
- * 暂停应用，可以看到图标，但是不能使用
- */
-@RequiresApi(Build.VERSION_CODES.N)
-fun suspendedAPP(
-    context: Context,
-    componentName: ComponentName,
-    packageName: String,
-    isDisable: Boolean
-) {
-    try {
-        (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
-            .setPackagesSuspended(componentName, arrayOf(packageName), isDisable)
-    } catch (e: Exception) {
-        e.printStackTrace()
-    }
-}
-
-@RequiresApi(Build.VERSION_CODES.N)
-fun isSuspendedAPP(
-    context: Context,
-    componentName: ComponentName,
-    packageName: String,
-): Boolean {
-    return try {
-        return (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
-            .isPackageSuspended(componentName, packageName)
-    } catch (e: Exception) {
-        return false
-    }
-}
-
-/**
- * 隐藏应用
- * pm list packages 无法显示包名
- */
-fun hiddenAPP(
-    context: Context,
-    componentName: ComponentName,
-    packageName: String,
-    isDisable: Boolean
-) {
-    try {
-        (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
-            .setApplicationHidden(componentName, packageName, isDisable)
-    } catch (e: Exception) {
-        e.printStackTrace()
-    }
-}
-
-fun isHiddenAPP(
-    context: Context,
-    componentName: ComponentName,
-    packageName: String,
-): Boolean {
-    return try {
-        return (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
-            .isApplicationHidden(componentName, packageName)
-    } catch (e: Exception) {
-        return false
-    }
-}
-
-/**
- * 禁止截图
- */
-fun setScreenCaptureDisabled(
-    context: Context,
-    componentName: ComponentName,
-    isDisable: Boolean
-) {
-    try {
-        (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
-            .setScreenCaptureDisabled(componentName, isDisable)
-    } catch (e: Exception) {
-        e.printStackTrace()
-    }
-}
-
-/**
- * 是否禁止截图
- */
-fun getScreenCaptureDisabled(context: Context, componentName: ComponentName): Boolean {
-    return try {
-        return (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
-            .getScreenCaptureDisabled(componentName)
-    } catch (e: Exception) {
-        return false
-    }
+fun Activity.toast(message: String) {
+    Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
 }
