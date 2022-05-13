@@ -13,17 +13,17 @@
             android:targetPackage="com.android.systemfunction" />
         <categories android:name="android.shortcut.conversation" />
     </shortcut>
-<!--    <shortcut-->
-<!--        android:enabled="true"-->
-<!--        android:icon="@drawable/ic_baseline_search_24"-->
-<!--        android:shortcutDisabledMessage="@string/static_message"-->
-<!--        android:shortcutId="static2"-->
-<!--        android:shortcutLongLabel="@string/static_long_label_2"-->
-<!--        android:shortcutShortLabel="@string/static_short_label_2">-->
-<!--        <intent-->
-<!--            android:action="android.intent.action.VIEW"-->
-<!--            android:targetClass="com.githubly.shortcutsdemo.StaticTestActivity"-->
-<!--            android:targetPackage="com.githubly.shortcutsdemo" />-->
-<!--    </shortcut>-->
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/ic_baseline_search_24"
+        android:shortcutDisabledMessage="@string/activity_log"
+        android:shortcutId="static2"
+        android:shortcutLongLabel="@string/activity_log"
+        android:shortcutShortLabel="@string/activity_log">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetClass="com.android.systemfunction.ui.Logger"
+            android:targetPackage="com.android.systemfunction" />
+    </shortcut>
 
 </shortcuts>

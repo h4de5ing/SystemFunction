@@ -4,6 +4,7 @@ import android.os.Build
 import android.view.View
 import android.widget.Button
 import androidx.annotation.RequiresApi
+import androidx.appcompat.widget.AppCompatButton
 import androidx.appcompat.widget.AppCompatCheckBox
 import com.android.mdmsdk.change
 import com.android.systemfunction.R
@@ -34,7 +35,7 @@ class ListAppAdapter(layoutRes: Int = R.layout.item_app_list) :
         }
         val suspended = holder.getView<AppCompatCheckBox>(R.id.suspended)
         suspended.change {
-            suspendedAPP(context, item.packageName, it)
+            suspendedAPP(item.packageName, it)
             suspended.isChecked = isSuspendedAPP(context, item.packageName)
         }
         val hidden = holder.getView<AppCompatCheckBox>(R.id.hidden)
@@ -42,6 +43,10 @@ class ListAppAdapter(layoutRes: Int = R.layout.item_app_list) :
             hiddenAPP(context, item.packageName, it)
             hidden.isChecked = isHiddenAPP(context, item.packageName)
         }
+        val backup = holder.getView<AppCompatButton>(R.id.backup)
+        backup.setOnClickListener { backup(item.packageName) }
+        val restore = holder.getView<AppCompatButton>(R.id.restore)
+        restore.setOnClickListener { restore(item.packageName) }
         try {
             println(
                 "${item.name} ${
@@ -60,6 +65,8 @@ class ListAppAdapter(layoutRes: Int = R.layout.item_app_list) :
             }
             suspended.isChecked = isSuspendedAPP(context, item.packageName)
             hidden.isChecked = isHiddenAPP(context, item.packageName)
+            backup.isEnabled = canBackup(context, item.packageName)
+            restore.isEnabled = canRestore(context, item.packageName)
         } catch (e: Exception) {
             e.printStackTrace()
         }

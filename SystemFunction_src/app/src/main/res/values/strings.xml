@@ -122,4 +122,5 @@
     <string name="lable_shortcut_static_search_disable">disable</string>
     <string name="lable_shortcut_static_search_long">app manager</string>
     <string name="lable_shortcut_static_search_short">app manager</string>
+    <string name="activity_log">Logger</string>
 </resources>

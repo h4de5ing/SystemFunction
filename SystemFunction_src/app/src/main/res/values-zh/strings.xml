@@ -6,4 +6,5 @@
     <string name="lable_shortcut_static_search_disable">被禁用</string>
     <string name="lable_shortcut_static_search_long">应用管理</string>
     <string name="lable_shortcut_static_search_short">应用管理</string>
+    <string name="activity_log">日志</string>
 </resources>

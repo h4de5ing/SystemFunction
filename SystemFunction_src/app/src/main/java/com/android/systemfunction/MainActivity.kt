@@ -114,7 +114,6 @@ class MainActivity : AppCompatActivity() {
         shut_down.setOnClickListener { alertConfirm(this, "关机?") { if (it) shutdown() } }
         reboot.setOnClickListener { alertConfirm(this, "重启?") { if (it) reboot() } }
         shot.setOnClickListener { testShot() }
-        startService(Intent(this, ForegroundService::class.java))
         app_manager.setOnClickListener {
             startActivity(
                 Intent(
@@ -134,6 +133,7 @@ class MainActivity : AppCompatActivity() {
         net_manager.setOnClickListener {
         }
         ("MDM包名:${getString(TestUtils.getInternalString())}").logD()
+        startService(Intent(this, ForegroundService::class.java))
     }
 
     private var opt = ""

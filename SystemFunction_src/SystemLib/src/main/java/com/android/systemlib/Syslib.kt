@@ -1,6 +1,7 @@
 package com.android.systemlib
 
 import android.annotation.SuppressLint
+import android.app.IActivityManager
 import android.app.PendingIntent
 import android.app.admin.DevicePolicyManager
 import android.content.*
@@ -14,6 +15,11 @@ import android.text.TextUtils
 import androidx.annotation.RequiresApi
 import androidx.core.view.accessibility.AccessibilityEventCompat
 import java.io.*
+
+/**
+ * TODO 待测试接口
+ * println("是否是第一次启动:${mIPackageManager.isFirstBoot}") 可以用来判断设备是否是恢复出厂设置过
+ */
 
 
 /**
@@ -386,7 +392,7 @@ private fun closeQuietly(c: Closeable?) {
 
 /**
  * 判断是否具有system权限
-FLAG_ALLOW_BACKUP
+FLAG_ALLOW_BACKUP 是否允许备份
 FLAG_ALLOW_CLEAR_USER_DATA
 FLAG_ALLOW_TASK_REPARENTING
 FLAG_DEBUGGABLE 是否允许被调试
@@ -626,7 +632,10 @@ fun isSuspendedAPP(
     }
 }
 
-fun suspendedAPP(context: Context, packageName: String, isHidden: Boolean) {
+/**
+ * 暂停应用
+ */
+fun suspendedAPP(packageName: String, isHidden: Boolean) {
     val mIPackageManager = IPackageManager.Stub.asInterface(ServiceManager.getService("package"))
     mIPackageManager.setPackagesSuspendedAsUser(
         arrayOf(packageName),
@@ -645,6 +654,27 @@ fun suspendedAPP(context: Context, packageName: String, isHidden: Boolean) {
 fun isSuspendedAPP(context: Context, packageName: String): Boolean {
     val pm = context.applicationContext.packageManager
     return pm.isPackageSuspended(packageName)
+}
+
+/**
+ * PackageManager.COMPONENT_ENABLED_STATE_DEFAULT=0
+ * PackageManager.COMPONENT_ENABLED_STATE_ENABLED=1
+ * PackageManager.COMPONENT_ENABLED_STATE_DISABLED=2
+ * PackageManager.COMPONENT_ENABLED_STATE_DISABLED_USER=3
+ * PackageManager.COMPONENT_ENABLED_STATE_DISABLED_UNTIL_USED=4
+ */
+fun setDisableAPP(context: Context, packageName: ComponentName, isDisable: Boolean) {
+    val pm = context.applicationContext.packageManager
+    pm.setComponentEnabledSetting(
+        packageName,
+        if (isDisable) PackageManager.COMPONENT_ENABLED_STATE_ENABLED else PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+        0
+    )
+}
+
+fun isDisableAPP(context: Context, packageName: ComponentName): Boolean {
+    val pm = context.applicationContext.packageManager
+    return pm.getComponentEnabledSetting(packageName) == PackageManager.COMPONENT_ENABLED_STATE_DISABLED
 }
 
 /**
@@ -794,8 +824,81 @@ fun getPowerSaveWhitelistApp(context: Context): List<String> {
     }
 }
 
-fun backup(context: Context) {
-//    val mBackupManager = IBackupManager.Stub.asInterface(ServiceManager.getService("backup"))
-//    mBackupManager.requestBackup(arrayOf("com.android.systemfunction"), null, null, 0)
-//    mBackupManager.backupNow()
+/**
+ * 应用数据目录具备可读权限
+ */
+fun canBackup(context: Context, packageName: String): Boolean {
+    val flags = (context.applicationContext.packageManager.getApplicationInfo(
+        packageName,
+        0
+    )).flags
+    return (flags and ApplicationInfo.FLAG_ALLOW_BACKUP) == ApplicationInfo.FLAG_ALLOW_BACKUP
+//    return File(
+//        (context.applicationContext.packageManager.getApplicationInfo(
+//            packageName,
+//            0
+//        )).dataDir
+//    ).canRead()
 }
+
+/**
+ * 应用数据目录具备可写权限
+ */
+fun canRestore(context: Context, packageName: String): Boolean {
+    return File(
+        (context.applicationContext.packageManager.getApplicationInfo(
+            packageName,
+            0
+        )).dataDir
+    ).canWrite()
+}
+
+/**
+ * 备份应用数据
+ */
+fun backup(packageName: String) {
+    val path =
+        File("${Environment.getExternalStorageDirectory().absolutePath}${File.separator}backup")
+    if (!path.exists()) path.mkdir()
+    val mIPackageManager = IPackageManager.Stub.asInterface(ServiceManager.getService("package"))
+    val applicationInfo = mIPackageManager.getApplicationInfo(packageName, 0, 0)
+    val dataPath = applicationInfo.dataDir
+    T.copyFiles(dataPath, "${path.absolutePath}${File.separator}${packageName}")
+}
+
+fun restore(packageName: String) {
+    val path =
+        File("${Environment.getExternalStorageDirectory().absolutePath}${File.separator}backup")
+    val mIPackageManager = IPackageManager.Stub.asInterface(ServiceManager.getService("package"))
+    val applicationInfo = mIPackageManager.getApplicationInfo(packageName, 0, 0)
+    val dataPath = applicationInfo.dataDir
+    T.copyFiles("${path.absolutePath}${File.separator}${packageName}", dataPath)
+}
+
+/**
+ * 递归遍历拷贝目录
+ */
+fun copyDir(src: String, des: String) {
+    try {
+        val fileTree: FileTreeWalk = File(src).walk()
+        fileTree.forEach {
+            println("${it.name}")
+        }
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+}
+
+/**
+ * 当第一次刷机或者恢复出厂设置以后这个返回值为true
+ */
+fun isFirstRun(): Boolean {
+    val mIPackageManager = IPackageManager.Stub.asInterface(ServiceManager.getService("package"))
+    return mIPackageManager.isFirstBoot
+}
+
+/**
+ * 结束任务
+ */
+fun removeTask(id: Int): Boolean =
+    IActivityManager.Stub.asInterface(ServiceManager.getService("activity")).removeTask(id)

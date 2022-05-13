@@ -97,13 +97,13 @@ public class CrashHandler implements Thread.UncaughtExceptionHandler {
         }
         // 使用Toast来显示异常信息
         new Thread() {
-            @Override  
-            public void run() {  
+            @Override
+            public void run() {
                 Looper.prepare();
                 Toast.makeText(mContext, "很抱歉,程序出现异常,正在收集日志，即将退出", Toast.LENGTH_LONG)
-                        .show();  
-                Looper.loop();  
-            }  
+                        .show();
+                Looper.loop();
+            }
         }.start();
         // 收集设备参数信息  
         collectDeviceInfo(mContext);
@@ -120,11 +120,9 @@ public class CrashHandler implements Thread.UncaughtExceptionHandler {
     public void collectDeviceInfo(Context ctx) {
         try {
             PackageManager pm = ctx.getPackageManager();
-            PackageInfo pi = pm.getPackageInfo(ctx.getPackageName(),
-                    PackageManager.GET_ACTIVITIES);
+            PackageInfo pi = pm.getPackageInfo(ctx.getPackageName(), PackageManager.GET_ACTIVITIES);
             if (pi != null) {
-                String versionName = pi.versionName == null ? "null"
-                        : pi.versionName;
+                String versionName = pi.versionName == null ? "null" : pi.versionName;
                 String versionCode = pi.versionCode + "";
                 infos.put("versionName", versionName);
                 infos.put("versionCode", versionCode);
@@ -173,10 +171,8 @@ public class CrashHandler implements Thread.UncaughtExceptionHandler {
         try {
             long timestamp = System.currentTimeMillis();
             String time = formatter.format(new Date());
-            String fileName = time + "-" + timestamp
-                    + ".log";
-            if (Environment.getExternalStorageState().equals(
-                    Environment.MEDIA_MOUNTED)) {
+            String fileName = time + "-" + timestamp + ".log";
+            if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
                 File file = new File(logDir, fileName);
                 FileOutputStream fos = new FileOutputStream(file);
                 fos.write(sb.toString().getBytes());
