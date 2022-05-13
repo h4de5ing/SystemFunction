@@ -9,8 +9,6 @@ import android.graphics.Bitmap
 import android.os.Build
 import android.os.Bundle
 import android.os.UserManager
-import android.view.View
-import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
@@ -22,7 +20,6 @@ import com.android.systemlib.*
 import com.github.h4de5ing.baseui.alertConfirm
 import com.github.h4de5ing.baseui.logD
 import com.github.h4de5ing.filepicker.DialogUtils
-import com.zhangyf.library.utils.TotpUtil
 import kotlinx.android.synthetic.main.activity_main.*
 import java.io.File
 import java.io.FileOutputStream
@@ -135,43 +132,8 @@ class MainActivity : AppCompatActivity() {
             }
         }
         net_manager.setOnClickListener {
-
         }
         ("MDM包名:${getString(TestUtils.getInternalString())}").logD()
-        timer(10 * 1000) {
-            opt = TotpUtil.generate()
-            runOnUiThread { show.text = opt }
-        }
-        password.change {
-            if (it.length == 6) {
-                if (opt == it) {
-                    val manager: InputMethodManager =
-                        getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
-                    manager.hideSoftInputFromWindow(
-                        password.windowToken,
-                        InputMethodManager.HIDE_NOT_ALWAYS
-                    )
-                    password.setText("")
-                    mask.visibility = View.GONE
-//                    scrollView.visibility = View.VISIBLE
-                } else {
-                    password.requestFocus()
-                    password.error = "password error"
-                }
-            } else {
-                if ("0123456789" == it) {
-                    val manager: InputMethodManager =
-                        getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
-                    manager.hideSoftInputFromWindow(
-                        password.windowToken,
-                        InputMethodManager.HIDE_NOT_ALWAYS
-                    )
-                    password.setText("")
-                    mask.visibility = View.GONE
-//                    scrollView.visibility = View.VISIBLE
-                }
-            }
-        }
     }
 
     private var opt = ""
@@ -232,14 +194,6 @@ class MainActivity : AppCompatActivity() {
         } catch (e: Exception) {
             toast("/sdcard/Pictures/1.png fail")
             e.printStackTrace()
-        }
-    }
-
-    override fun onResume() {
-        super.onResume()
-        if (!BuildConfig.DEBUG) {
-            mask.visibility = View.VISIBLE
-//            scrollView.visibility = View.GONE
         }
     }
 }
