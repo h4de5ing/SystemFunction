@@ -8,7 +8,7 @@ import java.io.IOException;
 public class T {
     public static void copyFiles(String inputname, String outputname) throws IOException {
         File f = new File(inputname);
-        if ((null == f) || (!f.exists()) || (!f.isDirectory())) {
+        if ((!f.exists()) || (!f.isDirectory())) {
             return;
         }
         // create output folder.
@@ -24,9 +24,7 @@ public class T {
                 FileInputStream input = new FileInputStream(file[i]);
                 // mkdir if destination does not exist
                 File outtest = new File(outputname);
-                if (!outtest.exists()) {
-                    outtest.mkdir();
-                }
+                if (!outtest.exists()) outtest.mkdir();
                 FileOutputStream output = new FileOutputStream(outputname + (file[i].getName()).toString());
                 byte[] b = new byte[1024 * 5];
                 int len;
@@ -37,7 +35,7 @@ public class T {
                 output.close();
                 input.close();
             } else if (file[i].isDirectory()) {
-                System.out.println(file[i].toString() + "," + outputname + file[i].getName());
+                System.out.println(file[i].toString() + " -> " + outputname + file[i].getName());
                 copyFiles(file[i].toString(), outputname + file[i].getName());
             }
         }
