@@ -50,8 +50,8 @@ class ForegroundService : Service(), LifecycleOwner {
         }
 
         override fun deviceManager(packageName: String?, className: String?, isRemove: Boolean) {
-            if (isRemove) removeActiveDeviceAdmin(App.application, "$packageName", "$className")
-            else activeDeviceManager(App.application, "$packageName", "$className")
+            if (isRemove) removeActiveDeviceAdmin(App.application, App.componentName2)
+            else setActiveAdmin(App.componentName2)
         }
 
         override fun defaultLauncher(packageName: String?, isClean: Boolean) {
@@ -105,6 +105,11 @@ class ForegroundService : Service(), LifecycleOwner {
         super.onCreate()
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
         "MDM ForegroundService 启动了".logD()
+        try {
+            if (!isAdminActive(this, App.componentName2)) setActiveProfileOwner(App.componentName2)
+        } catch (e: Exception) {
+            "ForegroundService设置MDM失败".logD()
+        }
         wifiManager = applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
         mLocationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
@@ -130,8 +135,7 @@ class ForegroundService : Service(), LifecycleOwner {
             Settings.System.putInt(contentResolver, "screen_off_timeout", Int.MAX_VALUE)
         loadApp()
         updateAllState()
-        val test = "用户策略:" +
-                "isDemoUser:${userManager?.isDemoUser} " +
+        val test = "isDemoUser:${userManager?.isDemoUser} " +
                 "isManagedProfile:${userManager?.isManagedProfile} " +
                 "isDemoUser:${userManager?.isDemoUser} " +
                 "isSystemUser：${userManager?.isSystemUser} " +
@@ -145,6 +149,7 @@ class ForegroundService : Service(), LifecycleOwner {
                     )
                 }"
         test.logD()
+        if (isDebug()) setUSBDataDisabled(this, false)
     }
 
     private fun loadApp() {
@@ -305,7 +310,8 @@ class ForegroundService : Service(), LifecycleOwner {
         updateInstallAPK()
         updateWindow()
         try {
-            disable(UserManager.DISALLOW_USB_FILE_TRANSFER, isDisableUSBData)
+            if (!isDebug())
+                disable(UserManager.DISALLOW_USB_FILE_TRANSFER, isDisableUSBData)
 
             disable(UserManager.DISALLOW_BLUETOOTH, isDisableBluetooth)
             disable(UserManager.DISALLOW_CONFIG_BLUETOOTH, isDisableBluetooth)
@@ -328,6 +334,9 @@ class ForegroundService : Service(), LifecycleOwner {
             disable(UserManager.DISALLOW_INSTALL_APPS, isDisableUnInstallApp)
             disable(UserManager.DISALLOW_CONTENT_CAPTURE, isDisableScreenShot)
             setScreenCaptureDisabled(this, App.componentName2, isDisableScreenShot)
+            setCameraDisabled(this, App.componentName2, isDisableCamera)
+            disableSensor(isDisableMicrophone, 1)
+            disableSensor(isDisableCamera, 2)
         } catch (e: Exception) {
             e.printStackTrace()
         }

@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -9,7 +8,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:paddingBottom="10dp"
-        app:constraint_referenced_ids="home,recent,back,navigation,status,adb,bluetooth,wifi,data,gps,microphone,screen_shot,screen_capture,tf_card,phone_call,hot_spot,sms,mms,system_update,install_app,uninstall_app,restore_factory,mdm,device_manager,reset,shut_down,reboot,shot,install,app_manager,net_manager"
+        app:constraint_referenced_ids="home,recent,back,navigation,status,adb,bluetooth,wifi,data,gps,camera,microphone,screen_shot,screen_capture,tf_card,phone_call,hot_spot,sms,mms,system_update,install_app,uninstall_app,restore_factory,device_manager,reset,shut_down,reboot,shot,install,app_manager,net_manager"
         app:flow_horizontalGap="10dp"
         app:flow_wrapMode="chain"
         app:layout_constraintLeft_toLeftOf="parent"
@@ -76,6 +75,12 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="禁用GPS" />
+
+    <androidx.appcompat.widget.AppCompatCheckBox
+        android:id="@+id/camera"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="禁用相机" />
 
     <androidx.appcompat.widget.AppCompatCheckBox
         android:id="@+id/microphone"
@@ -149,12 +154,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="禁用恢复出厂设置" />
-
-    <androidx.appcompat.widget.AppCompatCheckBox
-        android:id="@+id/mdm"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="启用MDM" />
 
     <androidx.appcompat.widget.AppCompatCheckBox
         android:id="@+id/device_manager"

@@ -1,20 +1,18 @@
 package com.android.systemfunction
 
 import android.annotation.SuppressLint
-import android.app.admin.DevicePolicyManager
-import android.content.ComponentName
-import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.os.Build
 import android.os.Bundle
 import android.os.UserManager
-import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import com.android.mdmsdk.ConfigEnum
 import com.android.mdmsdk.change
+import com.android.systemfunction.app.App
 import com.android.systemfunction.ui.APPManagerActivity
+import com.android.systemfunction.ui.BackupSettingsActivity
 import com.android.systemfunction.utils.*
 import com.android.systemlib.*
 import com.github.h4de5ing.baseui.alertConfirm
@@ -26,50 +24,32 @@ import java.io.FileOutputStream
 
 
 class MainActivity : AppCompatActivity() {
-    private var dm: DevicePolicyManager? = null
-    private var componentName2 =
-        ComponentName(BuildConfig.APPLICATION_ID, AdminReceiver::class.java.name)
-
     @SuppressLint("MissingPermission")
-    @RequiresApi(Build.VERSION_CODES.O)
+    @RequiresApi(Build.VERSION_CODES.S)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        dm = getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
         try {
-            if (!isActiveDeviceManager(this, componentName2)) setMDM(this, componentName2)
+            if (!isAdminActive(this, App.componentName2)) setActiveProfileOwner(App.componentName2)
         } catch (e: Exception) {
-            "设置MDM失败".logD()
-            e.printStackTrace()
+            "MainActivity 设置MDM失败".logD()
         }
         updateUI()
-        mdm.change { isChecked ->
-            if (isChecked) {
-                try {
-                    "设置结果:${setMDM(this, componentName2)}".logD()
-                } catch (e: Exception) {
-                    Toast.makeText(this, "MDM设置失败:${e.message}", Toast.LENGTH_SHORT).show()
-                    e.printStackTrace()
-                }
-            } else {
-                try {
-                    removeMDM(this, componentName2)
-                } catch (e: Exception) {
-                    Toast.makeText(this, "MDM取消失败:${e.message}", Toast.LENGTH_SHORT).show()
-                    e.printStackTrace()
-                }
-            }
-        }
         home.change { updateKT(ConfigEnum.DISABLE_HOME.name, if (it) "0" else "1") }
         recent.change { updateKT(ConfigEnum.DISABLE_RECENT.name, if (it) "0" else "1") }
         back.change { updateKT(ConfigEnum.DISABLE_BACK.name, if (it) "0" else "1") }
         navigation.change { updateKT(ConfigEnum.DISABLE_NAVIGATION.name, if (it) "0" else "1") }
         status.change { updateKT(ConfigEnum.DISABLE_STATUS.name, if (it) "0" else "1") }
-        adb.change { updateKT(ConfigEnum.DISABLE_USB_DATA.name, if (it) "0" else "1") }
+        adb.change {
+            if (isDebug())
+                setUSBDataDisabled(this, it) else
+                updateKT(ConfigEnum.DISABLE_USB_DATA.name, if (it) "0" else "1")
+        }
         bluetooth.change { updateKT(ConfigEnum.DISABLE_BLUETOOTH.name, if (it) "0" else "1") }
         wifi.change { updateKT(ConfigEnum.DISABLE_WIFI.name, if (it) "0" else "1") }
         data.change { updateKT(ConfigEnum.DISABLE_DATA_CONNECTIVITY.name, if (it) "0" else "1") }
         gps.change { updateKT(ConfigEnum.DISABLE_GPS.name, if (it) "0" else "1") }
+        camera.change { updateKT(ConfigEnum.DISABLE_CAMERA.name, if (it) "0" else "1") }
         microphone.change { updateKT(ConfigEnum.DISABLE_MICROPHONE.name, if (it) "0" else "1") }
         screen_shot.change { updateKT(ConfigEnum.DISABLE_SCREEN_SHOT.name, if (it) "0" else "1") }
         screen_capture.change {
@@ -99,16 +79,12 @@ class MainActivity : AppCompatActivity() {
             updateKT(ConfigEnum.DISABLE_RESTORE_FACTORY.name, if (it) "0" else "1")
         }
         device_manager.change {
-            if (it) activeDeviceManager(
-                this,
-                BuildConfig.APPLICATION_ID,
-                AdminReceiver::class.java.name
-            )
-            else removeActiveDeviceAdmin(
-                this,
-                BuildConfig.APPLICATION_ID,
-                AdminReceiver::class.java.name
-            )
+            if (it) {
+                setActiveProfileOwner(App.componentName2)
+            } else {
+                removeActiveDeviceAdmin(this, App.componentName2)
+                clearProfileOwner(App.componentName2)
+            }
         }
         reset.setOnClickListener { alertConfirm(this, "恢复出厂设置?") { if (it) reset(this) } }
         shut_down.setOnClickListener { alertConfirm(this, "关机?") { if (it) shutdown() } }
@@ -131,15 +107,19 @@ class MainActivity : AppCompatActivity() {
             }
         }
         net_manager.setOnClickListener {
+            startActivity(
+                Intent(
+                    this,
+                    BackupSettingsActivity::class.java
+                )
+            )
         }
         ("MDM包名:${getString(TestUtils.getInternalString())}").logD()
         startService(Intent(this, ForegroundService::class.java))
     }
 
-    private var opt = ""
     private fun updateUI() {
         try {
-            mdm.isChecked = dm!!.isAdminActive(componentName2)
             home.isChecked = isDisableHome
             recent.isChecked = isDisableRecent
             back.isChecked = isDisableBack
@@ -150,6 +130,7 @@ class MainActivity : AppCompatActivity() {
             wifi.isChecked = isDisableWIFI
             data.isChecked = isDisableData
             gps.isChecked = isDisableGPS
+            camera.isChecked = isDisableCamera
             microphone.isChecked = isDisableMicrophone
             screen_shot.isChecked = isDisableScreenShot
             screen_capture.isChecked = isDisableScreenCapture
@@ -161,24 +142,15 @@ class MainActivity : AppCompatActivity() {
             system_update.isChecked = isDisableSystemUpdate
             restore_factory.isChecked = isDisableRestoreFactory
             device_manager.isChecked =
-                isActiveDeviceManager(
+                isAdminActive(
                     this,
-                    BuildConfig.APPLICATION_ID,
-                    AdminReceiver::class.java.name
+                    App.componentName2
                 )
             install_app.isChecked = isDisable(UserManager.DISALLOW_INSTALL_APPS)
             uninstall_app.isChecked = isDisable(UserManager.DISALLOW_UNINSTALL_APPS)
         } catch (e: Exception) {
             e.printStackTrace()
         }
-    }
-
-    private fun disable(key: String, isDisable: Boolean) {
-        disableMDM(
-            this,
-            ComponentName(BuildConfig.APPLICATION_ID, AdminReceiver::class.java.name),
-            key, isDisable
-        )
     }
 
     private fun isDisable(key: String): Boolean = isDisableDMD(this, key)

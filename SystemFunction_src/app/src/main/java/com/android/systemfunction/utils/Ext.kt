@@ -1,17 +1,14 @@
 package com.android.systemfunction.utils
 
 import android.annotation.SuppressLint
-import android.app.Activity
+import android.content.ContentProviderOperation
+import android.content.ContentValues
+import android.content.Context
 import android.content.Intent
 import android.content.pm.ResolveInfo
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.Canvas
-import android.graphics.PixelFormat
-import android.graphics.drawable.BitmapDrawable
-import android.graphics.drawable.Drawable
+import android.net.Uri
 import android.os.Build
-import android.widget.Toast
+import android.provider.Settings
 import androidx.annotation.RequiresApi
 import androidx.core.widget.addTextChangedListener
 import androidx.core.widget.doOnTextChanged
@@ -23,13 +20,16 @@ import com.android.systemfunction.app.App.Companion.application
 import com.android.systemfunction.app.App.Companion.systemDao
 import com.android.systemfunction.bean.AppBean
 import com.android.systemfunction.bean.KeyValue
+import com.android.systemfunction.bean.SettingsBean
 import com.android.systemfunction.db.Config
 import com.android.systemfunction.db.PackageList
 import com.android.systemlib.*
 import com.github.h4de5ing.base.delayed
 import com.github.h4de5ing.baseui.logD
 import com.google.android.material.textfield.TextInputEditText
-import java.io.ByteArrayOutputStream
+import com.google.gson.JsonArray
+import com.google.gson.JsonObject
+import com.google.gson.JsonParser
 import java.io.File
 import java.util.*
 import kotlin.properties.Delegates
@@ -46,6 +46,7 @@ var isDisableBluetooth = false
 var isDisableWIFI = false
 var isDisableData = false
 var isDisableGPS = false
+var isDisableCamera = false
 var isDisableMicrophone = false
 var isDisableScreenShot = false
 var isDisableScreenCapture = false
@@ -92,13 +93,13 @@ fun updateAPP(type: Int, isAdd: Boolean, list: List<String>) {
                 "禁止卸载 add:${dbList} ->${list} =${dbList.union(list)}".logD()
                 dbList.union(list).subtract(dbList).forEach {
                     ("禁止卸载 add：${it}").logD()
-                    disUninstallAPP(application, App.componentName2, it, true)
+                    disUninstallAPP(it, true)
                 }
             } else {
                 ("禁止卸载 remove:${dbList} ->${list} =${dbList.subtract(list)}").logD()
                 dbList.intersect(list).forEach {
                     ("禁止卸载 remove：${it}").logD()
-                    disUninstallAPP(application, App.componentName2, it, false)
+                    disUninstallAPP(it, false)
                 }
             }
         }
@@ -107,15 +108,15 @@ fun updateAPP(type: Int, isAdd: Boolean, list: List<String>) {
                 "禁止安装 add:${dbList} ->${list} =${dbList.union(list)}".logD()
                 dbList.union(list).subtract(dbList).forEach {
                     ("禁止安装 add：${it}").logD()
-                    if (isHiddenAPP(application, App.componentName2, it))
-                        hiddenAPP(application, App.componentName2, it, true)
+                    if (isHiddenAPP(it))
+                        hiddenAPP(it, true)
                 }
             } else {
                 ("禁止安装 remove:${dbList} ->${list} =${dbList.subtract(list)}").logD()
                 dbList.intersect(list).forEach {
                     ("禁止安装 remove：${it}").logD()
-                    if (isHiddenAPP(application, App.componentName2, it))
-                        hiddenAPP(application, App.componentName2, it, false)
+                    if (isHiddenAPP(it))
+                        hiddenAPP(it, false)
                 }
             }
         }
@@ -270,45 +271,173 @@ fun getInstallApp(): List<AppBean> {
     "应用个数:${queryIntentActivities.size}".logD()
     return list.distinctBy { it.packageName }
 }
-
-private fun drawable2Bitmap(icon: Drawable): Bitmap {
-    val bitmap =
-        Bitmap.createBitmap(
-            icon.intrinsicWidth,
-            icon.intrinsicHeight,
-            if (icon.opacity == PixelFormat.OPAQUE) Bitmap.Config.RGB_565 else Bitmap.Config.ARGB_8888
-        )
-    val canvas = Canvas(bitmap)
-    icon.setBounds(0, 0, icon.intrinsicWidth, icon.intrinsicHeight)
-    icon.draw(canvas)
-    return bitmap
+/**
+* 从setting providers读取数据
+*/
+fun getAllSettings(context: Context): SettingsBean {
+    val global = getUriFor(context, Uri.parse("content://settings/global"))
+    val system = getUriFor(context, Uri.parse("content://settings/system"))
+    val secure = getUriFor(context, Uri.parse("content://settings/secure"))
+    return SettingsBean(global, system, secure)
 }
 
-//序列化 Drawable->Bitmap->ByteArray
-fun drawable2ByteArray(icon: Drawable): ByteArray {
-    return bitmap2ByteArray(drawable2Bitmap(icon))
+/**
+ * 从json解析数据
+ */
+fun parserJson(json: String): SettingsBean {
+    val obj = JsonParser.parseString(json) as JsonObject
+    val global = obj.getAsJsonArray("global").toList()
+    val system = obj.getAsJsonArray("system").toList()
+    val secure = obj.getAsJsonArray("secure").toList()
+    return SettingsBean(global, system, secure)
 }
 
-private fun bitmap2ByteArray(bitmap: Bitmap): ByteArray {
-    val baos = ByteArrayOutputStream()
-    bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos)
-    return baos.toByteArray()
+fun putSettings(context: Context, bean: SettingsBean) {
+    putAllSettings(context, Uri.parse("content://settings/global"), bean.global)
+    putAllSettings(context, Uri.parse("content://settings/system"), bean.system)
+    putAllSettings(context, Uri.parse("content://settings/secure"), bean.secure)
 }
 
-//反序列化 ByteArray->Bitmap->Drawable
-fun byteArray2Drawable(byteArray: ByteArray): Drawable? {
-    val bitmap = byteArray2Bitmap(byteArray)
-    return if (bitmap == null) null else BitmapDrawable(bitmap)
+/**
+ * 获取apn
+ * /system/etc/apns-conf.xml
+ * /data/data/com.android.providers.telephony/databases/mmssms.db
+ */
+fun getAPN(context: Context): String {
+    val uri = Uri.parse("content://telephony/carriers")
+    val cursor = context.contentResolver.query(uri, null, null, null, null)
+    val names = mutableListOf<String>()
+    val sb = StringBuilder()
+    if (cursor != null && cursor.moveToFirst()) {
+        cursor.columnNames.forEach { names.add(it) }
+        println(names)
+        while (cursor.moveToNext()) {
+            names.forEach { name ->
+                val index = cursor.getColumnIndex(name)
+                if (index >= 0) {
+                    val value = cursor.getString(index)
+                    sb.append("$value,")
+                }
+            }
+            sb.append("\n")
+        }
+        cursor.close()
+    }
+    return sb.toString()
 }
 
-private fun byteArray2Bitmap(byteArray: ByteArray): Bitmap? {
-    return if (byteArray.isNotEmpty()) BitmapFactory.decodeByteArray(
-        byteArray,
-        0,
-        byteArray.size
-    ) else null
+/**
+ * 删除apn数据库
+ */
+fun cleanAPN(context: Context) {
+    val uri = Uri.parse("content://telephony/carriers")
+    val result = context.contentResolver.delete(uri, "_id>=?", arrayOf("0"))
+    println("删除结果:${result}")
 }
 
-fun Activity.toast(message: String) {
-    Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+
+/**
+ * 数据量太大
+ * android.os.TransactionTooLargeException: data parcel size 5461200 bytes
+ *  [_id, name, numeric, mcc, mnc, carrier_id, apn, user, server, password, proxy, port, mmsproxy, mmsport, mmsc, authtype, type, current, protocol, roaming_protocol, carrier_enabled, bearer, bearer_bitmask, network_type_bitmask, mvno_type, mvno_match_data, sub_id, profile_id, modem_cognitive, max_conns, wait_time, max_conns_time, mtu, edited, user_visible, user_editable, owned_by, apn_set_id, skip_464xlat]
+ */
+fun setAPN(context: Context, list: List<String>, done: ((String, Boolean) -> Unit)) {
+    val uri = Uri.parse("content://telephony/carriers")
+    val resolver = context.contentResolver
+    val cursor = resolver.query(uri, null, null, null, null)
+//    val names = mutableListOf<String>()
+//    if (cursor != null && cursor.moveToFirst()) {
+//        cursor.columnNames.forEach { names.add(it) }
+//        cursor.close()
+//    }
+//    println(names)
+    val ops = arrayListOf<ContentProviderOperation>()
+    for (i in 0 until list.size) {
+        val line = list[i]
+//        println(line)
+        try {
+            val items = line.split(",")
+            if (items.size > 3) {
+                val _id = items[0]
+//                val co = ContentProviderOperation.newInsert(uri)
+//            names.forEachIndexed { nameIndex, name ->
+//                if (nameIndex != 0) co.withValue(name, items[nameIndex])
+//            }
+//                co.withValue("name", items[1])
+//                co.withValue("numeric", items[2])
+//                co.withValue("mcc", items[3])
+//                co.withValue("mnc", items[4])
+//                co.withValue("apn", items[6])
+//                co.withValue("user", items[7])
+//                co.withValue("server", items[8])
+//                co.withValue("password", items[9])
+//                co.withValue("proxy", items[10])
+//                co.withValue("port", items[11])
+//                co.withValue("mmsproxy", items[12])
+//                co.withValue("mmsport", items[13])
+//                co.withValue("mmsc", items[14])
+//                co.withValue("type", items[16])
+//                co.withYieldAllowed(true)
+//                ops.add(co.build())
+
+                val value = ContentValues()
+                value.put("name", items[1])
+                value.put("numeric", items[2])
+                value.put("mcc", items[3])
+                value.put("mnc", items[4])
+                value.put("apn", items[6])
+                value.put("user", items[7])
+                value.put("server", items[8])
+                value.put("password", items[9])
+                value.put("proxy", items[10])
+                value.put("port", items[11])
+                value.put("mmsproxy", items[12])
+                value.put("mmsport", items[13])
+                value.put("mmsc", items[14])
+                value.put("type", items[16])
+                val result = resolver.insert(uri, value)
+                println("insert result：${result}")
+                done("${i}/${list.size}", false)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+    //备份结束
+    done("", true)
+//    list.forEach { line ->
+//        try {
+//            val items = line.split(",")
+//            val _id = items[0]
+//            val co = ContentProviderOperation.newInsert(uri)
+//            names.forEachIndexed { nameIndex, name ->
+//                co.withValue(name, items[nameIndex])
+//            }
+////            co.withSelection("${names[0]}=?", arrayOf(_id))
+//            ops.add(co.build())
+//        } catch (e: Exception) {
+//        }
+//    }
+
+//    try {
+//        val result =
+//            context.contentResolver.applyBatch("telephony", ops)//telephony  在Telephony 这个类中
+//        result.forEach {
+//            println("apn更新结果:${it}")
+//        }
+//    } catch (e: Exception) {
+//    }
+}
+
+private fun JsonArray.toList(): List<Pair<String, String>> {
+    val list = mutableListOf<Pair<String, String>>()
+    this.forEach { element ->
+        try {
+            val obj = element as JsonObject
+            obj.keySet().forEach { list.add(Pair(it, obj[it].asString)) }
+        } catch (e: Exception) {
+            println("null $element ${e.message}")
+        }
+    }
+    return list
 }

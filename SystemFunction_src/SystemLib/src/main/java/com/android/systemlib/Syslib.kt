@@ -484,10 +484,10 @@ fun isDisUninstallAPP(
     packageName: String,
 ): Boolean {
     return try {
-        return (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
+        (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
             .isUninstallBlocked(componentName, packageName)
     } catch (e: Exception) {
-        return false
+        false
     }
 }
 
@@ -792,18 +792,38 @@ fun getAllPackages(): List<String> {
     return IPackageManager.Stub.asInterface(ServiceManager.getService("package")).allPackages
 }
 
-fun getPermissions(context: Context, packageName: String): List<String> {
-//    val pm = IPackageManager.Stub.asInterface(ServiceManager.getService("package"))
-    val pm = context.applicationContext.packageManager
-    //所有申请的权限
-    val arrays = pm.getPackageInfo(packageName, PackageManager.GET_PERMISSIONS).requestedPermissions
-    arrays.forEach {
-        try {
-            println(it)
-        } catch (e: Exception) {
+/**
+ * 应用权限操作
+ */
+fun grantAllPermission(packageName: String) {
+    try {
+        val ipm = IPackageManager.Stub.asInterface(ServiceManager.getService("package"))
+        ipm.getPackageInfo(
+            packageName,
+            PackageManager.GET_PERMISSIONS,
+            0
+        ).requestedPermissions.forEach {
+            try {
+                ipm.grantRuntimePermission(packageName, it, 0)
+            } catch (e: Exception) {
+            }
         }
+    } catch (e: Exception) {
     }
-    return arrays.toList()
+}
+
+@RequiresApi(Build.VERSION_CODES.Q)
+fun getwhite(context: Context, packageName: String) {
+    val pm = context.packageManager
+    pm.getWhitelistedRestrictedPermissions(
+        packageName,
+        PackageManager.FLAG_PERMISSION_WHITELIST_UPGRADE
+    ).forEach {
+        println("white:${it}")
+    }
+//    pm.addWhitelistedRe
+//    strictedPermission()
+//    pm.removeWhitelistedRestrictedPermission()
 }
 
 /**

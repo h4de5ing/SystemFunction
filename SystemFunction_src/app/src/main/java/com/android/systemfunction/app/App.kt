@@ -14,6 +14,7 @@ import com.github.h4de5ing.baseui.initLog
 
 class App : Application() {
     companion object {
+        lateinit var db: SystemDatabase //App.db.runInTransaction {  }
         lateinit var systemDao: SystemDao
         lateinit var application: Application
         lateinit var componentName2: ComponentName
@@ -22,7 +23,8 @@ class App : Application() {
     override fun onCreate() {
         super.onCreate()
         application = this
-        systemDao = SystemDatabase.create(this).barcodeDao()
+        db = SystemDatabase.create(this)
+        systemDao = db.barcodeDao()
         firstUpdate(systemDao.selectAllConfig())
         firstUpdatePackage(systemDao.selectAllPackages())
         componentName2 = ComponentName(BuildConfig.APPLICATION_ID, AdminReceiver::class.java.name)

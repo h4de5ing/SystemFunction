@@ -109,8 +109,7 @@ fun getUriFor(context: Context, uri: Uri): List<Pair<String, String>> {
         while (cursor.moveToNext()) {
             val name = cursor.getString(1)
             val value = cursor.getString(2)
-            //去除空的内容
-            if (!TextUtils.isEmpty(name) && !TextUtils.isEmpty(value)) list.add(Pair(name, value))
+            if (!TextUtils.isEmpty(name)) list.add(Pair(name, "$value"))
         }
         cursor.close()
     }

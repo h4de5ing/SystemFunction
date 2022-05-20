@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">MDM</string>
+    <string name="app_name">oemconfig</string>
     <!-- ============================== -->
     <!--  app/device policies examples strings     -->
     <!-- ============================== -->
