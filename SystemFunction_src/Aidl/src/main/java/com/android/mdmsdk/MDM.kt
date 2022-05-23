@@ -539,3 +539,10 @@ fun getSuperWhiteListForSystem(): List<String> {
     return mService?.getPackages(PackageTypeEnum.SUPER_WHITE.ordinal)
         ?.toMutableList() ?: emptyList()
 }
+
+/**
+ * 获取设备信息
+ */
+fun getDeviceInfo(): String? {
+    return mService?.deviceInfo
+}

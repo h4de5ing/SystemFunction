@@ -13,4 +13,5 @@ interface IRemoteInterface {
     void resetDevice();
     void packageManager(in String[] list,in boolean isAdd,in int type);
     String[] getPackages(in int type);
+    String getDeviceInfo();
 }
