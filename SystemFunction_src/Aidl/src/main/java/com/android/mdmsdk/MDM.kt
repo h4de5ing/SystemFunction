@@ -546,3 +546,17 @@ fun getSuperWhiteListForSystem(): List<String> {
 fun getDeviceInfo(): String? {
     return mService?.deviceInfo
 }
+
+/**
+ * 禁止设备分享文件
+ */
+fun setFileShareDisabled(isDisable: Boolean) {
+    mService?.setDisable(ConfigEnum.DISABLE_SHARE.name, isDisable)
+}
+
+/**
+ * 查询是否禁用设备分享文件
+ */
+fun isFileShareDisabled(): Boolean {
+    return mService?.isDisable(ConfigEnum.DISABLE_SHARE.name) ?: false
+}
