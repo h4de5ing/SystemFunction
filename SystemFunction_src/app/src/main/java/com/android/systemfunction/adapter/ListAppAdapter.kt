@@ -1,9 +1,13 @@
 package com.android.systemfunction.adapter
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.view.View
 import android.widget.Button
+import android.widget.Toast
 import androidx.annotation.RequiresApi
+import androidx.appcompat.widget.AppCompatButton
 import androidx.appcompat.widget.AppCompatCheckBox
 import com.android.mdmsdk.change
 import com.android.systemfunction.R
@@ -45,6 +49,17 @@ class ListAppAdapter(layoutRes: Int = R.layout.item_app_list) :
         val superWhite = holder.getView<AppCompatCheckBox>(R.id.super_white)
         superWhite.change {
             grantAllPermission(item.packageName)
+        }
+        holder.getView<AppCompatButton>(R.id.settings).setOnClickListener {
+            try {
+                val intent = Intent()
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                intent.action = "android.settings.APPLICATION_DETAILS_SETTINGS"
+                intent.data = Uri.fromParts("package", item.packageName, null)
+                context.startActivity(intent)
+            } catch (e: Exception) {
+                Toast.makeText(context, "${e.message}", Toast.LENGTH_SHORT).show()
+            }
         }
         try {
             println(

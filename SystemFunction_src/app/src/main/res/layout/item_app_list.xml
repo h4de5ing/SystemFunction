@@ -63,7 +63,7 @@
             <androidx.constraintlayout.helper.widget.Flow
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                app:constraint_referenced_ids="uninstall,disable_uninstall,persistent,super_white,suspended,hidden"
+                app:constraint_referenced_ids="uninstall,disable_uninstall,persistent,super_white,suspended,hidden,settings"
                 app:flow_horizontalGap="10dp"
                 app:flow_wrapMode="chain"
                 app:layout_constraintLeft_toLeftOf="parent"
@@ -107,6 +107,11 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="隐藏应用" />
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/settings"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="应用设置" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
