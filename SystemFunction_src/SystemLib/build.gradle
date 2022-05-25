@@ -29,7 +29,7 @@ android {
     gradle.projectsEvaluated {
         tasks.withType(JavaCompile) {
             Set<File> fileSet = options.bootstrapClasspath.getFiles()
-            List<File> newFileList = new ArrayList<>();
+            List<File> newFileList = new ArrayList<>()
             newFileList.add(new File("libs/classes.jar"))
             newFileList.addAll(fileSet)
             options.bootstrapClasspath = files(newFileList.toArray())

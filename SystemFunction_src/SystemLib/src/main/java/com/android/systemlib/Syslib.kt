@@ -2,27 +2,23 @@ package com.android.systemlib
 
 import android.annotation.SuppressLint
 import android.app.*
-import android.app.admin.DevicePolicyManager
 import android.app.backup.IBackupManager
 import android.content.*
 import android.content.pm.*
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.Canvas
-import android.graphics.PixelFormat
-import android.graphics.drawable.BitmapDrawable
-import android.graphics.drawable.Drawable
 import android.net.*
 import android.net.wifi.WifiConfiguration
 import android.net.wifi.WifiManager
 import android.net.wifi.WifiNetworkSpecifier
 import android.os.*
+import android.os.storage.IStorageManager
 import android.provider.Settings
+import android.system.Os
 import android.telephony.TelephonyManager
 import android.text.TextUtils
+import android.webkit.MimeTypeMap
 import androidx.annotation.RequiresApi
 import androidx.core.view.accessibility.AccessibilityEventCompat
-import com.android.android12.disableCamera12
+import com.android.android12.disableSensor12
 import com.android.internal.app.IAppOpsService
 import java.io.*
 
@@ -459,41 +455,6 @@ fun disableApp(context: Context, componentName: ComponentName, isDisable: Boolea
 /**
  * 禁止卸载应用
  */
-@Deprecated("调用下面不需要dpm权限的disUninstallAPP方法", ReplaceWith(""), DeprecationLevel.WARNING)
-fun disUninstallAPP(
-    context: Context,
-    componentName: ComponentName,
-    packageName: String,
-    isDisable: Boolean
-) {
-    try {
-        (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
-            .setUninstallBlocked(componentName, packageName, isDisable)
-    } catch (e: Exception) {
-        e.printStackTrace()
-    }
-}
-
-/**
- * 是否是禁止卸载
- */
-@Deprecated("调用下面不需要dpm权限的isDisUninstallAPP方法", ReplaceWith(""), DeprecationLevel.WARNING)
-fun isDisUninstallAPP(
-    context: Context,
-    componentName: ComponentName,
-    packageName: String,
-): Boolean {
-    return try {
-        (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
-            .isUninstallBlocked(componentName, packageName)
-    } catch (e: Exception) {
-        false
-    }
-}
-
-/**
- * 禁止卸载应用
- */
 fun disUninstallAPP(packageName: String, isDisable: Boolean) {
     val mIPackageManager = IPackageManager.Stub.asInterface(ServiceManager.getService("package"))
     mIPackageManager.setBlockUninstallForUser(packageName, isDisable, 0)
@@ -508,7 +469,7 @@ fun isDisUninstallAPP(packageName: String): Boolean {
 }
 
 /**
- * 隐藏app
+ * 隐藏app 应用图标隐藏，不能使用
  */
 fun hiddenAPP(packageName: String, isHidden: Boolean) {
     IPackageManager.Stub.asInterface(ServiceManager.getService("package"))
@@ -525,7 +486,7 @@ fun isHiddenAPP(packageName: String): Boolean {
 
 
 /**
- * 暂停应用
+ * 暂停应用 图标变成灰色，app不能使用
  */
 fun suspendedAPP(packageName: String, isHidden: Boolean) {
     val mIPackageManager = IPackageManager.Stub.asInterface(ServiceManager.getService("package"))
@@ -732,44 +693,6 @@ fun isFirstRun(): Boolean {
     return mIPackageManager.isFirstBoot
 }
 
-private fun drawable2Bitmap(icon: Drawable): Bitmap {
-    val bitmap =
-        Bitmap.createBitmap(
-            icon.intrinsicWidth,
-            icon.intrinsicHeight,
-            if (icon.opacity == PixelFormat.OPAQUE) Bitmap.Config.RGB_565 else Bitmap.Config.ARGB_8888
-        )
-    val canvas = Canvas(bitmap)
-    icon.setBounds(0, 0, icon.intrinsicWidth, icon.intrinsicHeight)
-    icon.draw(canvas)
-    return bitmap
-}
-
-//序列化 Drawable->Bitmap->ByteArray
-fun drawable2ByteArray(icon: Drawable): ByteArray {
-    return bitmap2ByteArray(drawable2Bitmap(icon))
-}
-
-private fun bitmap2ByteArray(bitmap: Bitmap): ByteArray {
-    val baos = ByteArrayOutputStream()
-    bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos)
-    return baos.toByteArray()
-}
-
-//反序列化 ByteArray->Bitmap->Drawable
-fun byteArray2Drawable(byteArray: ByteArray): Drawable? {
-    val bitmap = byteArray2Bitmap(byteArray)
-    return if (bitmap == null) null else BitmapDrawable(bitmap)
-}
-
-private fun byteArray2Bitmap(byteArray: ByteArray): Bitmap? {
-    return if (byteArray.isNotEmpty()) BitmapFactory.decodeByteArray(
-        byteArray,
-        0,
-        byteArray.size
-    ) else null
-}
-
 /**
  * 结束任务
  */
@@ -794,6 +717,7 @@ fun getAllPackages(): List<String> {
 
 /**
  * 应用权限操作
+ * 授予运行时权限
  */
 fun grantAllPermission(packageName: String) {
     try {
@@ -837,6 +761,7 @@ fun getwhite(context: Context, packageName: String) {
  * AppOpsManager.MODE_ERRORED
  * AppOpsManager.MODE_DEFAULT
  * AppOpsManager.MODE_FOREGROUND
+ * resetAllModes 重置全部权限
  */
 fun setMode(context: Context, code: Int, packageName: String, mode: Int) {
     val uid = UserHandle.getCallingUserId()
@@ -862,6 +787,7 @@ fun setMode(context: Context, code: Int, packageName: String, mode: Int) {
 }
 
 /**
+ * Android 12新增加的接口
  * 禁用Sensor
  * 支持：
  * 0 未知
@@ -871,8 +797,60 @@ fun setMode(context: Context, code: Int, packageName: String, mode: Int) {
  */
 fun disableSensor(isDisable: Boolean, sensor: Int) {
     if (Build.VERSION.SDK_INT > 31) {
-        disableCamera12(isDisable, 2)
+        disableSensor12(isDisable, 2)
     } else {
 
     }
+}
+
+/**
+ * 取消挂载扩展存储设备
+ */
+@RequiresApi(Build.VERSION_CODES.N)
+fun unmount(context: Context) {
+    try {
+        val iStorageManager =
+            IStorageManager.Stub.asInterface(ServiceManager.getService("mount"))
+        iStorageManager.getVolumeList(0, context.packageName, 0)
+            .forEach { if (it.isRemovable) iStorageManager.unmount(it.id) }
+    } catch (e: Exception) {
+    }
+}
+
+@SuppressLint("WrongConstant")
+fun ota(context: Context, fileName: String) {
+    try {
+        RecoverySystem.installPackage(context, File(fileName))
+//        val rs = context.getSystemService("recovery") as RecoverySystem
+//       val iRecoverySystem= IRecoverySystem.Stub.asInterface(ServiceManager.getService("recovery"))
+//        iRecoverySystem.rebootRecoveryWithCommand()
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+}
+
+/**
+ * 获取设置配置项
+ */
+fun getSystemGlobal(context: Context, key: String): String =
+    Settings.Global.getString(context.contentResolver, key)
+
+/**
+ * 写入到设置里面去
+ */
+fun setSystemGlobal(context: Context, key: String, value: String): Boolean =
+    Settings.Global.putString(context.contentResolver, key, value)
+
+fun getFileType(context: Context) {
+    Intent.ACTION_SEND
+    val cr = context.contentResolver
+    val fileMimeType = cr.getType(Uri.parse(""))//根据文件uri路径获取类型
+    val fileType = MimeTypeMap.getSingleton().getExtensionFromMimeType(fileMimeType)
+}
+
+fun shell(command: String) {
+    SELinux.getContext()
+    Os.getpid()
+    Os.getuid()
+
 }

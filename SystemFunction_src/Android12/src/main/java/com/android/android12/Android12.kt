@@ -9,9 +9,12 @@ import android.service.SensorPrivacyIndividualEnabledSensorProto
 import android.service.SensorPrivacyToggleSourceProto
 import androidx.annotation.RequiresApi
 
+/**
+ * frameworks/base/services/core/java/com/android/server/SensorPrivacyService.java
+ */
 @RequiresApi(Build.VERSION_CODES.S)
 @SuppressLint("WrongConstant")
-fun disableCamera12(isDisable: Boolean, sensor: Int) {
+fun disableSensor12(isDisable: Boolean, sensor: Int) {
     val sensors = when (sensor) {
         1 -> SensorPrivacyManager.Sensors.MICROPHONE
         2 -> SensorPrivacyManager.Sensors.CAMERA

@@ -93,6 +93,7 @@ fun isSystemResolveInfo(info: ResolveInfo): Boolean {
 /**
  * 获取系统里面的所有Launcher
  */
+@SuppressLint("QueryPermissionsNeeded")
 fun getAllLaunchers(context: Context): MutableList<Pair<String, String>> {
     val list = mutableListOf<Pair<String, String>>()
     val pm = context.packageManager
@@ -201,31 +202,6 @@ fun setStatusBarInt(context: Context, status: Int) {
     } catch (e: Exception) {
         e.printStackTrace()
     }
-}
-
-/**
- * 启用adb
- */
-fun enable_adb(context: Context, enable: Boolean) {
-    Settings.Global.putInt(
-        context.contentResolver,
-        Settings.Global.ADB_ENABLED,
-        if (enable) 1 else 0
-    )
-}
-
-/**
- * 自动屏幕亮度
- */
-fun enable_auto_screen_brightness_mode(context: Context, enable: Boolean) {
-    Settings.System.putInt(
-        context.contentResolver,
-        Settings.System.SCREEN_BRIGHTNESS_MODE,
-        if (enable)
-            Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC
-        else
-            Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL
-    )
 }
 
 fun set(context: Context, enable: Boolean) {

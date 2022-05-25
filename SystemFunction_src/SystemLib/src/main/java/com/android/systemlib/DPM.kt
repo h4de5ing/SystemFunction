@@ -210,6 +210,41 @@ fun isSuspendedAPP(
 }
 
 /**
+ * 禁止卸载应用
+ */
+@Deprecated("调用不需要dpm权限的disUninstallAPP方法", ReplaceWith(""), DeprecationLevel.WARNING)
+fun disUninstallAPP(
+    context: Context,
+    componentName: ComponentName,
+    packageName: String,
+    isDisable: Boolean
+) {
+    try {
+        (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
+            .setUninstallBlocked(componentName, packageName, isDisable)
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+}
+
+/**
+ * 是否是禁止卸载
+ */
+@Deprecated("调用不需要dpm权限的isDisUninstallAPP方法", ReplaceWith(""), DeprecationLevel.WARNING)
+fun isDisUninstallAPP(
+    context: Context,
+    componentName: ComponentName,
+    packageName: String,
+): Boolean {
+    return try {
+        (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
+            .isUninstallBlocked(componentName, packageName)
+    } catch (e: Exception) {
+        false
+    }
+}
+
+/**
  * 禁止截图
  */
 fun setScreenCaptureDisabled(
