@@ -17,9 +17,10 @@ dependencyResolutionManagement {
     }
 }
 rootProject.name = "SystemFunction"
-include ':app'
+//include ':app'
 include ':SystemLib'
 include ':Android12'
-include ':Aidl'
+//include ':Aidl'
 //include ':mdmclient'
 //include ':otax'
+include ':extapp'
