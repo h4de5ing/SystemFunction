@@ -77,7 +77,7 @@ fun getAllSettings(context: Context): List<Pair<String, String>> {
     return list
 }
 
-fun getDeclaredFields(context: Context, clazz: Class<T>): Pair<String, String>? {
+fun getDeclaredFields(context: Context, clazz: Class<Any>): Pair<String, String>? {
     var pair: Pair<String, String>? = null
     try {
         clazz.declaredFields.forEach {
@@ -129,8 +129,10 @@ fun getUriFor(context: Context, uri: Uri): List<Pair<String, String>> {
  * @param uri  content://settings/global
  * @param name 设置名称 wifi_on
  * @param value 1 开  0 关
- * adb shell content query --uri content://settings/global
- * adb shell content query --uri content://settings/global/wifi_on
+ * content query --uri content://settings/global/install_app
+ * content insert --uri content://settings/global --bind name:s:install_app --bind value:s:[com.android.systemfunction,com.android.otax,com.guoshi.httpcanary]
+ * content update --uri content://settings/global --bind value:s:[com.android.otax] --where "name='install_app'"
+ * content delete --uri content://settings/global --where "name='install_app'"
  * 写成功后状态不生效,需要重启才能生效
  */
 fun putSettings(context: Context, uri: Uri, name: String, value: String) {
@@ -269,4 +271,10 @@ private fun drawable2Bitmap(icon: Drawable): Bitmap {
     icon.setBounds(0, 0, icon.intrinsicWidth, icon.intrinsicHeight)
     icon.draw(canvas)
     return bitmap
+}
+
+//TODO 获取sim卡相关的信息
+fun getPhoneNumber() {
+//    val telephonyManager = getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+//    println("手机号码:${telephonyManager.line1Number}")
 }

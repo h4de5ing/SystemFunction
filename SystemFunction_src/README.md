@@ -27,3 +27,10 @@ config_defaultSupervisionProfileOwnerComponent
 
 PackageManager 
 isAutoRevokeWhitelisted  撤销权限
+
+
+那些比较重要的系统服务
+KeyChainSystemService
+TelecomLoaderService
+
+apn 设置可以参考ApnEditor.java ApnPreference.java ApnSettings.java

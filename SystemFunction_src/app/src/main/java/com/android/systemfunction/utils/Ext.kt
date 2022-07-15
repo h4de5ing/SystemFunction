@@ -1,21 +1,18 @@
 package com.android.systemfunction.utils
 
 import android.annotation.SuppressLint
-import android.content.ContentProviderOperation
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ResolveInfo
 import android.net.Uri
 import android.os.Build
-import android.provider.Settings
 import androidx.annotation.RequiresApi
 import androidx.core.widget.addTextChangedListener
 import androidx.core.widget.doOnTextChanged
 import com.android.mdmsdk.BuildConfig
 import com.android.mdmsdk.ConfigEnum
 import com.android.mdmsdk.PackageTypeEnum
-import com.android.systemfunction.app.App
 import com.android.systemfunction.app.App.Companion.application
 import com.android.systemfunction.app.App.Companion.systemDao
 import com.android.systemfunction.bean.AppBean
@@ -55,6 +52,7 @@ var isDisablePhoneCall = false
 var isDisableHotSpot = false
 var isDisableSMS = false
 var isDisableMMS = false
+var isDisableShare = false
 var isDisableSystemUpdate = false
 var isDisableRestoreFactory = false
 var isDisableInstallApp = false
@@ -77,7 +75,7 @@ fun updatePackageDB(type: Int, isAdd: Boolean, list: List<String>) {
         if (isAdd) {
             this.packages = this.getPackageList().union(list).toString()
         } else {
-            this.packages = this.getPackageList().subtract(list).toString()
+            this.packages = this.getPackageList().subtract(list.toSet()).toString()
         }
         this.update()
     } ?: PackageList(0, type, list.toString()).insert()
@@ -86,34 +84,51 @@ fun updatePackageDB(type: Int, isAdd: Boolean, list: List<String>) {
 //处理APP的禁止安装卸载 等操作
 fun updateAPP(type: Int, isAdd: Boolean, list: List<String>) {
     val dbList =
-        allDBPackages.firstOrNull { it.type == type }?.let { it.getPackageList() } ?: emptyList()
+        allDBPackages.firstOrNull { it.type == type }?.getPackageList() ?: emptyList()
     when (type) {
         PackageTypeEnum.DISABLE_UNINSTALL.ordinal -> {//禁止卸载
             if (isAdd) {
                 "禁止卸载 add:${dbList} ->${list} =${dbList.union(list)}".logD()
-                dbList.union(list).subtract(dbList).forEach {
+                dbList.union(list).subtract(dbList.toSet()).forEach {
                     ("禁止卸载 add：${it}").logD()
                     disUninstallAPP(it, true)
                 }
             } else {
-                ("禁止卸载 remove:${dbList} ->${list} =${dbList.subtract(list)}").logD()
-                dbList.intersect(list).forEach {
+                ("禁止卸载 remove:${dbList} ->${list} =${dbList.subtract(list.toSet())}").logD()
+                dbList.intersect(list.toSet()).forEach {
                     ("禁止卸载 remove：${it}").logD()
                     disUninstallAPP(it, false)
+                }
+            }
+        }
+        PackageTypeEnum.INSTALL.ordinal -> {
+            if (isAdd) {
+                "允许安装 add:${dbList} ->${list} =${dbList.union(list)}".logD()
+                dbList.union(list).subtract(dbList.toSet()).forEach {
+                    ("允许安装 add：${it}").logD()
+                    if (isHiddenAPP(it))
+                        hiddenAPP(it, true)
+                }
+            } else {
+                ("允许安装 remove:${dbList} ->${list} =${dbList.subtract(list.toSet())}").logD()
+                dbList.intersect(list.toSet()).forEach {
+                    ("允许安装 remove：${it}").logD()
+                    if (isHiddenAPP(it))
+                        hiddenAPP(it, false)
                 }
             }
         }
         PackageTypeEnum.DISABLE_INSTALL.ordinal -> {//禁止安装
             if (isAdd) {
                 "禁止安装 add:${dbList} ->${list} =${dbList.union(list)}".logD()
-                dbList.union(list).subtract(dbList).forEach {
+                dbList.union(list).subtract(dbList.toSet()).forEach {
                     ("禁止安装 add：${it}").logD()
                     if (isHiddenAPP(it))
                         hiddenAPP(it, true)
                 }
             } else {
-                ("禁止安装 remove:${dbList} ->${list} =${dbList.subtract(list)}").logD()
-                dbList.intersect(list).forEach {
+                ("禁止安装 remove:${dbList} ->${list} =${dbList.subtract(list.toSet())}").logD()
+                dbList.intersect(list.toSet()).forEach {
                     ("禁止安装 remove：${it}").logD()
                     if (isHiddenAPP(it))
                         hiddenAPP(it, false)
@@ -124,17 +139,31 @@ fun updateAPP(type: Int, isAdd: Boolean, list: List<String>) {
             val applist = getPowerSaveWhitelistApp(application)
             if (isAdd) {
                 "应用保活 add:${applist} ->${list} =${applist.union(list)}".logD()
-                applist.union(list).subtract(applist).forEach {
+                applist.union(list).subtract(applist.toSet()).forEach {
                     ("应用保活 add：${it}").logD()
                     if (!isPowerSaveWhitelistApp(application, it))
                         addPowerSaveWhitelistApp(application, it)
                 }
             } else {
                 "应用保活 remove:${applist} ->${list} =${applist.union(list)}".logD()
-                applist.intersect(list).forEach {
+                applist.intersect(list.toSet()).forEach {
                     ("应用保活 remove：${it}").logD()
                     if (isPowerSaveWhitelistApp(application, it))
                         removePowerSaveWhitelistApp(application, it)
+                }
+            }
+        }
+        PackageTypeEnum.SUPER_WHITE.ordinal -> {//应用受信任  默认自动权限
+            if (isAdd) {
+                "信任 add:${dbList} ->${list} =${dbList.union(list)}".logD()
+                dbList.union(list).subtract(dbList.toSet()).forEach {
+                    ("信任 add：${it}").logD()
+                    grantAllPermission(it)
+                }
+            } else {
+                ("信任 remove:${dbList} ->${list} =${dbList.subtract(list.toSet())}").logD()
+                dbList.intersect(list.toSet()).forEach {
+                    ("信任 remove：${it}").logD()
                 }
             }
         }
@@ -142,13 +171,19 @@ fun updateAPP(type: Int, isAdd: Boolean, list: List<String>) {
 }
 
 fun updateInstallAPK() {
-    delayed(1000) {//延迟1秒钟处理禁止安装列表
-        allDBPackages.firstOrNull { it.type == PackageTypeEnum.DISABLE_INSTALL.ordinal }?.let {
-            it.getPackageList().forEach { packageName ->
-                packageName.logD()
-                hiddenAPP(application, App.componentName2, packageName, true)
-            }
-        }
+    delayed(1000) {
+        setSystemGlobal(
+            application,
+            ConfigEnum.DISABLE_INSTALL_APP.name.lowercase(Locale.ROOT),
+            allDBPackages.firstOrNull { it.type == PackageTypeEnum.DISABLE_INSTALL.ordinal }
+                ?.getPackageList().toString()
+        )
+        setSystemGlobal(
+            application,
+            ConfigEnum.INSTALL_APP.name.lowercase(Locale.ROOT),
+            allDBPackages.firstOrNull { it.type == PackageTypeEnum.INSTALL.ordinal }
+                ?.getPackageList().toString()
+        )
     }
 }
 
@@ -189,6 +224,8 @@ fun firstUpdate(data: List<Config>) {
         configs.firstOrNull { it.key == ConfigEnum.DISABLE_DATA_CONNECTIVITY.name }?.value.toString() == "0"
     isDisableGPS =
         configs.firstOrNull { it.key == ConfigEnum.DISABLE_GPS.name }?.value.toString() == "0"
+    isDisableCamera =
+        configs.firstOrNull { it.key == ConfigEnum.DISABLE_CAMERA.name }?.value.toString() == "0"
     isDisableMicrophone =
         configs.firstOrNull { it.key == ConfigEnum.DISABLE_MICROPHONE.name }?.value.toString() == "0"
     isDisableScreenShot =
@@ -205,10 +242,16 @@ fun firstUpdate(data: List<Config>) {
         configs.firstOrNull { it.key == ConfigEnum.DISABLE_SMS.name }?.value.toString() == "0"
     isDisableMMS =
         configs.firstOrNull { it.key == ConfigEnum.DISABLE_MMS.name }?.value.toString() == "0"
+    isDisableShare =
+        configs.firstOrNull { it.key == ConfigEnum.DISABLE_SHARE.name }?.value.toString() == "0"
     isDisableSystemUpdate =
         configs.firstOrNull { it.key == ConfigEnum.DISABLE_SYSTEM_UPDATE.name }?.value.toString() == "0"
     isDisableRestoreFactory =
         configs.firstOrNull { it.key == ConfigEnum.DISABLE_RESTORE_FACTORY.name }?.value.toString() == "0"
+    isDisableInstallApp =
+        configs.firstOrNull { it.key == ConfigEnum.DISABLE_INSTALL_APP.name }?.value.toString() == "0"
+    isDisableUnInstallApp =
+        configs.firstOrNull { it.key == ConfigEnum.DISABLE_UNINSTALL_APP.name }?.value.toString() == "0"
 }
 
 interface ChangeBoolean {
@@ -271,10 +314,13 @@ fun getInstallApp(): List<AppBean> {
     "应用个数:${queryIntentActivities.size}".logD()
     return list.distinctBy { it.packageName }
 }
+
 /**
-* 从setting providers读取数据
-*/
-fun getAllSettings(context: Context): SettingsBean {
+ * 从setting providers读取数据
+ * content query --uri content://settings/global/wifi_on
+ * content insert --uri content://settings/global --bind name:s:preferred_network_mode1 --bind value:i:0
+ */
+fun getAllSettingsForSettingsBean(context: Context): SettingsBean {
     val global = getUriFor(context, Uri.parse("content://settings/global"))
     val system = getUriFor(context, Uri.parse("content://settings/system"))
     val secure = getUriFor(context, Uri.parse("content://settings/secure"))
@@ -300,6 +346,7 @@ fun putSettings(context: Context, bean: SettingsBean) {
 
 /**
  * 获取apn
+ * content query --uri content://telephony/carriers/ --where "mcc=460"
  * /system/etc/apns-conf.xml
  * /data/data/com.android.providers.telephony/databases/mmssms.db
  */
@@ -344,42 +391,12 @@ fun cleanAPN(context: Context) {
 fun setAPN(context: Context, list: List<String>, done: ((String, Boolean) -> Unit)) {
     val uri = Uri.parse("content://telephony/carriers")
     val resolver = context.contentResolver
-    val cursor = resolver.query(uri, null, null, null, null)
-//    val names = mutableListOf<String>()
-//    if (cursor != null && cursor.moveToFirst()) {
-//        cursor.columnNames.forEach { names.add(it) }
-//        cursor.close()
-//    }
-//    println(names)
-    val ops = arrayListOf<ContentProviderOperation>()
-    for (i in 0 until list.size) {
+    for (i in list.indices) {
         val line = list[i]
-//        println(line)
         try {
             val items = line.split(",")
             if (items.size > 3) {
                 val _id = items[0]
-//                val co = ContentProviderOperation.newInsert(uri)
-//            names.forEachIndexed { nameIndex, name ->
-//                if (nameIndex != 0) co.withValue(name, items[nameIndex])
-//            }
-//                co.withValue("name", items[1])
-//                co.withValue("numeric", items[2])
-//                co.withValue("mcc", items[3])
-//                co.withValue("mnc", items[4])
-//                co.withValue("apn", items[6])
-//                co.withValue("user", items[7])
-//                co.withValue("server", items[8])
-//                co.withValue("password", items[9])
-//                co.withValue("proxy", items[10])
-//                co.withValue("port", items[11])
-//                co.withValue("mmsproxy", items[12])
-//                co.withValue("mmsport", items[13])
-//                co.withValue("mmsc", items[14])
-//                co.withValue("type", items[16])
-//                co.withYieldAllowed(true)
-//                ops.add(co.build())
-
                 val value = ContentValues()
                 value.put("name", items[1])
                 value.put("numeric", items[2])
@@ -405,28 +422,6 @@ fun setAPN(context: Context, list: List<String>, done: ((String, Boolean) -> Uni
     }
     //备份结束
     done("", true)
-//    list.forEach { line ->
-//        try {
-//            val items = line.split(",")
-//            val _id = items[0]
-//            val co = ContentProviderOperation.newInsert(uri)
-//            names.forEachIndexed { nameIndex, name ->
-//                co.withValue(name, items[nameIndex])
-//            }
-////            co.withSelection("${names[0]}=?", arrayOf(_id))
-//            ops.add(co.build())
-//        } catch (e: Exception) {
-//        }
-//    }
-
-//    try {
-//        val result =
-//            context.contentResolver.applyBatch("telephony", ops)//telephony  在Telephony 这个类中
-//        result.forEach {
-//            println("apn更新结果:${it}")
-//        }
-//    } catch (e: Exception) {
-//    }
 }
 
 private fun JsonArray.toList(): List<Pair<String, String>> {

@@ -4,7 +4,10 @@ import android.annotation.SuppressLint
 import android.app.Service
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
-import android.content.*
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.database.ContentObserver
 import android.location.LocationManager
 import android.net.ConnectivityManager
@@ -20,12 +23,14 @@ import androidx.annotation.RequiresApi
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
+import com.android.mdmsdk.ConfigEnum
 import com.android.mdmsdk.IRemoteInterface
 import com.android.systemfunction.app.App
 import com.android.systemfunction.app.App.Companion.systemDao
 import com.android.systemfunction.utils.*
 import com.android.systemlib.*
 import com.github.h4de5ing.baseui.logD
+import java.util.*
 
 //https://blog.csdn.net/qq_35501560/article/details/105948631
 @RequiresApi(Build.VERSION_CODES.O)
@@ -78,6 +83,20 @@ class ForegroundService : Service(), LifecycleOwner {
         override fun getPackages(type: Int): Array<String> {
             return systemDao.selectAllPackagesList(type)[0].getPackageList().toTypedArray()
         }
+
+        override fun setSettings(key: String?, value: String?) {
+            key?.apply {
+                Settings.Global.putString(App.application.contentResolver, key, value)
+            }
+        }
+
+        override fun getSettings(key: String?): String {
+            return Settings.Global.getString(App.application.contentResolver, key)
+        }
+
+        override fun getDeviceInfo(): String {
+            return Build.getSerial()
+        }
     }
 
     override fun onUnbind(intent: Intent?): Boolean {
@@ -106,7 +125,10 @@ class ForegroundService : Service(), LifecycleOwner {
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
         "MDM ForegroundService 启动了".logD()
         try {
-            if (!isAdminActive(this, App.componentName2)) setActiveProfileOwner(App.componentName2)
+            if (!isAdminActive(this, App.componentName2)) setActiveProfileOwner(
+                this,
+                App.componentName2
+            )
         } catch (e: Exception) {
             "ForegroundService设置MDM失败".logD()
         }
@@ -194,6 +216,7 @@ class ForegroundService : Service(), LifecycleOwner {
                 Intent.ACTION_PACKAGE_REPLACED -> updateInstallAPK()
                 Intent.ACTION_PACKAGE_CHANGED -> updateInstallAPK()
                 Intent.ACTION_PACKAGE_FULLY_REMOVED -> updateInstallAPK()
+                Intent.ACTION_MEDIA_MOUNTED -> updateTFCard()
             }
         }
     }
@@ -213,6 +236,7 @@ class ForegroundService : Service(), LifecycleOwner {
         filter.addAction(Intent.ACTION_PACKAGE_REPLACED)
         filter.addAction(Intent.ACTION_PACKAGE_CHANGED)
         filter.addAction(Intent.ACTION_PACKAGE_FULLY_REMOVED)
+        filter.addAction(Intent.ACTION_MEDIA_MOUNTED)
         filter.addDataScheme("package")
         registerReceiver(stateReceiver, filter)
     }
@@ -234,9 +258,9 @@ class ForegroundService : Service(), LifecycleOwner {
 
     private fun isGPSOpen(): Boolean {
         var state =
-            (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) mLocationManager!!.isLocationEnabled else mLocationManager!!.isProviderEnabled(
-                Settings.System.LOCATION_PROVIDERS_ALLOWED
-            ))
+            (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P)
+                mLocationManager!!.isLocationEnabled
+            else mLocationManager!!.isProviderEnabled(Settings.System.LOCATION_PROVIDERS_ALLOWED))
 //        val gps = mLocationManager?.isProviderEnabled(LocationManager.GPS_PROVIDER)
         val network = mLocationManager?.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
         if (/*gps==true||*/state || network == true) {
@@ -289,6 +313,34 @@ class ForegroundService : Service(), LifecycleOwner {
         }
     }
 
+    private fun updateTFCard() {
+        if (isDisableTFCard) {
+            unmount(this)
+        }
+    }
+
+    private fun updateShare() {
+        setSystemGlobal(
+            this,
+            ConfigEnum.DISABLE_SHARE.name.lowercase(Locale.ROOT),
+            if (isDisableShare) "1" else "0"
+        )
+    }
+
+    private fun updateSystemUpdate() {
+        setSystemGlobal(
+            this,
+            ConfigEnum.DISABLE_SYSTEM_UPDATE.name.lowercase(Locale.ROOT),
+            if (isDisableSystemUpdate) "1" else "0"
+        )
+        disable(UserManager.DISALLOW_SAFE_BOOT, isDisableBluetooth)
+    }
+
+    private fun updateMMS() {
+        hiddenAPP("com.android.mms.service", isDisableMMS)
+        hiddenAPP("com.android.mms", isDisableMMS)
+    }
+
     override fun onDestroy() {
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
         super.onDestroy()
@@ -309,15 +361,24 @@ class ForegroundService : Service(), LifecycleOwner {
         updateADB()
         updateInstallAPK()
         updateWindow()
+        updateTFCard()
+        updateShare()
+        updateSystemUpdate()
+        updateMMS()
         try {
-            if (!isDebug())
+            if (!isDebug()) {
                 disable(UserManager.DISALLOW_USB_FILE_TRANSFER, isDisableUSBData)
+                disable(UserManager.DISALLOW_DEBUGGING_FEATURES, isDisableUSBData)
+            }
 
             disable(UserManager.DISALLOW_BLUETOOTH, isDisableBluetooth)
             disable(UserManager.DISALLOW_CONFIG_BLUETOOTH, isDisableBluetooth)
 
             disable(UserManager.DISALLOW_CONFIG_WIFI, isDisableWIFI)
+
             disable(UserManager.DISALLOW_CONFIG_MOBILE_NETWORKS, isDisableData)
+            disable(UserManager.DISALLOW_DATA_ROAMING, isDisableData)
+            disable(UserManager.DISALLOW_CONFIG_DATE_TIME, isDisableData)
 
             disable(UserManager.DISALLOW_CONFIG_LOCATION, isDisableGPS)
             disable(UserManager.DISALLOW_SHARE_LOCATION, isDisableGPS)
@@ -331,9 +392,10 @@ class ForegroundService : Service(), LifecycleOwner {
             disable(UserManager.DISALLOW_SMS, isDisableSMS)
             disable(UserManager.DISALLOW_FACTORY_RESET, isDisableRestoreFactory)
             disable(UserManager.DISALLOW_INSTALL_APPS, isDisableInstallApp)
-            disable(UserManager.DISALLOW_INSTALL_APPS, isDisableUnInstallApp)
+            disable(UserManager.DISALLOW_UNINSTALL_APPS, isDisableUnInstallApp)
             disable(UserManager.DISALLOW_CONTENT_CAPTURE, isDisableScreenShot)
             setScreenCaptureDisabled(this, App.componentName2, isDisableScreenShot)
+            disable("no_camera", isDisableCamera)
             setCameraDisabled(this, App.componentName2, isDisableCamera)
             disableSensor(isDisableMicrophone, 1)
             disableSensor(isDisableCamera, 2)
@@ -344,11 +406,7 @@ class ForegroundService : Service(), LifecycleOwner {
 
     private fun disable(key: String, isDisable: Boolean) {
         try {
-            disableMDM(
-                this,
-                ComponentName(BuildConfig.APPLICATION_ID, AdminReceiver::class.java.name),
-                key, isDisable
-            )
+            disableMDM(this, App.componentName2, key, isDisable)
         } catch (e: Exception) {
             e.printStackTrace()
         }

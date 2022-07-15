@@ -1,18 +1,19 @@
 package com.android.systemfunction
 
 import android.annotation.SuppressLint
+import android.app.ActivityManager
+import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.os.Build
 import android.os.Bundle
-import android.os.UserManager
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import com.android.mdmsdk.ConfigEnum
 import com.android.mdmsdk.change
 import com.android.systemfunction.app.App
 import com.android.systemfunction.ui.APPManagerActivity
-import com.android.systemfunction.ui.BackupSettingsActivity
+import com.android.systemfunction.ui.PackageListActivity
 import com.android.systemfunction.utils.*
 import com.android.systemlib.*
 import com.github.h4de5ing.baseui.alertConfirm
@@ -30,7 +31,10 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         try {
-            if (!isAdminActive(this, App.componentName2)) setActiveProfileOwner(App.componentName2)
+            if (!isAdminActive(this, App.componentName2)) setActiveProfileOwner(
+                this,
+                App.componentName2
+            )
         } catch (e: Exception) {
             "MainActivity 设置MDM失败".logD()
         }
@@ -63,6 +67,7 @@ class MainActivity : AppCompatActivity() {
         hot_spot.change { updateKT(ConfigEnum.DISABLE_HOT_SPOT.name, if (it) "0" else "1") }
         sms.change { updateKT(ConfigEnum.DISABLE_SMS.name, if (it) "0" else "1") }
         mms.change { updateKT(ConfigEnum.DISABLE_MMS.name, if (it) "0" else "1") }
+        share.change { updateKT(ConfigEnum.DISABLE_SHARE.name, if (it) "0" else "1") }
         system_update.change {
             updateKT(
                 ConfigEnum.DISABLE_SYSTEM_UPDATE.name,
@@ -80,15 +85,30 @@ class MainActivity : AppCompatActivity() {
         }
         device_manager.change {
             if (it) {
-                setActiveProfileOwner(App.componentName2)
+                setActiveProfileOwner(this, App.componentName2)
             } else {
                 removeActiveDeviceAdmin(this, App.componentName2)
                 clearProfileOwner(App.componentName2)
             }
         }
-        reset.setOnClickListener { alertConfirm(this, "恢复出厂设置?") { if (it) reset(this) } }
-        shut_down.setOnClickListener { alertConfirm(this, "关机?") { if (it) shutdown() } }
-        reboot.setOnClickListener { alertConfirm(this, "重启?") { if (it) reboot() } }
+        reset.setOnClickListener {
+            alertConfirm(
+                this,
+                "${getString(R.string.reset)}?"
+            ) { if (it) reset(this) }
+        }
+        shut_down.setOnClickListener {
+            alertConfirm(
+                this,
+                "${getString(R.string.shut_down)}?"
+            ) { if (it) shutdown() }
+        }
+        reboot.setOnClickListener {
+            alertConfirm(
+                this,
+                "${getString(R.string.reboot)}?"
+            ) { if (it) reboot() }
+        }
         shot.setOnClickListener { testShot() }
         app_manager.setOnClickListener {
             startActivity(
@@ -99,23 +119,44 @@ class MainActivity : AppCompatActivity() {
             )
         }
         install.setOnClickListener {
-            DialogUtils.selectFile(this, "请选择一个APK") {
-                installAPK(
-                    this,
-                    it[0]
-                )
+            DialogUtils.selectFile(this, "select a APK file") {
+                installAPK(this, it[0])
             }
         }
-        net_manager.setOnClickListener {
+        ota.setOnClickListener {
+            DialogUtils.selectFile(this, "select a ZIP file") {
+                ota(this, it[0])
+            }
+        }
+        get_recent.setOnClickListener {
+            val am = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+            val tasks = am.getRecentTasks(Int.MAX_VALUE, 0)
+            tasks.forEach {
+                if (it != null) {
+                    val packageName = "${it.baseIntent.component?.packageName}"
+                    val flags =
+                        (it.baseIntent.flags and Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS) == Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS
+                    println("$packageName ${it.taskId} $flags")
+                }
+            }
+        }
+        remove_recent.setOnClickListener {
+            //get_recent(this)
             startActivity(
                 Intent(
                     this,
-                    BackupSettingsActivity::class.java
+                    PackageListActivity::class.java
                 )
             )
         }
-        ("MDM包名:${getString(TestUtils.getInternalString())}").logD()
+        ("MDM包名:${getString(TestUtils.getInternalString())} TaskId:$taskId").logD()
         startService(Intent(this, ForegroundService::class.java))
+        try {
+            getStorage(this, result)
+            getFileType(this)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     private fun updateUI() {
@@ -139,6 +180,7 @@ class MainActivity : AppCompatActivity() {
             hot_spot.isChecked = isDisableHotSpot
             sms.isChecked = isDisableSMS
             mms.isChecked = isDisableMMS
+            share.isChecked = isDisableShare
             system_update.isChecked = isDisableSystemUpdate
             restore_factory.isChecked = isDisableRestoreFactory
             device_manager.isChecked =
@@ -146,14 +188,13 @@ class MainActivity : AppCompatActivity() {
                     this,
                     App.componentName2
                 )
-            install_app.isChecked = isDisable(UserManager.DISALLOW_INSTALL_APPS)
-            uninstall_app.isChecked = isDisable(UserManager.DISALLOW_UNINSTALL_APPS)
+            install_app.isChecked = isDisableInstallApp
+            uninstall_app.isChecked = isDisableUnInstallApp
         } catch (e: Exception) {
             e.printStackTrace()
         }
     }
 
-    private fun isDisable(key: String): Boolean = isDisableDMD(this, key)
     private fun testShot() {
         try {
             val bitmap = takeScreenShot()

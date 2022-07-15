@@ -3,6 +3,7 @@ package com.android.systemlib
 import android.annotation.SuppressLint
 import android.app.*
 import android.app.backup.IBackupManager
+import android.app.usage.UsageStatsManager
 import android.content.*
 import android.content.pm.*
 import android.net.*
@@ -12,10 +13,11 @@ import android.net.wifi.WifiNetworkSpecifier
 import android.os.*
 import android.os.storage.IStorageManager
 import android.provider.Settings
-import android.system.Os
 import android.telephony.TelephonyManager
 import android.text.TextUtils
+import android.text.format.Formatter
 import android.webkit.MimeTypeMap
+import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.core.view.accessibility.AccessibilityEventCompat
 import com.android.android12.disableSensor12
@@ -100,6 +102,7 @@ fun getPrivilegedConfiguredNetworks(context: Context): List<WifiConfiguration> {
 /**
  * 静默设置默认桌面
  */
+@SuppressLint("QueryPermissionsNeeded")
 fun setDefaultLauncher(context: Context, packageName: String) {
     try {
         val pm = context.packageManager
@@ -256,7 +259,7 @@ fun mobile_data(context: Context, isDisable: Boolean) {
  */
 fun installAPK(context: Context, apkFilePath: String) {
     try {
-        val apkFile = File(apkFilePath);
+        val apkFile = File(apkFilePath)
         val packageInstaller = context.packageManager.packageInstaller
         val sessionParams =
             PackageInstaller.SessionParams(PackageInstaller.SessionParams.MODE_FULL_INSTALL)
@@ -273,7 +276,6 @@ fun installAPK(context: Context, apkFilePath: String) {
     }
 }
 
-@RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 private fun copyInstallFile(
     packageInstaller: PackageInstaller,
     sessionId: Int, apkFilePath: String
@@ -306,7 +308,7 @@ private fun copyInstallFile(
     return success
 }
 
-@RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+@SuppressLint("UnspecifiedImmutableFlag")
 private fun execInstallCommand(
     context: Context,
     packageInstaller: PackageInstaller,
@@ -400,6 +402,7 @@ fun isSystemAPP(context: Context, packageName: String): Boolean {
 /**
  * 判断是否为挂起状态
  */
+@RequiresApi(Build.VERSION_CODES.N)
 fun isSuspended(context: Context, packageName: String): Boolean {
     return try {
         val pm = context.packageManager
@@ -428,7 +431,7 @@ fun canUninstall(context: Context, packageName: String): Boolean {
 /**
  * 静默卸载
  */
-@SuppressLint("MissingPermission")
+@SuppressLint("MissingPermission", "UnspecifiedImmutableFlag")
 fun uninstall(context: Context, packageName: String) {
     val intent = Intent()
     intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
@@ -456,16 +459,16 @@ fun disableApp(context: Context, componentName: ComponentName, isDisable: Boolea
  * 禁止卸载应用
  */
 fun disUninstallAPP(packageName: String, isDisable: Boolean) {
-    val mIPackageManager = IPackageManager.Stub.asInterface(ServiceManager.getService("package"))
-    mIPackageManager.setBlockUninstallForUser(packageName, isDisable, 0)
+    IPackageManager.Stub.asInterface(ServiceManager.getService("package"))
+        .setBlockUninstallForUser(packageName, isDisable, 0)
 }
 
 /**
  * 是否是禁止卸载
  */
 fun isDisUninstallAPP(packageName: String): Boolean {
-    val mIPackageManager = IPackageManager.Stub.asInterface(ServiceManager.getService("package"))
-    return mIPackageManager.getBlockUninstallForUser(packageName, 0)
+    return IPackageManager.Stub.asInterface(ServiceManager.getService("package"))
+        .getBlockUninstallForUser(packageName, 0)
 }
 
 /**
@@ -718,6 +721,9 @@ fun getAllPackages(): List<String> {
 /**
  * 应用权限操作
  * 授予运行时权限
+ * 也可以使用dpm的setPermissionGrantState授权
+ * 自动授权
+ * setPermissionPolicy
  */
 fun grantAllPermission(packageName: String) {
     try {
@@ -797,7 +803,7 @@ fun setMode(context: Context, code: Int, packageName: String, mode: Int) {
  */
 fun disableSensor(isDisable: Boolean, sensor: Int) {
     if (Build.VERSION.SDK_INT > 31) {
-        disableSensor12(isDisable, 2)
+        disableSensor12(isDisable, sensor)
     } else {
 
     }
@@ -817,13 +823,45 @@ fun unmount(context: Context) {
     }
 }
 
-@SuppressLint("WrongConstant")
+/**
+ * 获取usb存储设备
+ */
+fun getStorage(context: Context, tv: TextView) {
+    try {
+        val iStorageManager =
+            IStorageManager.Stub.asInterface(ServiceManager.getService("mount"))
+        iStorageManager.getVolumes(0)
+            .forEach {
+                it.getDisk()?.isUsb?.apply {
+                    val totalBytes = it.getPath().totalSpace
+                    val freeBytes = it.getPath().freeSpace
+                    val usedBytes = totalBytes - freeBytes
+                    val used = Formatter.formatFileSize(context, usedBytes)
+                    val total = Formatter.formatFileSize(context, totalBytes)
+                    val read = File(it.path).canRead()
+                    val write = File(it.path).canWrite()
+                    tv.append(
+                        it.path +
+                                " r:${read} w:${write} " +
+                                " ${used}/${total}"
+                                + "\n"
+                    )
+                }
+            }
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+}
+
+@SuppressLint("WrongConstant", "MissingPermission")
 fun ota(context: Context, fileName: String) {
     try {
-        RecoverySystem.installPackage(context, File(fileName))
-//        val rs = context.getSystemService("recovery") as RecoverySystem
-//       val iRecoverySystem= IRecoverySystem.Stub.asInterface(ServiceManager.getService("recovery"))
-//        iRecoverySystem.rebootRecoveryWithCommand()
+        val sp = getSystemPropertyString("ro.boot.slot_suffix")
+        if (TextUtils.isEmpty(sp)) {//整包升级
+            RecoverySystem.installPackage(context, File(fileName))
+        } else { //A/B系统升级
+
+        }
     } catch (e: Exception) {
         e.printStackTrace()
     }
@@ -841,16 +879,79 @@ fun getSystemGlobal(context: Context, key: String): String =
 fun setSystemGlobal(context: Context, key: String, value: String): Boolean =
     Settings.Global.putString(context.contentResolver, key, value)
 
+@SuppressLint("InlinedApi", "WrongConstant")
 fun getFileType(context: Context) {
     Intent.ACTION_SEND
     val cr = context.contentResolver
     val fileMimeType = cr.getType(Uri.parse(""))//根据文件uri路径获取类型
     val fileType = MimeTypeMap.getSingleton().getExtensionFromMimeType(fileMimeType)
+    //跟踪应用程序使用状态
+    val usageStatsManager =
+        context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
+//    usageStatsManager.isAppInactive("")//判断app是否还活跃
+
+    //BugreportManagerService 用于捕获bugreport
+    val bugreportManager =
+        context.getSystemService(Context.BUGREPORT_SERVICE) as BugreportManager
+//    bugreportManager.startConnectivityBugreport()
 }
 
 fun shell(command: String) {
     SELinux.getContext()
-    Os.getpid()
-    Os.getuid()
+//    SystemClock.setCurrentTimeMillis()//设置当前时间
+//    SystemProperties.get("persist.sys.timezone")
+//    SystemProperties.set("persist.sys.timezone", "GMT")
+}
 
+//@RequiresApi(Build.VERSION_CODES.Q)
+//@SuppressLint("WrongConstant")
+//fun setDisabledForSetup(context: Context, iconId: Int) {
+//    val status = context.getSystemService("statusbar") as StatusBarManager
+////    status.setIcon("clock", iconId, 0, null)
+//}
+
+fun get_recent(context: Context) {
+    try {
+        val atm = IActivityTaskManager.Stub.asInterface(ServiceManager.getService("activity_task"))
+        val ams =
+            IActivityManager.Stub.asInterface(ServiceManager.getService(Context.ACTIVITY_SERVICE))
+//    task.getRecentTasks(Int.MAX_VALUE,0,0)
+//    atm.removeAllVisibleRecentTasks()
+        val packageName = "com.scanner.hardware"
+        //removeRecentTasksByPackageName
+        //clearApplicationUserData
+//    var task: RecentTasks
+//        atm.removeTask()
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+}
+
+fun runCommand(command: String): String? {
+    var process: java.lang.Process? = null
+    var result = ""
+    var os: DataOutputStream? = null
+    var read: BufferedReader? = null
+    try {
+        process = Runtime.getRuntime().exec(command)
+        Thread.sleep(5000)
+        os = DataOutputStream(process.outputStream)
+        read = BufferedReader(InputStreamReader(process.inputStream))
+//        os.writeBytes("${command}\n")
+        os.writeBytes("exit\n")
+        os.flush()
+        var line: String? = null
+        while (read.readLine().also { line = it } != null) {
+            result += line
+            result += "\n"
+        }
+        process.waitFor()
+    } catch (e: Exception) {
+        e.printStackTrace()
+    } finally {
+        os?.close()
+        read?.close()
+        process?.destroy()
+    }
+    return result
 }

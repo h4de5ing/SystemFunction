@@ -14,7 +14,14 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:text="系统信息\n测试" />
-
+    <Button
+        android:id="@+id/copy"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Copy"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/systemInfo" />
     <Button
         android:id="@+id/upload"
         android:layout_width="wrap_content"
@@ -22,7 +29,7 @@
         android:text="Upload"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/systemInfo" />
+        app:layout_constraintTop_toBottomOf="@+id/copy" />
 
     <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/result"

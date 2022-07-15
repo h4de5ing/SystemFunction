@@ -27,14 +27,15 @@ class ListAppAdapter(layoutRes: Int = R.layout.item_app_list) :
         holder.setImageDrawable(R.id.icon, byteArray2Drawable(item.icon))
         val uninstall = holder.getView<Button>(R.id.uninstall)
         uninstall.setOnClickListener {
-            alertConfirm(context, "卸载${item.name}?") {
+            alertConfirm(context, "${context.getString(R.string.uninstall)} ${item.name}?") {
                 if (it) uninstall(context, item.packageName)
             }
         }
         val disableUninstall = holder.getView<AppCompatCheckBox>(R.id.disable_uninstall)
         disableUninstall.change {
             disUninstallAPP(item.packageName, it)
-            disableUninstall.isChecked = isDisUninstallAPP(item.packageName)
+            disableUninstall.isChecked =
+                isDisUninstallAPP(item.packageName)
         }
         val suspended = holder.getView<AppCompatCheckBox>(R.id.suspended)
         suspended.change {
@@ -74,7 +75,7 @@ class ListAppAdapter(layoutRes: Int = R.layout.item_app_list) :
                 if (isSystemAPP(context, item.packageName)) View.GONE else View.VISIBLE
             uninstall.visibility =
                 if (isSystemAPP(context, item.packageName)) View.GONE else View.VISIBLE
-            if (isSystemAPP(context, item.packageName)) {
+            if (!isSystemAPP(context, item.packageName)) {
                 disableUninstall.isChecked = isDisUninstallAPP(item.packageName)
             }
             suspended.isChecked = isSuspendedAPP(item.packageName)

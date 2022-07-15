@@ -2,6 +2,7 @@ package com.android.systemlib
 
 import android.app.admin.DevicePolicyManager
 import android.app.admin.IDevicePolicyManager
+import android.app.admin.SystemUpdatePolicy
 import android.content.ComponentName
 import android.content.Context
 import android.os.Build
@@ -65,6 +66,7 @@ fun isAdminActive(context: Context, componentName: ComponentName): Boolean {
         .isAdminActive(componentName)
 }
 
+
 /**
  * 禁用摄像头
  */
@@ -116,10 +118,45 @@ fun disableMDM(
 
 /**
  * 查询xx是否被禁用
+ * //TODO 测试 UserManager.setUserRestriction 是否需要dpm权限
  */
 fun isDisableDMD(context: Context, key: String): Boolean {
     return (context.applicationContext.getSystemService(Context.USER_SERVICE) as UserManager)
         .userRestrictions.getBoolean(key)
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+fun setDelegatedScopes(
+    context: Context,
+    componentName: ComponentName,
+    packageName: String
+) {
+    val dm =
+        context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    dm.setDelegatedScopes(
+        componentName,
+        packageName,
+        arrayListOf(DevicePolicyManager.DELEGATION_BLOCK_UNINSTALL)
+    )
+}
+
+/**
+ * 设置冻结系统升级策略
+ */
+fun setSystemUpdatePolicy(
+    context: Context,
+    componentName: ComponentName,
+    policy: SystemUpdatePolicy
+) {
+    try {
+        if (Build.VERSION.SDK_INT >= 28) {
+            val dm =
+                context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+            dm.setSystemUpdatePolicy(componentName, policy)
+        }
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
 }
 
 /**
@@ -131,9 +168,8 @@ public static final int WIPE_RESET_PROTECTION_DATA = 2;
 public static final int WIPE_SILENTLY = 8;
  */
 fun wipeDate(context: Context) {
-    val dm =
-        context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    dm.wipeData(DevicePolicyManager.WIPE_EXTERNAL_STORAGE)
+    (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
+        .wipeData(DevicePolicyManager.WIPE_EXTERNAL_STORAGE)
 }
 
 /**
@@ -165,10 +201,10 @@ fun isHiddenAPP(
     packageName: String,
 ): Boolean {
     return try {
-        return (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
+        (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
             .isApplicationHidden(componentName, packageName)
     } catch (e: Exception) {
-        return false
+        false
     }
 }
 
@@ -202,10 +238,10 @@ fun isSuspendedAPP(
     packageName: String,
 ): Boolean {
     return try {
-        return (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
+        (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
             .isPackageSuspended(componentName, packageName)
     } catch (e: Exception) {
-        return false
+        false
     }
 }
 

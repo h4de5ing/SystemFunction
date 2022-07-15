@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">oemconfig</string>
+    <string name="app_name">dpmmanager</string>
     <!-- ============================== -->
     <!--  app/device policies examples strings     -->
     <!-- ============================== -->
@@ -21,7 +21,7 @@
 
     <string name="enable_admin">Enable admin</string>
     <string name="device_capabilities_category">Device capabilities</string>
-    <string name="disable_camera">Disable all device cameras</string>
+    <!--    <string name="disable_camera">Disable all device cameras</string>-->
     <string name="disable_keyguard_widgets">Disable keyguard widgets</string>
     <string name="disable_keyguard_secure_camera">Disable keyguard secure camera</string>
     <string name="disable_keyguard_notifications">Disable keyguard notifications</string>
@@ -123,4 +123,36 @@
     <string name="lable_shortcut_static_search_long">app manager</string>
     <string name="lable_shortcut_static_search_short">app manager</string>
     <string name="activity_log">Logger</string>
+
+    <string name="disable_home">disable home key</string>
+    <string name="disable_recent">disable recent key</string>
+    <string name="disable_back">disable back key</string>
+    <string name="disable_navigation">disable navigation</string>
+    <string name="disable_status">disable status bar</string>
+    <string name="disable_adb">disable adb</string>
+    <string name="disable_bluetooth">disable bluetooth</string>
+    <string name="disable_wifi">disable wifi</string>
+    <string name="disable_data">disable mobile data</string>
+    <string name="disable_gps">disable gps</string>
+    <string name="disable_camera">disable camera</string>
+    <string name="disable_microphone">disable microphone</string>
+    <string name="disable_screen_shot">disable screen shot</string>
+    <string name="disable_screen_capture">disable screen capture</string>
+    <string name="disable_tf_card">disable tfCard</string>
+    <string name="disable_phone_call">disable phone call</string>
+    <string name="disable_hot_spot">disable hotspot</string>
+    <string name="disable_sms">disable sms</string>
+    <string name="disable_mms">disable mms</string>
+    <string name="disable_share">disable share</string>
+    <string name="disable_system_update">disable system update</string>
+    <string name="disable_install_app">disable install app</string>
+    <string name="disable_uninstall_app">disable uninstall app</string>
+    <string name="disable_restore_factory">disable restore factory</string>
+    <string name="device_manager">device manager</string>
+    <string name="reset">reset</string>
+    <string name="shut_down">shut down</string>
+    <string name="reboot">reboot</string>
+    <string name="shot">shot</string>
+    <string name="install">install</string>
+    <string name="uninstall">uninstall</string>
 </resources>

@@ -7,7 +7,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.android.systemfunction.R
 import com.android.systemfunction.utils.*
-import com.android.systemfunction.utils.getAllSettings
+import com.android.systemfunction.utils.getAllSettingsForSettingsBean
 import com.android.systemlib.*
 import com.github.h4de5ing.filepicker.DialogUtils
 import kotlinx.android.synthetic.main.activity_backup_settings.*
@@ -25,7 +25,7 @@ class BackupSettingsActivity : AppCompatActivity() {
                     val backFile = File("${files[0]}${File.separator}${files[1]}")
                     if (backFile.exists())
                         backFile.delete()
-                    write2File(backFile.absolutePath, getAllSettings(this).toJson(), false)
+                    write2File(backFile.absolutePath, getAllSettingsForSettingsBean(this).toJson(), false)
                     toast("backup settings finish")
                 } catch (e: Exception) {
                     toast("${e.message}")

@@ -20,6 +20,10 @@ import java.util.regex.Pattern
 import kotlin.io.buffered
 import kotlin.io.readLines
 
+/**
+WifiDppConfiguratorActivity  生成wifi二维码
+WifiDppEnrolleeActivity      扫描wifi二维码
+ */
 @RequiresApi(Build.VERSION_CODES.Q)
 class BackupWIFIActivity : AppCompatActivity() {
     private var wifiManager: WifiManager? = null
