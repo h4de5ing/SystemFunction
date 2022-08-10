@@ -104,10 +104,11 @@ class ForegroundService : Service(), LifecycleOwner {
         return super.onUnbind(intent)
     }
 
-    override fun onStart(intent: Intent?, startId: Int) {
-        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_START)
-        super.onStart(intent, startId)
-    }
+//    @Deprecated("Deprecated in Java")
+//    override fun onStart(intent: Intent?, startId: Int) {
+//        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_START)
+//        super.onStart(intent, startId)
+//    }
 
     private val lifecycleRegistry = LifecycleRegistry(this)
     private var wifiManager: WifiManager? = null
@@ -231,13 +232,15 @@ class ForegroundService : Service(), LifecycleOwner {
         filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED)
         filter.addAction(LocationManager.PROVIDERS_CHANGED_ACTION)
         filter.addAction(WIFI_AP_STATE_CHANGED_ACTION)
-        filter.addAction(Intent.ACTION_PACKAGE_ADDED)
-        filter.addAction(Intent.ACTION_PACKAGE_REMOVED)
-        filter.addAction(Intent.ACTION_PACKAGE_REPLACED)
-        filter.addAction(Intent.ACTION_PACKAGE_CHANGED)
-        filter.addAction(Intent.ACTION_PACKAGE_FULLY_REMOVED)
-        filter.addAction(Intent.ACTION_MEDIA_MOUNTED)
-        filter.addDataScheme("package")
+        val filter2 = IntentFilter()
+        filter2.addAction(Intent.ACTION_PACKAGE_ADDED)
+        filter2.addAction(Intent.ACTION_PACKAGE_REMOVED)
+        filter2.addAction(Intent.ACTION_PACKAGE_REPLACED)
+        filter2.addAction(Intent.ACTION_PACKAGE_CHANGED)
+        filter2.addAction(Intent.ACTION_PACKAGE_FULLY_REMOVED)
+        filter2.addAction(Intent.ACTION_MEDIA_MOUNTED)
+        filter2.addDataScheme("package")
+        registerReceiver(stateReceiver, filter2)
         registerReceiver(stateReceiver, filter)
     }
 
