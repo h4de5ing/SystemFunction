@@ -139,6 +139,49 @@ fun setDefaultLauncher(context: Context, packageName: String) {
     }
 }
 
+
+/**
+ * 获取系统里面的所有Launcher
+ */
+fun getAllLaunchers2(context: Context): MutableList<Pair<String, String>> {
+    val list = mutableListOf<Pair<String, String>>()
+    val pm = context.packageManager
+    pm.queryIntentActivities(HOME_INTENT, PackageManager.MATCH_DEFAULT_ONLY)
+        .forEach { resolveInfo ->
+            if (resolveInfo != null) {
+                val appName = resolveInfo.activityInfo.loadLabel(pm).toString()
+                if (!TextUtils.isEmpty(appName)) {
+                    println(resolveInfo.activityInfo.packageName)
+                    list.add(
+                        Pair(
+                            resolveInfo.activityInfo.loadLabel(pm).toString(),
+                            resolveInfo.activityInfo.packageName
+                        )
+                    )
+                }
+            }
+        }
+    return list
+}
+
+fun getSystemDefaultLauncher2(context: Context): ComponentName? {
+    var componentName: ComponentName? = null
+    val pm = context.packageManager
+    pm.queryIntentActivities(HOME_INTENT, PackageManager.MATCH_DEFAULT_ONLY)
+        .forEach { resolveInfo ->
+            if (resolveInfo != null) {
+                val appName = resolveInfo.activityInfo.loadLabel(pm).toString()
+                if (!TextUtils.isEmpty(appName) && isSystemResolveInfo(resolveInfo)) {
+                    componentName = ComponentName(
+                        resolveInfo.activityInfo.packageName,
+                        resolveInfo.activityInfo.name
+                    )
+                }
+            }
+        }
+    return componentName
+}
+
 /**
  * 静默移除默认桌面
  * 默认设备管理可以参考IRoleManager
@@ -577,7 +620,7 @@ fun getPkgList(): MutableList<String> {
 }
 
 /**
- * 添加应用白名单
+ * 把应用添加到电池优化白名单，需要系统权限
  */
 @RequiresApi(Build.VERSION_CODES.M)
 @SuppressLint("WrongConstant", "SoonBlockedPrivateApi")
@@ -596,7 +639,7 @@ fun addPowerSaveWhitelistApp(context: Context, packageName: String) {
 }
 
 /**
- * 移除应用白名单
+ * 把应用从电池优化白名单移除，需要系统权限
  */
 @RequiresApi(Build.VERSION_CODES.M)
 @SuppressLint("WrongConstant", "SoonBlockedPrivateApi")
@@ -780,7 +823,7 @@ fun setMode(context: Context, code: Int, packageName: String, mode: Int) {
     val iAppOpsManager =
         IAppOpsService.Stub.asInterface(ServiceManager.getService(Context.APP_OPS_SERVICE))
 //    iAppOpsManager.checkPackage()//检测权限有没有被绕过
-//    iAppOpsManager.setMode(code, uid, packageName, mode)
+    iAppOpsManager.setMode(code, uid, packageName, mode)
 //    val list = iAppOpsManager.getOpsForPackage(uid, packageName, null)
 //    list?.apply {
 //        this.forEach {

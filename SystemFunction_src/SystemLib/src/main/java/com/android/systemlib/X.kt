@@ -240,7 +240,7 @@ fun drawable2ByteArray(icon: Drawable): ByteArray {
     return bitmap2ByteArray(drawable2Bitmap(icon))
 }
 
-private fun bitmap2ByteArray(bitmap: Bitmap): ByteArray {
+fun bitmap2ByteArray(bitmap: Bitmap): ByteArray {
     val baos = ByteArrayOutputStream()
     bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos)
     return baos.toByteArray()
@@ -252,7 +252,7 @@ fun byteArray2Drawable(byteArray: ByteArray): Drawable? {
     return if (bitmap == null) null else BitmapDrawable(bitmap)
 }
 
-private fun byteArray2Bitmap(byteArray: ByteArray): Bitmap? {
+fun byteArray2Bitmap(byteArray: ByteArray): Bitmap? {
     return if (byteArray.isNotEmpty()) BitmapFactory.decodeByteArray(
         byteArray,
         0,
@@ -260,7 +260,7 @@ private fun byteArray2Bitmap(byteArray: ByteArray): Bitmap? {
     ) else null
 }
 
-private fun drawable2Bitmap(icon: Drawable): Bitmap {
+fun drawable2Bitmap(icon: Drawable): Bitmap {
     val bitmap =
         Bitmap.createBitmap(
             icon.intrinsicWidth,

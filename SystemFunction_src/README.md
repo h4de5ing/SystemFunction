@@ -10,7 +10,6 @@ SystemLib 为系统层功能的抽象层,如果这个接口是Android5~Android12
 Android12 保存Android12特有接口    
 Android11 保存Android11特有接口  
 ...  
-Android5 保存Android5特有接口  
 App依赖->SystemLib(抽象层)->(Android5、Android6、Android7、Android8、Android9、Android10、Android11、Android12)
 
 

@@ -64,6 +64,7 @@ fun getDefaultLauncherName(context: Context): String? {
 
 /**
  * 获取系统里具有系统权限的Launcher
+ * TODO 优化 参考 getSystemDefaultLauncher2 返回ComponentName
  */
 fun getSystemDefaultLauncher(context: Context): String? {
     var packageName = ""
