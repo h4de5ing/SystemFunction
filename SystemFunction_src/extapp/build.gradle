@@ -4,12 +4,12 @@ plugins {
 }
 
 android {
-    compileSdk 32
+    compileSdk 33
 
     defaultConfig {
         applicationId "com.android.extapp"
-        minSdk 21
-        targetSdk 32
+        minSdk 26
+        targetSdk 33
         versionCode 1
         versionName "1.0"
 
@@ -18,7 +18,7 @@ android {
 
     signingConfigs {
         sign {
-            storeFile file("D:\\emdoor\\AdvancedSignTool\\SignFiles\\Q865M_Q115M_android11\\platform.jks")
+            storeFile file("D:\\platform.jks")
             storePassword('android')
             keyAlias('android')
             keyPassword('android')
@@ -46,8 +46,8 @@ android {
 }
 
 dependencies {
-    implementation 'androidx.core:core-ktx:1.8.0'
-    implementation 'androidx.appcompat:appcompat:1.4.2'
+    implementation 'androidx.core:core-ktx:1.9.0'
+    implementation 'androidx.appcompat:appcompat:1.5.1'
     implementation 'com.google.android.material:material:1.6.1'
     implementation "androidx.preference:preference-ktx:1.2.0"
 }

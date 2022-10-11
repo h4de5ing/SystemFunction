@@ -31,10 +31,10 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         try {
-            if (!isAdminActive(this, App.componentName2)) setActiveProfileOwner(
-                this,
-                App.componentName2
-            )
+//            if (!isAdminActive(this, App.componentName2)) setActiveProfileOwner(
+//                this,
+//                App.componentName2
+//            )
         } catch (e: Exception) {
             "MainActivity 设置MDM失败".logD()
         }

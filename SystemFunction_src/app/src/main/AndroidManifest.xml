@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.android.systemfunction"
     android:sharedUserId="android.uid.system">
     <!-- 网络 WiFi权限 -->
@@ -8,7 +9,9 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
-    <uses-permission android:name="android.permission.READ_WIFI_CREDENTIAL" />
+    <uses-permission
+        android:name="android.permission.READ_WIFI_CREDENTIAL"
+        tools:ignore="ProtectedPermissions" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
     <uses-permission android:name="android.permission.WRITE_SETTINGS" />
@@ -38,6 +41,7 @@
     <uses-permission android:name="android.permission.OBSERVE_SENSOR_PRIVACY" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.RECOVERY" />
+    <uses-permission android:name="android.permission.GET_TASKS" />
 
     <application
         android:name=".app.App"

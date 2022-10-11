@@ -9,7 +9,7 @@ android {
     compileSdk 33
     defaultConfig {
         applicationId "com.android.systemfunction"
-        minSdk 21
+        minSdk 26
         targetSdk 33
         versionCode 100
         versionName "1.0.0"
@@ -18,7 +18,7 @@ android {
     }
     signingConfigs {
         sign {
-            storeFile file("D:\\emdoor\\AdvancedSignTool\\SignFiles\\Q865M_Q115M_android11\\platform.jks")
+            storeFile file("D:\\platform.jks")
             storePassword('android')
             keyAlias('android')
             keyPassword('android')

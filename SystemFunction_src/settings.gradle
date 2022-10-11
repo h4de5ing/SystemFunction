@@ -24,4 +24,7 @@ include ':Android12'
 //include ':mdmclient'
 //include ':otax'
 include ':extapp'
-include ':appmonitor'
+//include ':appmonitor'
+//include ':FileObserverJni'
+//project(':FileObserverJni').projectDir = new File("D:\\code\\github\\fileObserver\\Tools\\fileobserver")
+include ':droidwall'

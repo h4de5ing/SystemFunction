@@ -9,10 +9,10 @@ import android.hardware.ICameraService
 import android.hardware.ICameraServiceListener
 import android.media.AudioManager
 import android.media.AudioRecordingConfiguration
-import android.os.Handler
-import android.os.IBinder
-import android.os.Looper
-import android.os.ServiceManager
+import android.os.*
+import androidx.annotation.RequiresApi
+import com.jiangc.receiver.FileObserverJni
+import java.io.File
 import java.lang.reflect.Field
 import java.text.SimpleDateFormat
 import java.util.*
@@ -32,6 +32,7 @@ class ForegroundService : Service() {
         monitorAudio()
         monitorCamera()
         monitorApp()
+        monitorOps()
     }
 
     private fun monitorAudio() {
@@ -68,9 +69,7 @@ class ForegroundService : Service() {
             }
 
             override fun onPhysicalCameraStatusChanged(
-                status: Int,
-                cameraId: String?,
-                physicalCameraId: String?
+                status: Int, cameraId: String?, physicalCameraId: String?
             ) {
             }
 
@@ -122,6 +121,68 @@ class ForegroundService : Service() {
                 println("onTaskMovedToFront $taskInfo")
             }
         })
+    }
+
+    private fun monitorOps() {
+        val opsManager = getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            opsManager.startWatchingActive(
+                arrayOf(
+                    AppOpsManager.OPSTR_CAMERA,
+                    AppOpsManager.OPSTR_FINE_LOCATION,
+                    AppOpsManager.OPSTR_WRITE_EXTERNAL_STORAGE,
+                    AppOpsManager.OPSTR_READ_EXTERNAL_STORAGE,
+                ), this.mainExecutor
+            ) { op, uid, packageName, active ->
+                println("op=$op uid=$uid packageName=$packageName active=$active")
+            }
+//            opsManager.startWatchingMode(
+//                AppOpsManager.OPSTR_READ_EXTERNAL_STORAGE, "com.coolapk.market", 0
+//            ) { op, packageName ->
+//                println("op=$op packageName=$packageName")
+//            }
+
+//            opsManager.setOnOpNotedCallback(mainExecutor,object:AppOpsManager.OnOpNotedCallback(){
+//                override fun onNoted(op: SyncNotedAppOp) {
+//                    println("onNoted ${op}")
+//                }
+//
+//                override fun onSelfNoted(op: SyncNotedAppOp) {
+//                    println("onSelfNoted ${op}")
+//                }
+//
+//                override fun onAsyncNoted(op: AsyncNotedAppOp) {
+//                    println("onAsyncNoted ${op}")
+//                }
+//            })
+
+            FileObserverJni("/sdcard/",
+                FileObserverJni.ALL_EVENTS,
+                object : FileObserverJni.ILifecycle {
+                    override fun onInit(errno: Int) {
+                        if (0 == errno) {
+                            println("onInit: 初始化成功")
+                        } else {
+                            println("onInit: 初始化失败: " + FileObserverJni.error2String(errno))
+                        }
+                    }
+
+                    override fun onExit(errno: Int) {
+                        if (0 == errno) {
+                            println("onExit: 正常退出")
+                        } else {
+                            println("onExit: 异常退出: $errno")
+                        }
+                    }
+                }).setmCallback { path, mask -> println("$path $mask") }
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.Q)
+    class SDCardListener(path: File) : FileObserver(path, ACCESS) {
+        override fun onEvent(event: Int, path: String?) {
+            println("有人动了文件:${path} $event")
+        }
     }
 
     fun now(): String = SimpleDateFormat(

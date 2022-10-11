@@ -12,10 +12,7 @@ import android.database.ContentObserver
 import android.location.LocationManager
 import android.net.ConnectivityManager
 import android.net.wifi.WifiManager
-import android.os.Build
-import android.os.IBinder
-import android.os.UserHandle
-import android.os.UserManager
+import android.os.*
 import android.provider.Settings
 import android.telephony.TelephonyManager
 import android.view.WindowManager
@@ -30,6 +27,7 @@ import com.android.systemfunction.app.App.Companion.systemDao
 import com.android.systemfunction.utils.*
 import com.android.systemlib.*
 import com.github.h4de5ing.baseui.logD
+import java.io.File
 import java.util.*
 
 //https://blog.csdn.net/qq_35501560/article/details/105948631
@@ -430,8 +428,14 @@ class ForegroundService : Service(), LifecycleOwner {
 
     private fun showToast(message: String) {
         message.logD()
-//        Looper.prepare()
-        //RealtimeToast.makeText(this, message, Toast.LENGTH_SHORT).show()
-//        Looper.loop()
+    }
+
+    @RequiresApi(Build.VERSION_CODES.Q)
+    class SDCardListener(path: File) : FileObserver(path, ALL_EVENTS) {
+        override fun onEvent(event: Int, path: String?) {
+            when (event) {
+
+            }
+        }
     }
 }

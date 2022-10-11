@@ -1,6 +1,6 @@
 package com.android.systemlib
 
-import android.app.Activity
+import android.app.*
 import android.content.ContentProviderOperation
 import android.content.ContentValues
 import android.content.Context
@@ -10,11 +10,13 @@ import android.graphics.Canvas
 import android.graphics.PixelFormat
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
+import android.hardware.*
 import android.net.Uri
 import android.provider.Settings
 import android.text.TextUtils
 import android.widget.Toast
 import java.io.*
+import java.util.*
 
 
 /**
