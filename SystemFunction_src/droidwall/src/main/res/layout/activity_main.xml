@@ -15,16 +15,46 @@
             android:id="@+id/toggle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textOff="黑名单模式"
-            android:textOn="白名单模式" />
+            android:textOff="关闭防火墙"
+            android:textOn="开启防火墙" />
 
         <androidx.appcompat.widget.AppCompatToggleButton
             android:id="@+id/toggle2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textOff="uid清空"
-            android:textOn="uid添加" />
+            android:textOn="uid添加"
+            android:visibility="gone" />
+
+        <EditText
+            android:id="@+id/chain"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:hint="chain"
+            android:inputType="number"
+            android:visibility="gone" />
+
+        <EditText
+            android:id="@+id/value"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:hint="value"
+            android:inputType="number"
+            android:visibility="gone" />
+
+        <Button
+            android:id="@+id/setting"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="设置"
+            android:visibility="gone" />
     </LinearLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="勾选复选框允许应用联网"
+        android:textColor="@color/black" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/list"
