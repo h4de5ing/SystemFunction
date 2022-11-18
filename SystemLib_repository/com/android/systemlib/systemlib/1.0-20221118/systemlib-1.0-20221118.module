@@ -1,0 +1,90 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "com.android.systemlib",
+    "module": "systemlib",
+    "version": "1.0-20221118",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "7.4"
+    }
+  },
+  "variants": [
+    {
+      "name": "releaseVariantReleaseApiPublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-api"
+      },
+      "dependencies": [
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib-jdk8",
+          "version": {
+            "requires": "1.7.10"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "systemlib-1.0-20221118.aar",
+          "url": "systemlib-1.0-20221118.aar",
+          "size": 43883,
+          "sha512": "bb5a52aedf905be0b79e5309f5a5cfad7d3f3f71d8a3db3a265eb78fae30665a527ac4f647b01397dd254210a3a8801483293c9ad461a04cea0b119fc512add0",
+          "sha256": "207f0560cc984754048eff24fc96553570c7b98df01820553bd0377d8c7b2250",
+          "sha1": "d26352970b39f0e8c3b7cbe9ec4afab072cc48a7",
+          "md5": "97f59efa5f65303877e4cecf8e8c8ff5"
+        }
+      ]
+    },
+    {
+      "name": "releaseVariantReleaseRuntimePublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib-jdk8",
+          "version": {
+            "requires": "1.7.10"
+          }
+        },
+        {
+          "group": "androidx.core",
+          "module": "core-ktx",
+          "version": {
+            "requires": "1.9.0"
+          }
+        },
+        {
+          "group": "SystemFunction",
+          "module": "Android12",
+          "version": {
+            "requires": "unspecified"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "systemlib-1.0-20221118.aar",
+          "url": "systemlib-1.0-20221118.aar",
+          "size": 43883,
+          "sha512": "bb5a52aedf905be0b79e5309f5a5cfad7d3f3f71d8a3db3a265eb78fae30665a527ac4f647b01397dd254210a3a8801483293c9ad461a04cea0b119fc512add0",
+          "sha256": "207f0560cc984754048eff24fc96553570c7b98df01820553bd0377d8c7b2250",
+          "sha1": "d26352970b39f0e8c3b7cbe9ec4afab072cc48a7",
+          "md5": "97f59efa5f65303877e4cecf8e8c8ff5"
+        }
+      ]
+    }
+  ]
+}

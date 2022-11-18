@@ -3,13 +3,14 @@
   <groupId>com.android.mdmsdk</groupId>
   <artifactId>mdmsdk</artifactId>
   <versioning>
-    <latest>1.0-20220907</latest>
-    <release>1.0-20220907</release>
+    <latest>1.0-20221118</latest>
+    <release>1.0-20221118</release>
     <versions>
       <version>1.0-20220425</version>
       <version>1.0-20220427</version>
       <version>1.0-20220907</version>
+      <version>1.0-20221118</version>
     </versions>
-    <lastUpdated>20220907054937</lastUpdated>
+    <lastUpdated>20221118093637</lastUpdated>
   </versioning>
 </metadata>

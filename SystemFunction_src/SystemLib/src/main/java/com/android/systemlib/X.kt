@@ -207,7 +207,7 @@ fun copyDir(src: String, des: String) {
     try {
         val fileTree: FileTreeWalk = File(src).walk()
         fileTree.forEach {
-            println("${it.name}")
+            println(it.name)
         }
     } catch (e: Exception) {
         e.printStackTrace()
@@ -219,7 +219,7 @@ fun write2File(name: String, content: String, append: Boolean) {
     try {
         writer = BufferedWriter(FileWriter(name, append))
         writer.write(content)
-    } catch (e: Exception) {
+    } catch (_: Exception) {
     } finally {
         closeQuietly(writer)
     }

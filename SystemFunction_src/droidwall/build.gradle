@@ -20,7 +20,7 @@ android {
     }
     signingConfigs {
         sign {
-            storeFile file("D:\\platform.jks")
+            storeFile file("D:\\emdoor\\AdvancedSignTool\\SignFiles\\Q86_10\\platform.jks")
             storePassword('android')
             keyAlias('android')
             keyPassword('android')
@@ -68,5 +68,6 @@ dependencies {
     annotationProcessor "androidx.room:room-compiler:$room_version"
     kapt "androidx.room:room-compiler:$room_version"
     debugImplementation 'com.guolindev.glance:glance:1.1.0'
+    implementation "androidx.lifecycle:lifecycle-viewmodel:2.5.1"
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.5.1"
 }

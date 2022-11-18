@@ -16,6 +16,7 @@ import android.provider.Settings
 import android.telephony.TelephonyManager
 import android.text.TextUtils
 import android.text.format.Formatter
+import android.view.accessibility.IAccessibilityManager
 import android.webkit.MimeTypeMap
 import android.widget.TextView
 import androidx.annotation.RequiresApi
@@ -997,4 +998,10 @@ fun runCommand(command: String): String? {
         process?.destroy()
     }
     return result
+}
+
+fun getAs() {
+    val am: IAccessibilityManager =
+        IAccessibilityManager.Stub.asInterface(ServiceManager.getService(Context.ACCESSIBILITY_SERVICE))
+    am.getInstalledAccessibilityServiceList(0)
 }

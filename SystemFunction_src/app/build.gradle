@@ -55,7 +55,7 @@ android {
 dependencies {
     implementation 'androidx.core:core-ktx:1.9.0'
     implementation 'androidx.appcompat:appcompat:1.5.1'
-    implementation 'com.google.android.material:material:1.6.1'
+    implementation 'com.google.android.material:material:1.7.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation "androidx.lifecycle:lifecycle-viewmodel:2.5.1"
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.5.1"
@@ -67,10 +67,10 @@ dependencies {
     debugImplementation 'com.guolindev.glance:glance:1.1.0'
 //    implementation 'com.android.systemlib:systemlib:1.0-20220411'
     implementation project(path: ':SystemLib')
-    implementation 'com.github.CymChad:BaseRecyclerViewAdapterHelper:3.0.4'
-    implementation 'com.github.h4de5ing.base:base:1.0-20220506'//基础工具
+    implementation 'com.github.CymChad:BaseRecyclerViewAdapterHelper:3.0.7'
+    implementation 'com.github.h4de5ing.base:base:1.0-20221118'//基础工具
     implementation 'com.github.h4de5ing.baseui:baseui:1.0-20220506'//基础UI工具
-    implementation 'com.github.h4de5ing.filepicker:filepicker:1.0-20220506'//文件选择器
+    implementation 'com.github.h4de5ing.filepicker:filepicker:1.0-20220810'//文件选择器
     implementation 'com.github.h4de5ing.gsoncommon:gsoncommon:1.0-20211125'//json解析工具
 //    implementation 'com.github.getActivity:XXPermissions:13.6'
 }
