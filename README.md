@@ -4,10 +4,12 @@
 
 ## 本仓库模块说明
 
-- SystemFunctionDemo 开发者参考demo
-
-- SystemLib_src 系统功能封装库的源码 app 1.AndroidManifest.xml 配置android:sharedUserId="android.uid.system"  
-  2.app build.gradle sign的签名文件必须是对应平台的系统签名 SystemLib 兼容android12以下的api Android12 兼容Android12特有的api
+- SystemLib_src 系统功能封装库的源码 app 
+  - AndroidManifest.xml 配置android:sharedUserId="android.uid.system"  
+  - app build.gradle sign的签名文件必须是对应平台的系统签名 
+  - SystemLib 兼容android12以下的api 
+  - Android12 兼容Android12特有的api
+  
 - SystemLib_repository 系统封装库的二进制文件，方便第三方使用，基于SystemLib_src源码打包
 
 ## 系统应用开发准备工作
@@ -31,7 +33,7 @@ signingConfigs {
     }
 }
 //添加库依赖
-implementation 'com.android.systemlib:systemlib:1.0-20220411'
+implementation 'com.android.systemlib:systemlib:1.0-20220411' //请根据需求升级版本号
 
 ```
 
