@@ -5,23 +5,9 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
-import android.graphics.Bitmap
-import android.os.Build
 import android.provider.Settings
 import android.text.TextUtils
 import android.view.View
-import com.android.android12.Screenshooter12
-
-/**
- * 系统截图
- * 参考 /frameworks/base/packages/Shell/src/com/android/shell/Screenshooter.java
- * sdk\sources\android-30\com\android\systemui\screenshot\GlobalScreenshot.java
- * 12
- * 9 10 11
- * 7 8
- */
-fun takeScreenShot(): Bitmap? =
-    if (Build.VERSION.SDK_INT >= 31) Screenshooter12.takeScreenshot() else Screenshooter.takeScreenshot()
 
 val HOME_INTENT = Intent("android.intent.action.MAIN")
     .addCategory("android.intent.category.HOME")

@@ -33,7 +33,7 @@ signingConfigs {
     }
 }
 //添加库依赖
-implementation 'com.android.systemlib:systemlib:1.0-20220411' //请根据需求升级版本号
+implementation 'com.android.systemlib:systemlib:1.0-20221223' //请根据需求升级版本号
 
 ```
 

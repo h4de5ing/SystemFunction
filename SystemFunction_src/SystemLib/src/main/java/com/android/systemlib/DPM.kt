@@ -30,7 +30,7 @@ fun setActiveProfileOwner(componentName: ComponentName) {
     try {
         setActiveAdmin(componentName)
         setProfileOwner(componentName)
-    } catch (e: Exception) {
+    } catch (_: Exception) {
     }
 }
 

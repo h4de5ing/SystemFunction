@@ -4,7 +4,6 @@ import android.app.ActivityManager
 import android.app.Instrumentation
 import android.content.Context
 import android.content.Intent
-import android.graphics.Bitmap
 import android.os.Build
 import android.os.Bundle
 import android.view.KeyEvent
@@ -20,8 +19,8 @@ import com.android.systemlib.*
 import com.github.h4de5ing.baseui.alertConfirm
 import com.github.h4de5ing.baseui.logD
 import com.github.h4de5ing.filepicker.DialogUtils
-import java.io.File
-import java.io.FileOutputStream
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 
 class MainActivity : AppCompatActivity() {
@@ -31,8 +30,10 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         try {
-            if (!isAdminActive(this, App.componentName2))
-                setActiveProfileOwner(this, App.componentName2)
+            if (!isAdminActive(this, App.componentName2)) setActiveProfileOwner(
+                this,
+                App.componentName2
+            )
         } catch (e: Exception) {
             "MainActivity 设置MDM失败".logD()
         }
@@ -119,8 +120,7 @@ class MainActivity : AppCompatActivity() {
             alertConfirm(this, "${getString(R.string.reboot)}?") { if (it) reboot() }
         }
         binding.shot.setOnClickListener {
-            Instrumentation().sendKeyDownUpSync(KeyEvent.KEYCODE_SYSRQ)
-//            testShot()
+            GlobalScope.launch { Instrumentation().sendKeyDownUpSync(KeyEvent.KEYCODE_SYSRQ) }
         }
         binding.appManager.setOnClickListener {
             startActivity(
@@ -201,21 +201,6 @@ class MainActivity : AppCompatActivity() {
             binding.installApp.isChecked = isDisableInstallApp
             binding.uninstallApp.isChecked = isDisableUnInstallApp
         } catch (e: Exception) {
-            e.printStackTrace()
-        }
-    }
-
-    private fun testShot() {
-        try {
-            val bitmap = takeScreenShot()
-            val file = File("/sdcard/Pictures/1.png")
-            val fos = FileOutputStream(file)
-            bitmap?.compress(Bitmap.CompressFormat.JPEG, 100, fos)
-            fos.flush()
-            fos.close()
-            toast("/sdcard/Pictures/1.png success")
-        } catch (e: Exception) {
-            toast("/sdcard/Pictures/1.png fail")
             e.printStackTrace()
         }
     }

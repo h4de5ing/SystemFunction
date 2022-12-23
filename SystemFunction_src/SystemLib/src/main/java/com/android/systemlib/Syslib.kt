@@ -73,11 +73,10 @@ fun addWifi(context: Context, ssid: String, pass: String) {
         .setSsidPattern(PatternMatcher(ssid, PatternMatcher.PATTERN_PREFIX))
         .setWpa2Passphrase(pass)
         .build()
-    //创建一个请求
     val request: NetworkRequest = NetworkRequest.Builder()
-        .addTransportType(NetworkCapabilities.TRANSPORT_WIFI) //创建的是WIFI网络。
-        .addCapability(NetworkCapabilities.NET_CAPABILITY_NOT_RESTRICTED) //网络不受限
-        .addCapability(NetworkCapabilities.NET_CAPABILITY_TRUSTED) //信任网络，增加这个连个参数让设备连接wifi之后还联网。
+        .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+        .addCapability(NetworkCapabilities.NET_CAPABILITY_NOT_RESTRICTED)
+        .addCapability(NetworkCapabilities.NET_CAPABILITY_TRUSTED)
         .setNetworkSpecifier(specifier)
         .build()
     connectivityManager.requestNetwork(request, object : ConnectivityManager.NetworkCallback() {
@@ -191,10 +190,9 @@ fun getSystemDefaultLauncher2(context: Context): ComponentName? {
 fun clearDefaultLauncher(context: Context, packageName: String) {
     val pm = context.packageManager
     pm.queryIntentActivities(HOME_INTENT, 0).forEach { resolveInfo ->
-        if (resolveInfo != null) {
+        if (resolveInfo != null)
             if (packageName == resolveInfo.activityInfo.packageName)
                 pm.clearPackagePreferredActivities(resolveInfo.activityInfo.packageName)
-        }
     }
     //IRoleManager.Stub.asInterface(ServiceManager.getService(Context.ROLE_SERVICE))
 }
@@ -852,8 +850,6 @@ fun setMode(context: Context, code: Int, packageName: String, mode: Int) {
 fun disableSensor(isDisable: Boolean, sensor: Int) {
     if (Build.VERSION.SDK_INT > 31) {
         disableSensor12(isDisable, sensor)
-    } else {
-
     }
 }
 
@@ -867,7 +863,7 @@ fun unmount(context: Context) {
             IStorageManager.Stub.asInterface(ServiceManager.getService("mount"))
         iStorageManager.getVolumeList(0, context.packageName, 0)
             .forEach { if (it.isRemovable) iStorageManager.unmount(it.id) }
-    } catch (e: Exception) {
+    } catch (_: Exception) {
     }
 }
 
