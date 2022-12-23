@@ -13,12 +13,12 @@
             <option value="$PROJECT_DIR$/Aidl" />
             <option value="$PROJECT_DIR$/Android12" />
             <option value="$PROJECT_DIR$/SystemLib" />
+            <option value="$PROJECT_DIR$/SystemUIX" />
             <option value="$PROJECT_DIR$/app" />
-            <option value="$PROJECT_DIR$/droidwall" />
-            <option value="$PROJECT_DIR$/extapp" />
           </set>
         </option>
       </GradleProjectSettings>
     </option>
+    <option name="offlineMode" value="true" />
   </component>
 </project>

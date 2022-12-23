@@ -33,29 +33,29 @@ android {
 dependencies {
     implementation 'androidx.appcompat:appcompat:1.5.1'
 }
-afterEvaluate {
-    publishing {
-        publications {
-            def today = new Date().format('yyyyMMdd')
-            release(MavenPublication) {
-                from components.release
-                groupId = 'com.android.mdmsdk'
-                artifactId = 'mdmsdk'
-                version = "1.0-$today"
-            }
-            debug(MavenPublication) {
-                from components.debug
-                groupId = 'com.android.mdmsdk'
-                artifactId = 'mdmsdk'
-                version = "1.0-$today"
-            }
-        }
-        repositories {
-            mavenLocal()
-            maven {
-                url uri('D:\\code\\SystemFunction\\SystemLib_repository')
-            }
-        }
-    }
-}
+//afterEvaluate {
+//    publishing {
+//        publications {
+//            def today = new Date().format('yyyyMMdd')
+//            release(MavenPublication) {
+//                from components.release
+//                groupId = 'com.android.mdmsdk'
+//                artifactId = 'mdmsdk'
+//                version = "1.0-$today"
+//            }
+//            debug(MavenPublication) {
+//                from components.debug
+//                groupId = 'com.android.mdmsdk'
+//                artifactId = 'mdmsdk'
+//                version = "1.0-$today"
+//            }
+//        }
+//        repositories {
+//            mavenLocal()
+//            maven {
+//                url uri('D:\\code\\SystemFunction\\SystemLib_repository')
+//            }
+//        }
+//    }
+//}
 //gradlew publish

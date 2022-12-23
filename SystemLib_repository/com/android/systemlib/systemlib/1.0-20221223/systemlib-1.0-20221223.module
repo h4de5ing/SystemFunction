@@ -1,0 +1,88 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "com.android.systemlib",
+    "module": "systemlib",
+    "version": "1.0-20221223",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "7.4"
+    }
+  },
+  "variants": [
+    {
+      "name": "releaseApiElements-published",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.usage": "java-api",
+        "org.jetbrains.kotlin.platform.type": "androidJvm"
+      },
+      "dependencies": [
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib-jdk8",
+          "version": {
+            "requires": "1.7.10"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "systemlib-1.0-20221223.aar",
+          "url": "systemlib-1.0-20221223.aar",
+          "size": 40718,
+          "sha512": "1552aaf9e2d1f007159e62de30e86f23738f6a00fb41667670fdee01b27786997972bef5738efb7dc19a40296a968cbcb1bf79e1f0855f3d72f87f8d00116b18",
+          "sha256": "24629ec5ff6edaa1f2fcd324d1020d97f463ce9ae1fd12bd3f8d77991117e90f",
+          "sha1": "d2691527dd42d9e4996717b22e2e5cc6fa433699",
+          "md5": "79463889ad67cf36ef3aa709240cc786"
+        }
+      ]
+    },
+    {
+      "name": "releaseRuntimeElements-published",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.usage": "java-runtime",
+        "org.jetbrains.kotlin.platform.type": "androidJvm"
+      },
+      "dependencies": [
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib-jdk8",
+          "version": {
+            "requires": "1.7.10"
+          }
+        },
+        {
+          "group": "androidx.core",
+          "module": "core-ktx",
+          "version": {
+            "requires": "1.9.0"
+          }
+        },
+        {
+          "group": "com.android.android12",
+          "module": "android12",
+          "version": {
+            "requires": "1.0-20221223"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "systemlib-1.0-20221223.aar",
+          "url": "systemlib-1.0-20221223.aar",
+          "size": 40718,
+          "sha512": "1552aaf9e2d1f007159e62de30e86f23738f6a00fb41667670fdee01b27786997972bef5738efb7dc19a40296a968cbcb1bf79e1f0855f3d72f87f8d00116b18",
+          "sha256": "24629ec5ff6edaa1f2fcd324d1020d97f463ce9ae1fd12bd3f8d77991117e90f",
+          "sha1": "d2691527dd42d9e4996717b22e2e5cc6fa433699",
+          "md5": "79463889ad67cf36ef3aa709240cc786"
+        }
+      ]
+    }
+  ]
+}

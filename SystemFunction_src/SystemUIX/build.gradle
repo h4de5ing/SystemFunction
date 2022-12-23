@@ -1,6 +1,7 @@
 plugins {
     id 'com.android.library'
     id 'org.jetbrains.kotlin.android'
+    id 'maven-publish'
 }
 
 android {
@@ -35,6 +36,7 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.5.1'
     implementation 'com.google.android.material:material:1.7.0'
     implementation 'androidx.recyclerview:recyclerview:1.2.1'
+    implementation 'com.github.h4de5ing.base:base:1.0-20221221'
     api 'com.github.CymChad:BaseRecyclerViewAdapterHelper:3.0.7'
     implementation project(':SystemLib')
     implementation project(':Android12')

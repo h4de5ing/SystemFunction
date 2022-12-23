@@ -14,8 +14,8 @@ dependencyResolutionManagement {
         jcenter()
         maven { url "https://jitpack.io" }
         maven { url 'https://github.com/h4de5ing/SystemFunction/raw/master/SystemLib_repository' }
-//        maven { url 'https://gitee.com/lex1992/repository/raw/master/repository' }
-        maven { url 'D:\\repository\\repository\\repository' }
+        maven { url 'https://gitee.com/lex1992/repository/raw/master/repository' }
+//        maven { url 'D:\\repository\\repository\\repository' }
     }
 }
 rootProject.name = "SystemFunction"
@@ -23,7 +23,7 @@ include ':app'
 include ':Aidl'
 include ':SystemLib'
 include ':Android12'
-//include ':SystemUIX'
+include ':SystemUIX'
 
 //include ':mdmclient'
 //include ':otax'

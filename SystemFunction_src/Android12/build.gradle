@@ -41,29 +41,29 @@ dependencies {
     implementation 'androidx.core:core-ktx:1.9.0'
     compileOnly files('libs/classes-header.jar')
 }
-//afterEvaluate {
-//    publishing {
-//        publications {
-//            def today = new Date().format('yyyyMMdd')
-//            release(MavenPublication) {
-//                from components.release
-//                groupId = 'com.android.android12'
-//                artifactId = 'android12'
-//                version = "1.0-$today"
-//            }
-//            debug(MavenPublication) {
-//                from components.debug
-//                groupId = 'com.android.android12'
-//                artifactId = 'android12'
-//                version = "1.0-$today"
-//            }
-//        }
-//        repositories {
-//            mavenLocal()
-//            maven {
-//                url uri('D:\\code\\SystemFunction\\SystemLib_repository')
-//            }
-//        }
-//    }
-//}
+afterEvaluate {
+    publishing {
+        publications {
+            def today = new Date().format('yyyyMMdd')
+            release(MavenPublication) {
+                from components.release
+                groupId = 'com.android.android12'
+                artifactId = 'android12'
+                version = "1.0-$today"
+            }
+            debug(MavenPublication) {
+                from components.debug
+                groupId = 'com.android.android12'
+                artifactId = 'android12'
+                version = "1.0-$today"
+            }
+        }
+        repositories {
+            mavenLocal()
+            maven {
+                url uri('D:\\code\\SystemFunction\\SystemLib_repository')
+            }
+        }
+    }
+}
 //gradlew publish

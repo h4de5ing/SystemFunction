@@ -42,5 +42,3 @@ AndroidManifest.xml
 <manifest android:sharedUserId="android.uid.system" />
 
 ```
-
-## 　接口更新日志以及说明文档请参考[接口更新日志](Log.md)

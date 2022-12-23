@@ -3,12 +3,12 @@ package com.android.systemuix.adapter
 import android.app.AlertDialog
 import android.content.pm.PackageInfo
 import android.widget.ImageView
-import com.android.systemlib.CommandExecution
 import com.android.systemlib.byteArray2Drawable
 import com.android.systemlib.drawable2ByteArray
 import com.android.systemuix.R
 import com.chad.library.adapter.base.BaseQuickAdapter
 import com.chad.library.adapter.base.viewholder.BaseViewHolder
+import com.github.h4de5ing.base.exec
 
 class DisableServiceAdapter(layoutRes: Int = R.layout.item_app_list) :
     BaseQuickAdapter<PackageInfo, BaseViewHolder>(layoutRes) {
@@ -27,10 +27,7 @@ class DisableServiceAdapter(layoutRes: Int = R.layout.item_app_list) :
                 "disable/enable service?",
                 "confirm ${if (getAppIsEnabled(item.packageName)) "disable" else "enable"} service ${item.packageName} ?"
             ) {
-                CommandExecution.execCommand(
-                    "pm ${if (getAppIsEnabled(item.packageName)) "disable-user" else "enable"} ${item.packageName}",
-                    false
-                )
+                exec("pm ${if (getAppIsEnabled(item.packageName)) "disable-user" else "enable"} ${item.packageName}")
                 if (getAppIsEnabled(item.packageName)) edit.setImageResource(R.drawable.ic_baseline_check_circle_outline_24)
                 else edit.setImageResource(R.drawable.ic_baseline_block_24)
             }

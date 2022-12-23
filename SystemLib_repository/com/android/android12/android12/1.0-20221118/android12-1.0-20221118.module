@@ -1,0 +1,83 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "com.android.android12",
+    "module": "android12",
+    "version": "1.0-20221118",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "7.4"
+    }
+  },
+  "variants": [
+    {
+      "name": "releaseVariantReleaseApiPublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-api"
+      },
+      "dependencies": [
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib-jdk8",
+          "version": {
+            "requires": "1.7.10"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "android12-1.0-20221118.aar",
+          "url": "android12-1.0-20221118.aar",
+          "size": 5342,
+          "sha512": "a55217886e2e32e3e7091b5e0c2e54d91ec06ea9e0f5a7802ce1b3e6bf095f2802f387aebc5d79fd6070f0a52f13844a2d277f3da90a752fee137374af791563",
+          "sha256": "04b8bfcb1dfef71fac84b6cd2462024de9985243502185ebe05a6f2bb13c295b",
+          "sha1": "5aebe16c96524949ba10e2aacffc12a1fb60bc36",
+          "md5": "f8c6e8b0b1224e882dac87ba2c48271d"
+        }
+      ]
+    },
+    {
+      "name": "releaseVariantReleaseRuntimePublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib-jdk8",
+          "version": {
+            "requires": "1.7.10"
+          }
+        },
+        {
+          "group": "androidx.core",
+          "module": "core-ktx",
+          "version": {
+            "requires": "1.9.0"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "android12-1.0-20221118.aar",
+          "url": "android12-1.0-20221118.aar",
+          "size": 5342,
+          "sha512": "a55217886e2e32e3e7091b5e0c2e54d91ec06ea9e0f5a7802ce1b3e6bf095f2802f387aebc5d79fd6070f0a52f13844a2d277f3da90a752fee137374af791563",
+          "sha256": "04b8bfcb1dfef71fac84b6cd2462024de9985243502185ebe05a6f2bb13c295b",
+          "sha1": "5aebe16c96524949ba10e2aacffc12a1fb60bc36",
+          "md5": "f8c6e8b0b1224e882dac87ba2c48271d"
+        }
+      ]
+    }
+  ]
+}
