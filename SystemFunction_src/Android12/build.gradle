@@ -7,7 +7,7 @@ plugins {
 android {
     compileSdk 33
     defaultConfig {
-        minSdk 26
+        minSdk 21
         targetSdk 33
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
@@ -29,11 +29,8 @@ android {
     gradle.projectsEvaluated {
         tasks.withType(JavaCompile) {
             Set<File> fileSet = options.bootstrapClasspath.getFiles()
-            List<File> newFileList = new ArrayList<>();
-            //JAVA语法，可连续调用，输入参数建议为相对路径
-//            newFileList.add(new File("libs/services.core.priorityboosted.jar"))
+            List<File> newFileList = new ArrayList<>()
             newFileList.add(new File("libs/classes-header.jar"))
-            //最后将原始参数添加
             newFileList.addAll(fileSet)
             options.bootstrapClasspath = files(newFileList.toArray())
         }

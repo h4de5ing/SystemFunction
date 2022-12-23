@@ -3,6 +3,7 @@ pluginManagement {
         gradlePluginPortal()
         google()
         mavenCentral()
+        maven { url 'https://gitee.com/lex1992/repository/raw/master/repository' }
     }
 }
 dependencyResolutionManagement {
@@ -10,10 +11,11 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        maven { url 'https://github.com/h4de5ing/SystemFunction/raw/master/SystemLib_repository' }
+        jcenter()
         maven { url "https://jitpack.io" }
-        maven { url 'https://gitee.com/lex1992/repository/raw/master/repository' }
-//        maven { url 'D:\\repository\\repository\\repository' }
+        maven { url 'https://github.com/h4de5ing/SystemFunction/raw/master/SystemLib_repository' }
+//        maven { url 'https://gitee.com/lex1992/repository/raw/master/repository' }
+        maven { url 'D:\\repository\\repository\\repository' }
     }
 }
 rootProject.name = "SystemFunction"
@@ -21,10 +23,11 @@ include ':app'
 include ':Aidl'
 include ':SystemLib'
 include ':Android12'
+//include ':SystemUIX'
+
 //include ':mdmclient'
 //include ':otax'
-include ':extapp'
 //include ':appmonitor'
 //include ':FileObserverJni'
 //project(':FileObserverJni').projectDir = new File("D:\\code\\github\\fileObserver\\Tools\\fileobserver")
-include ':droidwall'
+//include ':droidwall'

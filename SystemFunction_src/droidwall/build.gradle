@@ -20,7 +20,7 @@ android {
     }
     signingConfigs {
         sign {
-            storeFile file("D:\\emdoor\\AdvancedSignTool\\SignFiles\\Q86_10\\platform.jks")
+            storeFile file("D:\\Android12SignerGUI\\SignFiles\\Q86_10\\platform.jks")
             storePassword('android')
             keyAlias('android')
             keyPassword('android')

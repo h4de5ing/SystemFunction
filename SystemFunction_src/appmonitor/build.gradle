@@ -19,8 +19,7 @@ android {
 
     signingConfigs {
         signer {
-            //Q865M_Q115M_android11 Q81
-            storeFile file("D:\\emdoor\\AdvancedSignTool\\SignFiles\\Q865M_Q115M_android11\\platform.jks")
+            storeFile file("D:\\Android12SignerGUI\\SignFiles\\Q865M_Q115M_android11\\platform.jks")
             storePassword('android')
             keyAlias('android')
             keyPassword('android')
