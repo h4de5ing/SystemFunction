@@ -5,18 +5,19 @@ import android.os.Bundle
 import android.os.FileObserver
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import com.android.systemfunction.R
-import kotlinx.android.synthetic.main.activity_test.*
+import com.android.systemfunction.databinding.ActivityTestBinding
 import java.io.File
 
 @RequiresApi(Build.VERSION_CODES.Q)
 class TestActivity : AppCompatActivity() {
+    private lateinit var binding: ActivityTestBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_test)
+        binding = ActivityTestBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         val path = File("/sdcard/Download")
         SDCardListener(path).startWatching()
-        start.setOnClickListener {
+        binding.start.setOnClickListener {
             File("/sdcard/Download/a.txt").createNewFile()
         }
     }

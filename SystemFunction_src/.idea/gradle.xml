@@ -15,6 +15,8 @@
             <option value="$PROJECT_DIR$/SystemLib" />
             <option value="$PROJECT_DIR$/SystemUIX" />
             <option value="$PROJECT_DIR$/app" />
+            <option value="$PROJECT_DIR$/mdmclient" />
+            <option value="$PROJECT_DIR$/otax" />
           </set>
         </option>
       </GradleProjectSettings>

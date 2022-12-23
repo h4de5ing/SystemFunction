@@ -6,26 +6,28 @@ import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.android.systemfunction.R
+import com.android.systemfunction.databinding.ActivityBackupSettingsBinding
 import com.android.systemfunction.utils.*
-import com.android.systemfunction.utils.getAllSettingsForSettingsBean
 import com.android.systemlib.*
 import com.github.h4de5ing.filepicker.DialogUtils
-import kotlinx.android.synthetic.main.activity_backup_settings.*
 import java.io.File
 import kotlin.io.buffered
 import kotlin.io.readLines
 
 class BackupSettingsActivity : AppCompatActivity() {
+    private lateinit var binding: ActivityBackupSettingsBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_backup_settings)
-        backup.setOnClickListener {
+        binding = ActivityBackupSettingsBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        binding.backup.setOnClickListener {
             DialogUtils.selectDir(this, "select dir", true) { files ->
                 try {
                     val backFile = File("${files[0]}${File.separator}${files[1]}")
-                    if (backFile.exists())
-                        backFile.delete()
-                    write2File(backFile.absolutePath, getAllSettingsForSettingsBean(this).toJson(), false)
+                    if (backFile.exists()) backFile.delete()
+                    write2File(
+                        backFile.absolutePath, getAllSettingsForSettingsBean(this).toJson(), false
+                    )
                     toast("backup settings finish")
                 } catch (e: Exception) {
                     toast("${e.message}")
@@ -33,7 +35,7 @@ class BackupSettingsActivity : AppCompatActivity() {
                 }
             }
         }
-        restore.setOnClickListener {
+        binding.restore.setOnClickListener {
             DialogUtils.selectFile(this, "select file") { files ->
                 try {
                     val json = files[0].stream().buffered().reader("utf-8").readString()
@@ -46,7 +48,7 @@ class BackupSettingsActivity : AppCompatActivity() {
                 }
             }
         }
-        backup_apn.setOnClickListener {
+        binding.backupApn.setOnClickListener {
             DialogUtils.selectDir(this, "select dir", true) { files ->
                 val apnFile = File("${files[0]}${File.separator}${files[1]}")
                 if (apnFile.exists()) apnFile.delete()
@@ -60,7 +62,7 @@ class BackupSettingsActivity : AppCompatActivity() {
                 }.start()
             }
         }
-        clean_apn.setOnClickListener {
+        binding.cleanApn.setOnClickListener {
             try {
                 cleanAPN(this)
             } catch (e: Exception) {
@@ -68,7 +70,7 @@ class BackupSettingsActivity : AppCompatActivity() {
                 e.printStackTrace()
             }
         }
-        restore_apn.setOnClickListener {
+        binding.restoreApn.setOnClickListener {
             DialogUtils.selectFile(this, "select file") { files ->
                 Thread {
                     try {
@@ -99,15 +101,10 @@ class BackupSettingsActivity : AppCompatActivity() {
                 val build = AlertDialog.Builder(this)
                 build.setTitle(message)
                 val view = View.inflate(
-                    this,
-                    R.layout.layout_custom_progress_dialog_view,
-                    null
+                    this, R.layout.layout_custom_progress_dialog_view, null
                 )
-                dialog = build
-                    .setCancelable(true)
-                    .setView(view)
-                    .create()
-                tipsView = view.findViewById<TextView>(R.id.loading_tips)
+                dialog = build.setCancelable(true).setView(view).create()
+                tipsView = view.findViewById(R.id.loading_tips)
                 tipsView?.text = message
             }
             dialog?.apply {

@@ -31,7 +31,6 @@ import java.io.File
 import java.util.*
 
 //https://blog.csdn.net/qq_35501560/article/details/105948631
-@RequiresApi(Build.VERSION_CODES.O)
 class ForegroundService : Service(), LifecycleOwner {
 
     override fun onBind(intent: Intent): IBinder {

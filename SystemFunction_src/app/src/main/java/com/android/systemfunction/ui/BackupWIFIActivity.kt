@@ -10,11 +10,10 @@ import android.os.Bundle
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import com.android.systemfunction.R
 import com.android.systemfunction.bean.WIFIBean
+import com.android.systemfunction.databinding.ActivityBackupWifiBinding
 import com.android.systemlib.*
 import com.github.h4de5ing.filepicker.DialogUtils
-import kotlinx.android.synthetic.main.activity_backup_wifi.*
 import java.io.File
 import java.util.regex.Pattern
 import kotlin.io.buffered
@@ -27,11 +26,13 @@ WifiDppEnrolleeActivity      扫描wifi二维码
 @RequiresApi(Build.VERSION_CODES.Q)
 class BackupWIFIActivity : AppCompatActivity() {
     private var wifiManager: WifiManager? = null
+    private lateinit var binding: ActivityBackupWifiBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_backup_wifi)
+        binding = ActivityBackupWifiBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         wifiManager = applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
-        backup.setOnClickListener {
+        binding.backup.setOnClickListener {
             DialogUtils.selectDir(this, "select dir", true) { files ->
                 try {
                     val backFile = File("${files[0]}${File.separator}${files[1]}")
@@ -57,12 +58,12 @@ class BackupWIFIActivity : AppCompatActivity() {
                 }
             }
         }
-        clear.setOnClickListener {
+        binding.clear.setOnClickListener {
             wifiManager?.configuredNetworks?.forEach {
                 wifiManager?.removeNetwork(it.networkId)
             }
         }
-        restore.setOnClickListener {
+        binding.restore.setOnClickListener {
             DialogUtils.selectFile(this, "select file") { files ->
                 try {
                     files[0].stream().buffered().reader("utf-8").readLines().forEach { wifiLine ->

@@ -1,7 +1,6 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
-    id 'kotlin-android-extensions'//TODO 删除
     id 'kotlin-kapt'
 }
 
@@ -41,16 +40,8 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
-    kotlinOptions {
-        jvmTarget = '1.8'
-    }
-    buildFeatures {
-        viewBinding true
-        dataBinding true
-    }
-    androidExtensions {
-        experimental = true
-    }
+    kotlinOptions { jvmTarget = '1.8' }
+    viewBinding { enabled = true }
 }
 
 dependencies {
@@ -69,6 +60,6 @@ dependencies {
     implementation 'com.github.h4de5ing.baseui:baseui:1.0-20221219'
     implementation 'com.github.h4de5ing.filepicker:filepicker:1.0-20221213'
     implementation 'com.github.h4de5ing.gsoncommon:gsoncommon:1.0-20211125'
-    implementation project(path: ':SystemLib')
-//    implementation 'com.android.systemlib:systemlib:1.0-20220411'
+//    implementation project(path: ':SystemLib')
+    implementation 'com.android.systemlib:systemlib:1.0-20221223'
 }

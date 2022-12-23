@@ -6,38 +6,38 @@ import android.os.Bundle
 import android.os.RecoverySystem
 import android.os.UpdateEngine
 import android.os.UpdateEngineCallback
-import android.text.TextUtils
 import androidx.appcompat.app.AppCompatActivity
-import com.android.systemlib.getSystemPropertyString
+import com.android.otax.databinding.ActivityMainBinding
 import com.github.h4de5ing.filepicker.DialogUtils
-import kotlinx.android.synthetic.main.activity_main.*
 import java.io.BufferedReader
 import java.io.DataOutputStream
 import java.io.File
 import java.io.InputStreamReader
 
 class MainActivity : AppCompatActivity() {
+    private lateinit var binding: ActivityMainBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-        copy.setOnClickListener {
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        binding.copy.setOnClickListener {
             DialogUtils.selectFile(this, "请选择一个ZIP") {
                 val zipFile = File(it[0])
                 if (zipFile.exists()) {
                     try {
                         val otaFile = File("/data/ota_package/update.zip")
                         zipFile.copyTo(otaFile, true)
-                        result.text = if (otaFile.exists()) "复制成功" else "复制失败"
+                        binding.result.text = if (otaFile.exists()) "复制成功" else "复制失败"
                         val commandResult = runCommand("chmod 666 ${otaFile.absoluteFile}")
-                        result.append(commandResult)
+                        binding.result.append(commandResult)
                     } catch (e: Exception) {
-                        result.text = e.message
+                        binding.result.text = e.message
                         e.printStackTrace()
                     }
                 }
             }
         }
-        upload.setOnClickListener {
+        binding.upload.setOnClickListener {
             val otaFile = File("/data/ota_package/update.zip")
             abupdate(otaFile)
 //            DialogUtils.selectFile(this, "请选择一个ZIP") {
@@ -85,7 +85,7 @@ class MainActivity : AppCompatActivity() {
                     override fun onStatusUpdate(status: Int, percent: Float) {
                         when (status) {
                             UpdateEngine.UpdateStatusConstants.UPDATED_NEED_REBOOT -> reboot()
-                            UpdateEngine.UpdateStatusConstants.DOWNLOADING -> result.text =
+                            UpdateEngine.UpdateStatusConstants.DOWNLOADING -> binding.result.text =
                                 "${percent.toInt()}"
                         }
                     }
@@ -145,9 +145,9 @@ class MainActivity : AppCompatActivity() {
                         errMessage = "$name [$value] (${message})"
                     }
                 }
-                result.text = errMessage
+                binding.result.text = errMessage
             } catch (e: Exception) {
-                result.text = "${e.message} [" + errorCode + "]"
+                binding.result.text = "${e.message} [" + errorCode + "]"
                 e.printStackTrace()
             }
         }

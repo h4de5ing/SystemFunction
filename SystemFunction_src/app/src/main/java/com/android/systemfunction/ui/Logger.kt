@@ -3,8 +3,7 @@ package com.android.systemfunction.ui
 import android.os.Bundle
 import android.text.method.ScrollingMovementMethod
 import androidx.appcompat.app.AppCompatActivity
-import com.android.systemfunction.R
-import kotlinx.android.synthetic.main.activity_loggerui.*
+import com.android.systemfunction.databinding.ActivityLoggeruiBinding
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileOutputStream
@@ -13,16 +12,18 @@ import java.io.InputStreamReader
 
 class Logger : AppCompatActivity() {
     private var recording = false
+    private lateinit var binding: ActivityLoggeruiBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_loggerui)
+        binding = ActivityLoggeruiBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         val readThread = ReadLogThread { }
-        start.setOnClickListener {
+        binding.start.setOnClickListener {
             recording = !recording
-            start.text = if (recording) "停止" else "开始"
+            binding.start.text = if (recording) "停止" else "开始"
             if (recording) readThread.start() else readThread.stopLog()
         }
-        log.movementMethod = ScrollingMovementMethod()
+        binding.log.movementMethod = ScrollingMovementMethod()
     }
 
     private class ReadLogThread(private val callback: (message: String) -> Unit) : Thread() {
