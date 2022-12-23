@@ -301,7 +301,7 @@ fun mobile_data(context: Context, isDisable: Boolean) {
 /**
  * 静默安装apk
  */
-fun installAPK(context: Context, apkFilePath: String) {
+fun installAPK(context: Context, apkFilePath: String, change: ((Int) -> Unit)) {
     try {
         val apkFile = File(apkFilePath)
         val packageInstaller = context.packageManager.packageInstaller
@@ -310,19 +310,19 @@ fun installAPK(context: Context, apkFilePath: String) {
         sessionParams.setSize(apkFile.length())
         val sessionId = packageInstaller.createSession(sessionParams)
         if (sessionId != -1) {
-            val copySuccess = copyInstallFile(packageInstaller, sessionId, apkFilePath)
-            if (copySuccess) {
-                execInstallCommand(context, packageInstaller, sessionId)
-            }
+            val copySuccess = copyInstallFile(packageInstaller, sessionId, apkFilePath, change)
+            if (copySuccess) execInstallCommand(context, packageInstaller, sessionId, change)
         }
     } catch (e: Exception) {
+        change(-1)
         e.printStackTrace()
     }
 }
 
 private fun copyInstallFile(
     packageInstaller: PackageInstaller,
-    sessionId: Int, apkFilePath: String
+    sessionId: Int, apkFilePath: String,
+    change: ((Int) -> Unit)
 ): Boolean {
     var `in`: InputStream? = null
     var out: OutputStream? = null
@@ -343,6 +343,7 @@ private fun copyInstallFile(
         session.fsync(out)
         success = true
     } catch (e: IOException) {
+        change(-2)
         e.printStackTrace()
     } finally {
         closeQuietly(out)
@@ -356,32 +357,26 @@ private fun copyInstallFile(
 private fun execInstallCommand(
     context: Context,
     packageInstaller: PackageInstaller,
-    sessionId: Int
+    sessionId: Int,
+    change: ((Int) -> Unit)
 ) {
     var session: PackageInstaller.Session? = null
     try {
         session = packageInstaller.openSession(sessionId)
-        val intent = Intent(context, InstallResultReceiver::class.java)
-        val pendingIntent: PendingIntent =
-            PendingIntent.getBroadcast(context, 1, intent, PendingIntent.FLAG_UPDATE_CURRENT)
-        session.commit(pendingIntent.intentSender)
+        session.commit(
+            PendingIntent.getBroadcast(
+                context,
+                1,
+                Intent(),
+                PendingIntent.FLAG_UPDATE_CURRENT
+            ).intentSender
+        )
+        change(0)
     } catch (e: IOException) {
+        change(-3)
         e.printStackTrace()
     } finally {
         closeQuietly(session)
-    }
-}
-
-class InstallResultReceiver : BroadcastReceiver() {
-    override fun onReceive(context: Context?, intent: Intent?) {
-        println(
-            "${
-                intent?.getIntExtra(
-                    PackageInstaller.EXTRA_STATUS,
-                    PackageInstaller.STATUS_FAILURE
-                )
-            }"
-        )
     }
 }
 
@@ -495,6 +490,15 @@ fun disableApp(context: Context, componentName: ComponentName, isDisable: Boolea
         componentName,
         if (isDisable) PackageManager.COMPONENT_ENABLED_STATE_DISABLED
         else PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+        PackageManager.DONT_KILL_APP
+    )
+}
+
+fun disableAppUser(context: Context, componentName: ComponentName, isDisable: Boolean) {
+    context.packageManager.setComponentEnabledSetting(
+        componentName,
+        if (isDisable) PackageManager.COMPONENT_ENABLED_STATE_DISABLED_USER
+        else PackageManager.COMPONENT_ENABLED_STATE_DEFAULT,
         PackageManager.DONT_KILL_APP
     )
 }
