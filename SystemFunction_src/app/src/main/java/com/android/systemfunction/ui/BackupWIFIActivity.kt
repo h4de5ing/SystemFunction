@@ -48,7 +48,7 @@ class BackupWIFIActivity : AppCompatActivity() {
                             )
                             list.add(bean)
                             write2File(backFile.absolutePath, "${bean}\n", true)
-                        } catch (e: Exception) {
+                        } catch (_: Exception) {
                         }
                     }
                     println(list)

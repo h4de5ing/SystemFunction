@@ -1,6 +1,5 @@
 package com.android.systemfunction
 
-import android.annotation.SuppressLint
 import android.app.ActivityManager
 import android.content.Context
 import android.content.Intent
@@ -25,7 +24,6 @@ import java.io.FileOutputStream
 
 
 class MainActivity : AppCompatActivity() {
-    @SuppressLint("MissingPermission")
     @RequiresApi(Build.VERSION_CODES.S)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,8 +44,8 @@ class MainActivity : AppCompatActivity() {
         status.change { updateKT(ConfigEnum.DISABLE_STATUS.name, if (it) "0" else "1") }
         adb.change {
             if (isDebug())
-                setUSBDataDisabled(this, it) else
-                updateKT(ConfigEnum.DISABLE_USB_DATA.name, if (it) "0" else "1")
+                setUSBDataDisabled(this, it)
+            else updateKT(ConfigEnum.DISABLE_USB_DATA.name, if (it) "0" else "1")
         }
         bluetooth.change { updateKT(ConfigEnum.DISABLE_BLUETOOTH.name, if (it) "0" else "1") }
         wifi.change { updateKT(ConfigEnum.DISABLE_WIFI.name, if (it) "0" else "1") }
@@ -57,10 +55,7 @@ class MainActivity : AppCompatActivity() {
         microphone.change { updateKT(ConfigEnum.DISABLE_MICROPHONE.name, if (it) "0" else "1") }
         screen_shot.change { updateKT(ConfigEnum.DISABLE_SCREEN_SHOT.name, if (it) "0" else "1") }
         screen_capture.change {
-            updateKT(
-                ConfigEnum.DISABLE_SCREEN_CAPTURE.name,
-                if (it) "0" else "1"
-            )
+            updateKT(ConfigEnum.DISABLE_SCREEN_CAPTURE.name, if (it) "0" else "1")
         }
         tf_card.change { updateKT(ConfigEnum.DISABLE_TF_CARD.name, if (it) "0" else "1") }
         phone_call.change { updateKT(ConfigEnum.DISABLE_PHONE_CALL.name, if (it) "0" else "1") }
@@ -69,10 +64,7 @@ class MainActivity : AppCompatActivity() {
         mms.change { updateKT(ConfigEnum.DISABLE_MMS.name, if (it) "0" else "1") }
         share.change { updateKT(ConfigEnum.DISABLE_SHARE.name, if (it) "0" else "1") }
         system_update.change {
-            updateKT(
-                ConfigEnum.DISABLE_SYSTEM_UPDATE.name,
-                if (it) "0" else "1"
-            )
+            updateKT(ConfigEnum.DISABLE_SYSTEM_UPDATE.name, if (it) "0" else "1")
         }
         install_app.change {
             updateKT(ConfigEnum.DISABLE_INSTALL_APP.name, if (it) "0" else "1")
@@ -84,43 +76,39 @@ class MainActivity : AppCompatActivity() {
             updateKT(ConfigEnum.DISABLE_RESTORE_FACTORY.name, if (it) "0" else "1")
         }
         device_manager.change {
-            if (it) {
-                setActiveProfileOwner(this, App.componentName2)
-            } else {
-                removeActiveDeviceAdmin(this, App.componentName2)
-                clearProfileOwner(App.componentName2)
+            try {
+                if (it) setActiveProfileOwner(this, App.componentName2)
+                else {
+                    removeActiveDeviceAdmin(this, App.componentName2)
+                    clearProfileOwner(App.componentName2)
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
         }
         reset.setOnClickListener {
-            alertConfirm(
-                this,
-                "${getString(R.string.reset)}?"
-            ) { if (it) reset(this) }
+            alertConfirm(this, "${getString(R.string.reset)}?") { if (it) reset(this) }
         }
         shut_down.setOnClickListener {
-            alertConfirm(
-                this,
-                "${getString(R.string.shut_down)}?"
-            ) { if (it) shutdown() }
+            alertConfirm(this, "${getString(R.string.shut_down)}?") { if (it) shutdown() }
         }
         reboot.setOnClickListener {
-            alertConfirm(
-                this,
-                "${getString(R.string.reboot)}?"
-            ) { if (it) reboot() }
+            alertConfirm(this, "${getString(R.string.reboot)}?") { if (it) reboot() }
         }
         shot.setOnClickListener { testShot() }
         app_manager.setOnClickListener {
+//            Instrumentation().sendKeyDownUpSync(KeyEvent.KEYCODE_SYSRQ)
             startActivity(
                 Intent(
-                    this,
-                    APPManagerActivity::class.java
+                    this, APPManagerActivity::class.java
                 )
             )
         }
         install.setOnClickListener {
             DialogUtils.selectFile(this, "select a APK file") {
-                installAPK(this, it[0])
+                installAPK(this, it[0]) { status ->
+                    println("APP安装状态:${status}")
+                }
             }
         }
         ota.setOnClickListener {
@@ -144,8 +132,7 @@ class MainActivity : AppCompatActivity() {
             //get_recent(this)
             startActivity(
                 Intent(
-                    this,
-                    PackageListActivity::class.java
+                    this, PackageListActivity::class.java
                 )
             )
         }
@@ -183,11 +170,7 @@ class MainActivity : AppCompatActivity() {
             share.isChecked = isDisableShare
             system_update.isChecked = isDisableSystemUpdate
             restore_factory.isChecked = isDisableRestoreFactory
-            device_manager.isChecked =
-                isAdminActive(
-                    this,
-                    App.componentName2
-                )
+            device_manager.isChecked = isAdminActive(this, App.componentName2)
             install_app.isChecked = isDisableInstallApp
             uninstall_app.isChecked = isDisableUnInstallApp
         } catch (e: Exception) {

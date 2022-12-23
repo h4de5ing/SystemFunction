@@ -14,7 +14,7 @@ public class TestUtils {
             Object obj = c.newInstance();
             Field field = c.getField("config_defaultSupervisionProfileOwnerComponent");
             id = field.getInt(obj);
-        } catch (Exception e) {
+        } catch (Exception ignored) {
         }
         return id;
     }

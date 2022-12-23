@@ -33,3 +33,7 @@ KeyChainSystemService
 TelecomLoaderService
 
 apn 设置可以参考ApnEditor.java ApnPreference.java ApnSettings.java
+
+
+## TODO
+- [ ] 移除截屏 采用快捷键替代 

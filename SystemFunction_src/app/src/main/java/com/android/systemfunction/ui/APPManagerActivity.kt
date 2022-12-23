@@ -1,8 +1,6 @@
 package com.android.systemfunction.ui
 
-import android.os.Build
 import android.os.Bundle
-import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.android.systemfunction.R
 import com.android.systemfunction.adapter.ListAppAdapter
@@ -11,7 +9,6 @@ import com.android.systemfunction.utils.getInstallApp
 import com.github.h4de5ing.baseui.base.BaseReturnActivity
 import kotlinx.android.synthetic.main.activity_appmanager.*
 
-@RequiresApi(Build.VERSION_CODES.N)
 class APPManagerActivity : BaseReturnActivity() {
     private val adapter = ListAppAdapter()
     private val appList = mutableListOf<AppBean>()

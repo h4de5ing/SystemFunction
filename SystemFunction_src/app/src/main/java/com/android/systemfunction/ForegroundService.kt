@@ -258,7 +258,7 @@ class ForegroundService : Service(), LifecycleOwner {
     }
 
     private fun isGPSOpen(): Boolean {
-        var state =
+        val state =
             (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P)
                 mLocationManager!!.isLocationEnabled
             else mLocationManager!!.isProviderEnabled(Settings.System.LOCATION_PROVIDERS_ALLOWED))

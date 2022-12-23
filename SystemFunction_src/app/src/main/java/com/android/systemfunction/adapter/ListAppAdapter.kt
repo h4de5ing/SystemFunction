@@ -17,7 +17,6 @@ import com.chad.library.adapter.base.BaseQuickAdapter
 import com.chad.library.adapter.base.viewholder.BaseViewHolder
 import com.github.h4de5ing.baseui.alertConfirm
 
-@RequiresApi(Build.VERSION_CODES.N)
 class ListAppAdapter(layoutRes: Int = R.layout.item_app_list) :
     BaseQuickAdapter<AppBean, BaseViewHolder>(layoutRes) {
     @RequiresApi(Build.VERSION_CODES.Q)

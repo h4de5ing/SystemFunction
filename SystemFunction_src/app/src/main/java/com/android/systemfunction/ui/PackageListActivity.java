@@ -48,7 +48,7 @@ public class PackageListActivity extends AppCompatActivity {
             for (String s : newMessage.split(",")) {
                 list.add(s.trim());
             }
-        } catch (Exception e) {
+        } catch (Exception ignored) {
         }
         return list;
     }

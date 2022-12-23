@@ -6,8 +6,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.ResolveInfo
 import android.net.Uri
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.core.widget.addTextChangedListener
 import androidx.core.widget.doOnTextChanged
 import com.android.mdmsdk.BuildConfig
@@ -21,7 +19,6 @@ import com.android.systemfunction.bean.SettingsBean
 import com.android.systemfunction.db.Config
 import com.android.systemfunction.db.PackageList
 import com.android.systemlib.*
-import com.github.h4de5ing.base.delayed
 import com.github.h4de5ing.baseui.logD
 import com.google.android.material.textfield.TextInputEditText
 import com.google.gson.JsonArray
@@ -195,7 +192,6 @@ fun firstUpdatePackage(data: MutableList<PackageList>) {
 private fun PackageList.update() = systemDao.updatePackages(this)
 private fun PackageList.insert() = systemDao.insertPackages(this)
 
-@RequiresApi(Build.VERSION_CODES.N)
 fun import2DB(list: List<KeyValue>) = list.forEach { updateKT(it.key, it.value) }
 
 private fun Config.update() = systemDao.updateConfig(this)
@@ -435,4 +431,12 @@ private fun JsonArray.toList(): List<Pair<String, String>> {
         }
     }
     return list
+}
+
+fun delayed(delay: Long, block: () -> Unit) {
+    Timer().schedule(object : TimerTask() {
+        override fun run() {
+            block()
+        }
+    }, delay)
 }

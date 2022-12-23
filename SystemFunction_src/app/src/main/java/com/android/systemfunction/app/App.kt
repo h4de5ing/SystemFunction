@@ -6,10 +6,10 @@ import com.android.systemfunction.AdminReceiver
 import com.android.systemfunction.BuildConfig
 import com.android.systemfunction.db.SystemDao
 import com.android.systemfunction.db.SystemDatabase
-import com.android.systemfunction.utils.CrashHandler
 import com.android.systemfunction.utils.firstUpdate
 import com.android.systemfunction.utils.firstUpdatePackage
 import com.android.systemfunction.utils.isDebug
+import com.github.h4de5ing.baseui.CrashHandler
 import com.github.h4de5ing.baseui.initLog
 
 class App : Application() {

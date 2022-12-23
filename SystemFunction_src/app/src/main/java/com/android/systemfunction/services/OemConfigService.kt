@@ -7,11 +7,9 @@ import android.os.IBinder
 import android.os.UserManager
 import android.service.quicksettings.Tile
 import android.service.quicksettings.TileService
-import androidx.annotation.RequiresApi
 import com.android.systemfunction.R
 import com.android.systemlib.isDisableDMD
 
-@RequiresApi(Build.VERSION_CODES.N)
 class OemConfigService : TileService() {
 
     override fun onBind(intent: Intent): IBinder? {
@@ -25,7 +23,7 @@ class OemConfigService : TileService() {
         qsTile.updateTile()
         qsTile.icon = Icon.createWithResource(this, R.drawable.ic_baseline_apps_24)
         qsTile.label = "APP"
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             qsTile.subtitle = "This is a TileService"
         }
     }
