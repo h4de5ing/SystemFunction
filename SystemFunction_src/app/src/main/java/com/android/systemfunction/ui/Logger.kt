@@ -37,7 +37,7 @@ class Logger : AppCompatActivity() {
         override fun run() {
             super.run()
             try {
-                var logcatProc = Runtime.getRuntime().exec("/system/bin/logcat *:e *:i")
+                val logcatProc = Runtime.getRuntime().exec("/system/bin/logcat *:e *:i")
                 val reader = BufferedReader(InputStreamReader(logcatProc.inputStream), 1024)
                 var line: String? = null
                 while (running && reader.readLine().also {

@@ -20,7 +20,7 @@ class DisableServiceAdapter(layoutRes: Int = R.layout.item_app_list) :
         holder.setText(R.id.app_package, item.packageName)
         holder.setImageDrawable(R.id.icon, byteArray2Drawable(drawable2ByteArray(icon)))
         val edit = holder.getView<ImageView>(R.id.edit)
-        if (item.applicationInfo.enabled) edit.setImageResource(R.drawable.ic_baseline_check_circle_outline_24)
+        if (getAppIsEnabled(item.packageName)) edit.setImageResource(R.drawable.ic_baseline_check_circle_outline_24)
         else edit.setImageResource(R.drawable.ic_baseline_block_24)
         edit.setOnClickListener {
             confirmDialog(
