@@ -1,10 +1,12 @@
 package com.android.systemlib
 
 import android.annotation.SuppressLint
+import android.app.StatusBarManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
+import android.os.Build
 import android.provider.Settings
 import android.text.TextUtils
 import android.view.View
@@ -189,6 +191,31 @@ fun setStatusBarInt(context: Context, status: Int) {
 //        val iStatusBarManager =
 //            IStatusBarService.Stub.asInterface(ServiceManager.getService("statusbar"))
 //        iStatusBarManager.disable(status, Binder(), context.packageName)
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+}
+
+const val DISABLE2_NONE = 0x00000000
+const val DISABLE2_QUICK_SETTINGS = 1
+const val DISABLE2_SYSTEM_ICONS = 1 shl 1
+const val DISABLE2_NOTIFICATION_SHADE = 1 shl 2
+const val DISABLE2_GLOBAL_ACTIONS = 1 shl 3
+const val DISABLE2_ROTATE_SUGGESTIONS = 1 shl 4
+const val DISABLE2_MASK: Int =
+    (DISABLE2_QUICK_SETTINGS or DISABLE2_SYSTEM_ICONS
+            or DISABLE2_NOTIFICATION_SHADE or DISABLE2_GLOBAL_ACTIONS or DISABLE2_ROTATE_SUGGESTIONS)
+
+@SuppressLint("WrongConstant")
+fun setStatusBar2(context: Context, status: Int) {
+    val service = context.getSystemService("statusbar")
+    try {
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+//            (service as StatusBarManager).disable2(status)
+//        }
+        val statusBarManager = Class.forName("android.app.StatusBarManager")
+        val expand = statusBarManager.getMethod("disable2", Int::class.java)
+        expand.invoke(service, status)
     } catch (e: Exception) {
         e.printStackTrace()
     }

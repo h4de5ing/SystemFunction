@@ -49,7 +49,7 @@ fun getAllSettings(context: Context): List<Pair<String, String>> {
                 val pair = getSettings(context, uri)
                 if (pair != null) list.add(pair)
                 //Settings.Global.getString(context.contentResolver, "${name}")
-            } catch (e: Exception) {
+            } catch (_: Exception) {
             }
         }
 
@@ -60,7 +60,7 @@ fun getAllSettings(context: Context): List<Pair<String, String>> {
                 val uri = Settings.System.getUriFor("$name")
                 val pair = getSettings(context, uri)
                 if (pair != null) list.add(pair)
-            } catch (e: Exception) {
+            } catch (_: Exception) {
             }
         }
         val secure = Settings.Secure::class.java
@@ -70,7 +70,7 @@ fun getAllSettings(context: Context): List<Pair<String, String>> {
                 val uri = Settings.Secure.getUriFor("$name")
                 val pair = getSettings(context, uri)
                 if (pair != null) list.add(pair)
-            } catch (e: Exception) {
+            } catch (_: Exception) {
             }
         }
     } catch (e: Exception) {
@@ -87,10 +87,10 @@ fun getDeclaredFields(context: Context, clazz: Class<Any>): Pair<String, String>
                 val name = it.get(clazz)
                 val uri = Settings.Global.getUriFor("$name")
                 pair = getSettings(context, uri)
-            } catch (e: Exception) {
+            } catch (_: Exception) {
             }
         }
-    } catch (e: Exception) {
+    } catch (_: Exception) {
     }
     return pair
 }
@@ -118,7 +118,7 @@ fun getUriFor(context: Context, uri: Uri): List<Pair<String, String>> {
         while (cursor.moveToNext()) {
             val name = cursor.getString(1)
             val value = cursor.getString(2)
-            if (!TextUtils.isEmpty(name)) list.add(Pair(name, "$value"))
+            if (!TextUtils.isEmpty(name)) list.add(Pair(name, value))
         }
         cursor.close()
     }
@@ -279,4 +279,8 @@ fun drawable2Bitmap(icon: Drawable): Bitmap {
 fun getPhoneNumber() {
 //    val telephonyManager = getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
 //    println("手机号码:${telephonyManager.line1Number}")
+}
+
+fun getDefaultConfig() {
+    com.android.internal.R.string.config_defaultSupervisionProfileOwnerComponent
 }

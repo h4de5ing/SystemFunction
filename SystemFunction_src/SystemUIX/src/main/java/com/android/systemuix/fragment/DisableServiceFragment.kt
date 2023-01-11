@@ -2,6 +2,7 @@ package com.android.systemuix.fragment
 
 import android.annotation.SuppressLint
 import android.app.Fragment
+import android.content.Context
 import android.content.pm.PackageInfo
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -38,7 +39,7 @@ class DisableServiceFragment : Fragment() {
         view?.apply {
             etKeyword = view.findViewById(R.id.keyword)
             tvResult = view.findViewById(R.id.result)
-            etKeyword?.addTextChangedListener(EditTextChangeListener { update(it) })
+            etKeyword?.addTextChangedListener(EditTextChangeListener { update(activity, it) })
             val recyclerView = view.findViewById<RecyclerView>(R.id.app)
             recyclerView.setHasFixedSize(true)
             recyclerView.layoutManager = LinearLayoutManager(activity)
@@ -50,8 +51,12 @@ class DisableServiceFragment : Fragment() {
     }
 
 
-    private fun update(keyword: String) {
-        val newList = appList.filter { it.toString().contains(keyword) }
+    private fun update(context: Context, keyword: String) {
+        val newList = appList.filter {
+            it.packageName.contains(keyword) ||
+//                    context.packageManager.getApplicationLabel(it.applicationInfo).contains(keyword)
+                    it.applicationInfo.loadLabel(context.packageManager).contains(keyword)
+        }
         val disabled = newList.filter { !it.applicationInfo.enabled }
         val enable = newList.filter { it.applicationInfo.enabled }
         tvResult?.text =

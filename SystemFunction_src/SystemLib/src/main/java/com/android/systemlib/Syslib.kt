@@ -781,10 +781,10 @@ fun grantAllPermission(packageName: String) {
         ).requestedPermissions.forEach {
             try {
                 ipm.grantRuntimePermission(packageName, it, 0)
-            } catch (e: Exception) {
+            } catch (_: Exception) {
             }
         }
-    } catch (e: Exception) {
+    } catch (_: Exception) {
     }
 }
 

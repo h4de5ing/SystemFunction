@@ -16,7 +16,7 @@ class DisableServiceAdapter(layoutRes: Int = R.layout.item_app_list) :
         val pm = context.packageManager
         val appName = pm.getApplicationLabel(item.applicationInfo)
         val icon = item.applicationInfo.loadIcon(pm)
-        holder.setText(R.id.time, "$appName")
+        holder.setText(R.id.app_name, "$appName")
         holder.setText(R.id.app_package, item.packageName)
         holder.setImageDrawable(R.id.icon, byteArray2Drawable(drawable2ByteArray(icon)))
         val edit = holder.getView<ImageView>(R.id.edit)

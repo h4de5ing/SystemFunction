@@ -30,4 +30,8 @@ frameworks\base\core\res\res\values\config.xml
 
 
 ## TODO
-- [ ] 移除截屏 采用快捷键替代 
+- [x] 移除截屏 采用快捷键替代 
+
+
+## 已实现接口
+- 禁用
