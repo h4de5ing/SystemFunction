@@ -1,0 +1,88 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "com.android.systemlib",
+    "module": "systemlib",
+    "version": "1.0-20230131",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "7.5"
+    }
+  },
+  "variants": [
+    {
+      "name": "releaseApiElements-published",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.usage": "java-api",
+        "org.jetbrains.kotlin.platform.type": "androidJvm"
+      },
+      "dependencies": [
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib-jdk8",
+          "version": {
+            "requires": "1.7.21"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "systemlib-1.0-20230131.aar",
+          "url": "systemlib-1.0-20230131.aar",
+          "size": 39733,
+          "sha512": "308f4b8ef744d2b51680ff1e5a9874852f3a10b76d2ecd2adc788a7e5122571fde2bd15ed888df960b3946bb1763b302aadd1fe13d21e1e4ad3e93ab7f3c36d3",
+          "sha256": "112bcb46638c79a3b07de044fb8a6cb1ee1b7046c0e290dbc55acebbdd915b26",
+          "sha1": "5898da3c8f6f481c5fbf7abc1f1d5cede9fee0d4",
+          "md5": "5477189a37af8a70b69d96bb21cc1a32"
+        }
+      ]
+    },
+    {
+      "name": "releaseRuntimeElements-published",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.usage": "java-runtime",
+        "org.jetbrains.kotlin.platform.type": "androidJvm"
+      },
+      "dependencies": [
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib-jdk8",
+          "version": {
+            "requires": "1.7.21"
+          }
+        },
+        {
+          "group": "androidx.core",
+          "module": "core-ktx",
+          "version": {
+            "requires": "1.9.0"
+          }
+        },
+        {
+          "group": "com.android.android12",
+          "module": "android12",
+          "version": {
+            "requires": "1.0-20230131"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "systemlib-1.0-20230131.aar",
+          "url": "systemlib-1.0-20230131.aar",
+          "size": 39733,
+          "sha512": "308f4b8ef744d2b51680ff1e5a9874852f3a10b76d2ecd2adc788a7e5122571fde2bd15ed888df960b3946bb1763b302aadd1fe13d21e1e4ad3e93ab7f3c36d3",
+          "sha256": "112bcb46638c79a3b07de044fb8a6cb1ee1b7046c0e290dbc55acebbdd915b26",
+          "sha1": "5898da3c8f6f481c5fbf7abc1f1d5cede9fee0d4",
+          "md5": "5477189a37af8a70b69d96bb21cc1a32"
+        }
+      ]
+    }
+  ]
+}
