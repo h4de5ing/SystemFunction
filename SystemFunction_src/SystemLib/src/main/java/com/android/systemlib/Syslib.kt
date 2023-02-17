@@ -366,7 +366,7 @@ private fun execInstallCommand(
                 context,
                 1,
                 Intent(),
-                PendingIntent.FLAG_UPDATE_CURRENT
+                PendingIntent.FLAG_IMMUTABLE
             ).intentSender
         )
         change(0)
