@@ -1,0 +1,95 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "com.android.systemlib",
+    "module": "systemlib",
+    "version": "1.0-20230217",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "7.5"
+    }
+  },
+  "variants": [
+    {
+      "name": "releaseApiElements-published",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.usage": "java-api",
+        "org.jetbrains.kotlin.platform.type": "androidJvm"
+      },
+      "dependencies": [
+        {
+          "group": "com.android.android12",
+          "module": "android12",
+          "version": {
+            "requires": "1.0-20230217"
+          }
+        },
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib-jdk8",
+          "version": {
+            "requires": "1.8.0"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "systemlib-1.0-20230217.aar",
+          "url": "systemlib-1.0-20230217.aar",
+          "size": 40299,
+          "sha512": "fe92965d3515f9b85f0ee1369c95db15fba91a8aa513b541e6dca36e6557e13b618c1b7e559b5ddd5d0cf19df99e8a4a78b930a8b61ac7fe2dda1b57201306dc",
+          "sha256": "86a2eeac35d6aac42ce6bfe0e99e42b192ba1339a0126a725109869f159c642a",
+          "sha1": "f9e71e968cae7ce5c4cf169a50edb5349c07d29e",
+          "md5": "78dc23dc1b61913b5bc2264f4ea2d9a1"
+        }
+      ]
+    },
+    {
+      "name": "releaseRuntimeElements-published",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.usage": "java-runtime",
+        "org.jetbrains.kotlin.platform.type": "androidJvm"
+      },
+      "dependencies": [
+        {
+          "group": "androidx.core",
+          "module": "core-ktx",
+          "version": {
+            "requires": "1.9.0"
+          }
+        },
+        {
+          "group": "com.android.android12",
+          "module": "android12",
+          "version": {
+            "requires": "1.0-20230217"
+          }
+        },
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib-jdk8",
+          "version": {
+            "requires": "1.8.0"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "systemlib-1.0-20230217.aar",
+          "url": "systemlib-1.0-20230217.aar",
+          "size": 40299,
+          "sha512": "fe92965d3515f9b85f0ee1369c95db15fba91a8aa513b541e6dca36e6557e13b618c1b7e559b5ddd5d0cf19df99e8a4a78b930a8b61ac7fe2dda1b57201306dc",
+          "sha256": "86a2eeac35d6aac42ce6bfe0e99e42b192ba1339a0126a725109869f159c642a",
+          "sha1": "f9e71e968cae7ce5c4cf169a50edb5349c07d29e",
+          "md5": "78dc23dc1b61913b5bc2264f4ea2d9a1"
+        }
+      ]
+    }
+  ]
+}
