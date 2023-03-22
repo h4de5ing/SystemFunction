@@ -23,9 +23,7 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
-    kotlinOptions {
-        jvmTarget = '1.8'
-    }
+    kotlinOptions { jvmTarget = '1.8' }
     gradle.projectsEvaluated {
         tasks.withType(JavaCompile) {
             Set<File> fileSet = options.bootstrapClasspath.getFiles()
@@ -40,7 +38,7 @@ android {
 dependencies {
     implementation 'androidx.core:core-ktx:1.9.0'
     api project(path: ':Android12')
-//    implementation 'com.android.android12:android12:1.0-20220411'
+//    implementation 'com.android.android12:android12:1.0-20230217'
     compileOnly files('libs/classes.jar')
 }
 //afterEvaluate {
@@ -49,12 +47,6 @@ dependencies {
 //            def today = new Date().format('yyyyMMdd')
 //            release(MavenPublication) {
 //                from components.release
-//                groupId = 'com.android.systemlib'
-//                artifactId = 'systemlib'
-//                version = "1.0-$today"
-//            }
-//            debug(MavenPublication) {
-//                from components.debug
 //                groupId = 'com.android.systemlib'
 //                artifactId = 'systemlib'
 //                version = "1.0-$today"

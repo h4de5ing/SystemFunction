@@ -6,6 +6,7 @@ plugins {
 
 android {
     compileSdk 33
+    namespace 'com.android.android12'
     defaultConfig {
         minSdk 21
         targetSdk 33
@@ -23,9 +24,7 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
-    kotlinOptions {
-        jvmTarget = '1.8'
-    }
+    kotlinOptions { jvmTarget = '1.8' }
     gradle.projectsEvaluated {
         tasks.withType(JavaCompile) {
             Set<File> fileSet = options.bootstrapClasspath.getFiles()
@@ -47,12 +46,6 @@ dependencies {
 //            def today = new Date().format('yyyyMMdd')
 //            release(MavenPublication) {
 //                from components.release
-//                groupId = 'com.android.android12'
-//                artifactId = 'android12'
-//                version = "1.0-$today"
-//            }
-//            debug(MavenPublication) {
-//                from components.debug
 //                groupId = 'com.android.android12'
 //                artifactId = 'android12'
 //                version = "1.0-$today"

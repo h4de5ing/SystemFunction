@@ -26,20 +26,16 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
-    kotlinOptions {
-        jvmTarget = '1.8'
-    }
+    kotlinOptions { jvmTarget = '1.8' }
 }
 
 dependencies {
-    implementation 'androidx.core:core-ktx:1.9.0'
-    implementation 'androidx.appcompat:appcompat:1.6.1'
+//    implementation 'androidx.core:core-ktx:1.9.0'
+//    implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.8.0'
     implementation 'androidx.recyclerview:recyclerview:1.3.0'
     implementation 'com.github.h4de5ing.base:base:1.0-20221229'
     api 'com.github.CymChad:BaseRecyclerViewAdapterHelper:3.0.7'
-    implementation project(':SystemLib')
-    implementation project(':Android12')
 }
 afterEvaluate {
     publishing {
@@ -47,12 +43,6 @@ afterEvaluate {
             def today = new Date().format('yyyyMMdd')
             release(MavenPublication) {
                 from components.release
-                groupId = 'com.android.systemuix'
-                artifactId = 'systemuix'
-                version = "1.0-$today"
-            }
-            debug(MavenPublication) {
-                from components.debug
                 groupId = 'com.android.systemuix'
                 artifactId = 'systemuix'
                 version = "1.0-$today"
