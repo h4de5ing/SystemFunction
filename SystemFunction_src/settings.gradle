@@ -23,7 +23,7 @@ include ':app'
 include ':Aidl'
 include ':SystemLib'
 include ':Android12'
-//include ':SystemUIX'
+include ':SystemUIX'
 
 //include ':mdmclient'
 //include ':otax'

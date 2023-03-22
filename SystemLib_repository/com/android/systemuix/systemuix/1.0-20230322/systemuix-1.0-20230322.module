@@ -1,0 +1,139 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "com.android.systemuix",
+    "module": "systemuix",
+    "version": "1.0-20230322",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "7.5"
+    }
+  },
+  "variants": [
+    {
+      "name": "releaseVariantReleaseApiPublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-api"
+      },
+      "dependencies": [
+        {
+          "group": "com.github.CymChad",
+          "module": "BaseRecyclerViewAdapterHelper",
+          "version": {
+            "requires": "3.0.7"
+          }
+        },
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib-jdk8",
+          "version": {
+            "requires": "1.8.0"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "systemuix-1.0-20230322.aar",
+          "url": "systemuix-1.0-20230322.aar",
+          "size": 60262,
+          "sha512": "0254794e4c70d455acbd2e12078807dc16a177227e7898eb5115459ddd70a3a47dbcb1780638b19e0846d6be93967f6daaccab77029dbe001061b183edd5c4ee",
+          "sha256": "b350a64390f6504fdff6003e03a576dde6711707143cf704470f3a0f889c6056",
+          "sha1": "42337bca6724f7efdbac938c146176998e62419d",
+          "md5": "363e818af35ef53f0070535fce8529d0"
+        }
+      ]
+    },
+    {
+      "name": "releaseVariantReleaseRuntimePublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "androidx.core",
+          "module": "core-ktx",
+          "version": {
+            "requires": "1.9.0"
+          }
+        },
+        {
+          "group": "androidx.appcompat",
+          "module": "appcompat",
+          "version": {
+            "requires": "1.6.1"
+          }
+        },
+        {
+          "group": "com.google.android.material",
+          "module": "material",
+          "version": {
+            "requires": "1.8.0"
+          }
+        },
+        {
+          "group": "androidx.recyclerview",
+          "module": "recyclerview",
+          "version": {
+            "requires": "1.3.0"
+          }
+        },
+        {
+          "group": "com.github.h4de5ing.base",
+          "module": "base",
+          "version": {
+            "requires": "1.0-20221229"
+          }
+        },
+        {
+          "group": "SystemFunction",
+          "module": "SystemLib",
+          "version": {
+            "requires": "unspecified"
+          }
+        },
+        {
+          "group": "SystemFunction",
+          "module": "Android12",
+          "version": {
+            "requires": "unspecified"
+          }
+        },
+        {
+          "group": "com.github.CymChad",
+          "module": "BaseRecyclerViewAdapterHelper",
+          "version": {
+            "requires": "3.0.7"
+          }
+        },
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib-jdk8",
+          "version": {
+            "requires": "1.8.0"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "systemuix-1.0-20230322.aar",
+          "url": "systemuix-1.0-20230322.aar",
+          "size": 60262,
+          "sha512": "0254794e4c70d455acbd2e12078807dc16a177227e7898eb5115459ddd70a3a47dbcb1780638b19e0846d6be93967f6daaccab77029dbe001061b183edd5c4ee",
+          "sha256": "b350a64390f6504fdff6003e03a576dde6711707143cf704470f3a0f889c6056",
+          "sha1": "42337bca6724f7efdbac938c146176998e62419d",
+          "md5": "363e818af35ef53f0070535fce8529d0"
+        }
+      ]
+    }
+  ]
+}

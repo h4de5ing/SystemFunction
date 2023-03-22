@@ -5,6 +5,8 @@ import android.app.Fragment
 import android.content.Context
 import android.content.pm.PackageInfo
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,7 +16,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.android.systemuix.R
 import com.android.systemuix.adapter.DisableServiceAdapter
-import com.android.systemuix.utils.EditTextChangeListener
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -39,7 +40,7 @@ class DisableServiceFragment : Fragment() {
         view?.apply {
             etKeyword = view.findViewById(R.id.keyword)
             tvResult = view.findViewById(R.id.result)
-            etKeyword?.addTextChangedListener(EditTextChangeListener { update(activity, it) })
+            etKeyword?.change { update(activity, it) }
             val recyclerView = view.findViewById<RecyclerView>(R.id.app)
             recyclerView.setHasFixedSize(true)
             recyclerView.layoutManager = LinearLayoutManager(activity)
@@ -49,6 +50,19 @@ class DisableServiceFragment : Fragment() {
             recyclerView.setOnTouchListener { _, _ -> refreshing }
         }
     }
+
+    private fun TextView.change(change: ((String) -> Unit)) =
+        addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+            }
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+            }
+
+            override fun afterTextChanged(s: Editable?) {
+                change(s.toString())
+            }
+        })
 
 
     private fun update(context: Context, keyword: String) {
@@ -64,6 +78,14 @@ class DisableServiceFragment : Fragment() {
         adapter.setNewInstance(newList.toMutableList())
     }
 
+    val whiteList = listOf(
+        "com.android.kiosk",
+        "com.android.systemfunction",
+        "com.android.settingc",
+        "com.android.buttonassignment",
+        "com.android.settings"
+    )
+
     @OptIn(DelicateCoroutinesApi::class)
     @SuppressLint("NotifyDataSetChanged", "QueryPermissionsNeeded")
     private fun loadData() {
@@ -71,7 +93,7 @@ class DisableServiceFragment : Fragment() {
             activity?.runOnUiThread {
                 val pm = activity.packageManager
                 appList.clear()
-                appList.addAll(pm.getInstalledPackages(0))
+                appList.addAll(pm.getInstalledPackages(0).filter { it.packageName !in whiteList })
                 val disabled = appList.filter { !it.applicationInfo.enabled }
                 val enable = appList.filter { it.applicationInfo.enabled }
                 tvResult?.text =

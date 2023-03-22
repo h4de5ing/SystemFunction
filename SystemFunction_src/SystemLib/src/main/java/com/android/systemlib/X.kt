@@ -22,20 +22,20 @@ import java.util.*
 /**
  * 不需要System权限调用的接口,普通权限可以调用的工具类
  */
-fun String.stream() = FileInputStream(this)
-fun InputStream.buffered() = BufferedInputStream(this)
-fun InputStream.reader(charset: String) = InputStreamReader(this, charset)
-fun Reader.readLines(): List<String> {
-    val result = arrayListOf<String>()
-    forEachLine { result.add(it) }
-    return result
-}
-
-fun Reader.readString(): String {
-    val sb = StringBuilder()
-    forEachLine { sb.append(it) }
-    return sb.toString()
-}
+//fun String.stream() = FileInputStream(this)
+//fun InputStream.buffered() = BufferedInputStream(this)
+//fun InputStream.reader(charset: String) = InputStreamReader(this, charset)
+//fun Reader.readLines(): List<String> {
+//    val result = arrayListOf<String>()
+//    forEachLine { result.add(it) }
+//    return result
+//}
+//
+//fun Reader.readString(): String {
+//    val sb = StringBuilder()
+//    forEachLine { sb.append(it) }
+//    return sb.toString()
+//}
 
 
 fun getAllSettings(context: Context): List<Pair<String, String>> {

@@ -1,12 +1,10 @@
 package com.android.systemlib
 
 import android.annotation.SuppressLint
-import android.app.StatusBarManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
-import android.os.Build
 import android.provider.Settings
 import android.text.TextUtils
 import android.view.View
@@ -38,16 +36,9 @@ fun isDefaultLauncher(context: Context): Boolean {
  * 获取默认Launcher的应用名
  */
 fun getDefaultLauncherName(context: Context): String? {
-    var name = ""
     val pm = context.packageManager
     val resolveInfo = pm.resolveActivity(HOME_INTENT, PackageManager.MATCH_DEFAULT_ONLY)
-    if (resolveInfo != null) {
-        val appName = resolveInfo.activityInfo.loadLabel(pm).toString()
-        if (!TextUtils.isEmpty(appName)) {
-            name = resolveInfo.activityInfo.loadLabel(pm).toString()
-        }
-    }
-    return name
+    return resolveInfo?.activityInfo?.loadLabel(pm)?.toString()
 }
 
 /**
@@ -55,23 +46,17 @@ fun getDefaultLauncherName(context: Context): String? {
  * TODO 优化 参考 getSystemDefaultLauncher2 返回ComponentName
  */
 fun getSystemDefaultLauncher(context: Context): String? {
-    var packageName = ""
-    val pm = context.packageManager
-    pm.queryIntentActivities(HOME_INTENT, PackageManager.MATCH_DEFAULT_ONLY)
-        .forEach { resolveInfo ->
-            if (resolveInfo != null) {
-                val appName = resolveInfo.activityInfo.loadLabel(pm).toString()
-                if (!TextUtils.isEmpty(appName) && isSystemResolveInfo(resolveInfo)) {
-                    packageName = resolveInfo.activityInfo.packageName
-                }
-            }
-        }
-    return packageName
+    return context.packageManager.queryIntentActivities(
+        HOME_INTENT,
+        PackageManager.MATCH_DEFAULT_ONLY
+    )
+        .firstOrNull { it != null && isSystemResolveInfo(it) }?.activityInfo?.packageName
 }
 
 /**
  * 判断他是否具有系统属性
  */
+@SuppressLint("DiscouragedPrivateApi")
 fun isSystemResolveInfo(info: ResolveInfo): Boolean {
     val field = info.javaClass.getDeclaredField("system")
     field.isAccessible = true
