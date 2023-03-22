@@ -42,11 +42,11 @@
         {
           "name": "systemuix-1.0-20230322.aar",
           "url": "systemuix-1.0-20230322.aar",
-          "size": 60738,
-          "sha512": "4a768c4e6e9ac5fa0c13e82670232ccb47b532b4a98d3710fa756420d61ff24cc95e3e1d13009752e6530d167f6e7c5941aff2ff0025ea1e8bb37b9df20cc57a",
-          "sha256": "24f52581e6162ccaeab7fc5c4639f81364002995dd248e97396fffc28cc131ce",
-          "sha1": "3fc3a1b8ccf4f3447c2a58bd0edd3736763b3c18",
-          "md5": "2326126f812ffc8a7e22e8bac1cbad33"
+          "size": 61697,
+          "sha512": "c4cbd6e07737c6c68ee08bbb5bbc71ca005c43a7d09d885132bbc95a644bc8cb2af455f863aecad39ad1e69408adb69c30b0ebb14c97f3386091031cc4ecee7b",
+          "sha256": "2a283a8e579483bfca9f676313a826b8def1cccff0de73d7d22e1ffbff217949",
+          "sha1": "a8a413ffcc72af0cad803c81be4f1ad86a78a412",
+          "md5": "2c3cd8644873458778f12ea16471d22b"
         }
       ]
     },
@@ -59,20 +59,6 @@
         "org.gradle.usage": "java-runtime"
       },
       "dependencies": [
-        {
-          "group": "androidx.core",
-          "module": "core-ktx",
-          "version": {
-            "requires": "1.9.0"
-          }
-        },
-        {
-          "group": "androidx.appcompat",
-          "module": "appcompat",
-          "version": {
-            "requires": "1.6.1"
-          }
-        },
         {
           "group": "com.google.android.material",
           "module": "material",
@@ -95,20 +81,6 @@
           }
         },
         {
-          "group": "SystemFunction",
-          "module": "SystemLib",
-          "version": {
-            "requires": "unspecified"
-          }
-        },
-        {
-          "group": "SystemFunction",
-          "module": "Android12",
-          "version": {
-            "requires": "unspecified"
-          }
-        },
-        {
           "group": "com.github.CymChad",
           "module": "BaseRecyclerViewAdapterHelper",
           "version": {
@@ -127,11 +99,11 @@
         {
           "name": "systemuix-1.0-20230322.aar",
           "url": "systemuix-1.0-20230322.aar",
-          "size": 60738,
-          "sha512": "4a768c4e6e9ac5fa0c13e82670232ccb47b532b4a98d3710fa756420d61ff24cc95e3e1d13009752e6530d167f6e7c5941aff2ff0025ea1e8bb37b9df20cc57a",
-          "sha256": "24f52581e6162ccaeab7fc5c4639f81364002995dd248e97396fffc28cc131ce",
-          "sha1": "3fc3a1b8ccf4f3447c2a58bd0edd3736763b3c18",
-          "md5": "2326126f812ffc8a7e22e8bac1cbad33"
+          "size": 61697,
+          "sha512": "c4cbd6e07737c6c68ee08bbb5bbc71ca005c43a7d09d885132bbc95a644bc8cb2af455f863aecad39ad1e69408adb69c30b0ebb14c97f3386091031cc4ecee7b",
+          "sha256": "2a283a8e579483bfca9f676313a826b8def1cccff0de73d7d22e1ffbff217949",
+          "sha1": "a8a413ffcc72af0cad803c81be4f1ad86a78a412",
+          "md5": "2c3cd8644873458778f12ea16471d22b"
         }
       ]
     }
