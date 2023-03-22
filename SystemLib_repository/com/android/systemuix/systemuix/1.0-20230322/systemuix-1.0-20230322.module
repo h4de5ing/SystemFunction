@@ -42,11 +42,11 @@
         {
           "name": "systemuix-1.0-20230322.aar",
           "url": "systemuix-1.0-20230322.aar",
-          "size": 60262,
-          "sha512": "0254794e4c70d455acbd2e12078807dc16a177227e7898eb5115459ddd70a3a47dbcb1780638b19e0846d6be93967f6daaccab77029dbe001061b183edd5c4ee",
-          "sha256": "b350a64390f6504fdff6003e03a576dde6711707143cf704470f3a0f889c6056",
-          "sha1": "42337bca6724f7efdbac938c146176998e62419d",
-          "md5": "363e818af35ef53f0070535fce8529d0"
+          "size": 60738,
+          "sha512": "4a768c4e6e9ac5fa0c13e82670232ccb47b532b4a98d3710fa756420d61ff24cc95e3e1d13009752e6530d167f6e7c5941aff2ff0025ea1e8bb37b9df20cc57a",
+          "sha256": "24f52581e6162ccaeab7fc5c4639f81364002995dd248e97396fffc28cc131ce",
+          "sha1": "3fc3a1b8ccf4f3447c2a58bd0edd3736763b3c18",
+          "md5": "2326126f812ffc8a7e22e8bac1cbad33"
         }
       ]
     },
@@ -127,11 +127,11 @@
         {
           "name": "systemuix-1.0-20230322.aar",
           "url": "systemuix-1.0-20230322.aar",
-          "size": 60262,
-          "sha512": "0254794e4c70d455acbd2e12078807dc16a177227e7898eb5115459ddd70a3a47dbcb1780638b19e0846d6be93967f6daaccab77029dbe001061b183edd5c4ee",
-          "sha256": "b350a64390f6504fdff6003e03a576dde6711707143cf704470f3a0f889c6056",
-          "sha1": "42337bca6724f7efdbac938c146176998e62419d",
-          "md5": "363e818af35ef53f0070535fce8529d0"
+          "size": 60738,
+          "sha512": "4a768c4e6e9ac5fa0c13e82670232ccb47b532b4a98d3710fa756420d61ff24cc95e3e1d13009752e6530d167f6e7c5941aff2ff0025ea1e8bb37b9df20cc57a",
+          "sha256": "24f52581e6162ccaeab7fc5c4639f81364002995dd248e97396fffc28cc131ce",
+          "sha1": "3fc3a1b8ccf4f3447c2a58bd0edd3736763b3c18",
+          "md5": "2326126f812ffc8a7e22e8bac1cbad33"
         }
       ]
     }

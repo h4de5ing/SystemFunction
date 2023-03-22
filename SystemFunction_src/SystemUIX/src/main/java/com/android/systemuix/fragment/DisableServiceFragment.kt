@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.android.systemuix.R
 import com.android.systemuix.adapter.DisableServiceAdapter
+import com.android.systemuix.whiteList
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -77,14 +78,6 @@ class DisableServiceFragment : Fragment() {
             "search result: [${newList.size}] application contains $keyword ,enable:${enable.size},disable:${disabled.size}"
         adapter.setNewInstance(newList.toMutableList())
     }
-
-    val whiteList = listOf(
-        "com.android.kiosk",
-        "com.android.systemfunction",
-        "com.android.settingc",
-        "com.android.buttonassignment",
-        "com.android.settings"
-    )
 
     @OptIn(DelicateCoroutinesApi::class)
     @SuppressLint("NotifyDataSetChanged", "QueryPermissionsNeeded")
