@@ -23,7 +23,7 @@ import kotlinx.coroutines.launch
 
 @SuppressLint("SetTextI18n")
 class DisableServiceFragment : Fragment() {
-    private val adapter = DisableServiceAdapter()
+    private val adapter = DisableServiceAdapter { loadData() }
     private val appList = mutableListOf<PackageInfo>()
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -74,8 +74,7 @@ class DisableServiceFragment : Fragment() {
         }
         val disabled = newList.filter { !it.applicationInfo.enabled }
         val enable = newList.filter { it.applicationInfo.enabled }
-        tvResult?.text =
-            "search result: [${newList.size}] application contains $keyword ,enable:${enable.size},disable:${disabled.size}"
+        tvResult?.text = getString(R.string.search_result, newList.size, disabled.size, enable.size)
         adapter.setNewInstance(newList.toMutableList())
     }
 
@@ -90,7 +89,7 @@ class DisableServiceFragment : Fragment() {
                 val disabled = appList.filter { !it.applicationInfo.enabled }
                 val enable = appList.filter { it.applicationInfo.enabled }
                 tvResult?.text =
-                    "search result: [${appList.size}] application contains - ,enable:${enable.size},disable:${disabled.size}"
+                    getString(R.string.search_result, appList.size, disabled.size, enable.size)
                 adapter.notifyDataSetChanged()
                 refreshing = false
             }

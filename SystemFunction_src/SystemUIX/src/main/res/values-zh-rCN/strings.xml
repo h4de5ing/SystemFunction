@@ -1,0 +1,4 @@
+<resources>
+    <string name="please_enter_key">请输入关键字：</string>
+    <string name="search_result">筛选出%1$d个服务，其中禁用%2$d个、启用%3$d个！</string>
+</resources>

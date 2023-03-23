@@ -1,0 +1,4 @@
+<resources>
+    <string name="please_enter_key">Please enter a keyword:</string>
+    <string name="search_result">Filter out %1$d services, of which %2$d are disabled and %3$d are enabled!</string>
+</resources>
