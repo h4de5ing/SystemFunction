@@ -15,7 +15,7 @@ import com.chad.library.adapter.base.viewholder.BaseViewHolder
 import com.github.h4de5ing.base.exec
 import java.io.ByteArrayOutputStream
 
-class DisableServiceAdapter(layoutRes: Int = R.layout.item_app_list) :
+class DisableServiceAdapter(layoutRes: Int = R.layout.item_app_list, val change: (() -> Unit)) :
     BaseQuickAdapter<PackageInfo, BaseViewHolder>(layoutRes) {
     override fun convert(holder: BaseViewHolder, item: PackageInfo) {
         val pm = context.packageManager
@@ -35,6 +35,7 @@ class DisableServiceAdapter(layoutRes: Int = R.layout.item_app_list) :
                 exec("pm ${if (getAppIsEnabled(item.packageName)) "disable-user" else "enable"} ${item.packageName}")
                 if (getAppIsEnabled(item.packageName)) edit.setImageResource(R.drawable.ic_baseline_check_circle_outline_24)
                 else edit.setImageResource(R.drawable.ic_baseline_block_24)
+                change()
             }
         }
     }

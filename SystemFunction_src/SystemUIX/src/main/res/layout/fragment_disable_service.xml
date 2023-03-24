@@ -7,6 +7,7 @@
 
     <EditText
         android:id="@+id/keyword"
+        android:hint="@string/please_enter_key"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         tools:hint="search keyword" />
