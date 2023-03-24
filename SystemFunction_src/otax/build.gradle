@@ -5,7 +5,7 @@ plugins {
 
 android {
     compileSdk 33
-
+    namespace 'com.android.otax'
     defaultConfig {
         applicationId "com.android.otax"
         minSdk 21

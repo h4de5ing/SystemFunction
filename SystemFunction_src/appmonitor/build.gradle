@@ -4,9 +4,8 @@ plugins {
 }
 
 android {
-    namespace 'com.android.appmonitor'
     compileSdk 33
-
+    namespace 'com.android.appmonitor'
     defaultConfig {
         applicationId "com.android.appmonitor"
         minSdk 26

@@ -5,7 +5,7 @@ plugins {
 
 android {
     compileSdk 33
-
+    name 'com.android.mdmclient'
     defaultConfig {
         applicationId "com.android.mdmclient"
         minSdk 21

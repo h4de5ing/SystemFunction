@@ -6,9 +6,8 @@ plugins {
 }
 
 android {
-    namespace 'com.android.droidwall'
     compileSdk 33
-
+    namespace 'com.android.droidwall'
     defaultConfig {
         applicationId "com.android.droidwall"
         minSdk 21

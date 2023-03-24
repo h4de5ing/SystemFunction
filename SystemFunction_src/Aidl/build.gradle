@@ -6,7 +6,7 @@ plugins {
 
 android {
     compileSdk 33
-
+    namespace 'com.android.mdmsdk'
     defaultConfig {
         minSdk 26
         targetSdk 33

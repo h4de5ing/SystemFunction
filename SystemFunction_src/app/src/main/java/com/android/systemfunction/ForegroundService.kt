@@ -347,9 +347,7 @@ class ForegroundService : Service(), LifecycleOwner {
         unregisterReceiver(stateReceiver)
     }
 
-    override fun getLifecycle(): Lifecycle {
-        return lifecycleRegistry
-    }
+    override val lifecycle: Lifecycle get() = lifecycleRegistry
 
     private fun updateAllState() {
         updateStatusBar()

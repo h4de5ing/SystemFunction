@@ -55,9 +55,6 @@ public class Logger {
     }
 
     public static String methodName() {
-        int level = 4;
-        StackTraceElement trace = Thread.currentThread().getStackTrace()[level];
-        String methodName = trace.getMethodName();
-        return methodName;
+        return Thread.currentThread().getStackTrace()[4].getMethodName();
     }
 }

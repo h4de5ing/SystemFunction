@@ -10,11 +10,7 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
-            <option value="$PROJECT_DIR$/Aidl" />
-            <option value="$PROJECT_DIR$/Android12" />
-            <option value="$PROJECT_DIR$/SystemLib" />
             <option value="$PROJECT_DIR$/SystemUIX" />
-            <option value="$PROJECT_DIR$/app" />
           </set>
         </option>
       </GradleProjectSettings>

@@ -5,8 +5,8 @@ plugins {
 }
 
 android {
-    namespace "com.android.systemfunction"
     compileSdk 33
+    namespace "com.android.systemfunction"
     defaultConfig {
         applicationId "com.android.systemfunction"
         minSdk 26
