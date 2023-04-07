@@ -17,7 +17,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.android.systemuix.R
 import com.android.systemuix.adapter.DisableServiceAdapter
 import com.android.systemuix.whiteList
-import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
@@ -32,7 +31,6 @@ class DisableServiceFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_disable_service, container, false)
     }
 
-    private var refreshing = false
     private var etKeyword: EditText? = null
     private var tvResult: TextView? = null
 
@@ -50,9 +48,7 @@ class DisableServiceFragment : Fragment() {
             recyclerView.setHasFixedSize(true)
             recyclerView.layoutManager = LinearLayoutManager(activity)
             recyclerView.adapter = adapter
-            adapter.setNewInstance(appList)
-            loadData()
-            recyclerView.setOnTouchListener { _, _ -> refreshing }
+            update(activity, textKeyword, true)
         }
     }
 
@@ -72,35 +68,23 @@ class DisableServiceFragment : Fragment() {
 
     @SuppressLint("QueryPermissionsNeeded")
     private fun update(context: Context, keyword: String, updateAppList: Boolean) {
-        if(updateAppList) {
-            appList.clear()
-            appList.addAll(activity.packageManager.getInstalledPackages(0).filter { it.packageName !in whiteList })
-        }
-        val newList = appList.filter {
-            it.packageName.contains(keyword) ||
-//                    context.packageManager.getApplicationLabel(it.applicationInfo).contains(keyword)
-                    it.applicationInfo.loadLabel(context.packageManager).contains(keyword)
-        }
-        val disabled = newList.filter { !it.applicationInfo.enabled }
-        val enable = newList.filter { it.applicationInfo.enabled }
-        tvResult?.text = getString(R.string.search_result, newList.size, disabled.size, enable.size)
-        adapter.setNewInstance(newList.toMutableList())
-    }
-
-    @OptIn(DelicateCoroutinesApi::class)
-    @SuppressLint("NotifyDataSetChanged", "QueryPermissionsNeeded")
-    private fun loadData() {
         GlobalScope.launch {
             activity?.runOnUiThread {
-                val pm = activity.packageManager
-                appList.clear()
-                appList.addAll(pm.getInstalledPackages(0).filter { it.packageName !in whiteList })
-                val disabled = appList.filter { !it.applicationInfo.enabled }
-                val enable = appList.filter { it.applicationInfo.enabled }
+                if (updateAppList) {
+                    appList.clear()
+                    appList.addAll(
+                        activity.packageManager.getInstalledPackages(0)
+                            .filter { it.packageName !in whiteList })
+                }
+                val newList = appList.filter {
+                    it.packageName.contains(keyword) ||
+                            it.applicationInfo.loadLabel(context.packageManager).contains(keyword)
+                }
+                val disabled = newList.filter { !it.applicationInfo.enabled }
+                val enable = newList.filter { it.applicationInfo.enabled }
                 tvResult?.text =
-                    getString(R.string.search_result, appList.size, disabled.size, enable.size)
-                adapter.notifyDataSetChanged()
-                refreshing = false
+                    getString(R.string.search_result, newList.size, disabled.size, enable.size)
+                adapter.setNewInstance(newList.toMutableList())
             }
         }
     }
