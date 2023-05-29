@@ -46,15 +46,15 @@ android {
 
 dependencies {
     implementation project(path: ':Aidl')
-    implementation 'androidx.core:core-ktx:1.9.0'
+    implementation 'androidx.core:core-ktx:1.10.1'
     implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'com.google.android.material:material:1.8.0'
+    implementation 'com.google.android.material:material:1.9.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-    implementation "androidx.lifecycle:lifecycle-viewmodel:2.6.0"
-    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.0"
-    implementation "androidx.room:room-runtime:2.5.0"
-    annotationProcessor "androidx.room:room-compiler:2.5.0"
-    kapt "androidx.room:room-compiler:2.5.0"
+    implementation "androidx.lifecycle:lifecycle-viewmodel:2.6.1"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.1"
+    implementation "androidx.room:room-runtime:2.5.1"
+    annotationProcessor "androidx.room:room-compiler:2.5.1"
+    kapt "androidx.room:room-compiler:2.5.1"
     debugImplementation 'com.guolindev.glance:glance:1.1.0'
     implementation 'com.github.CymChad:BaseRecyclerViewAdapterHelper:3.0.7'
     implementation 'com.github.h4de5ing.baseui:baseui:1.0-20221219'
