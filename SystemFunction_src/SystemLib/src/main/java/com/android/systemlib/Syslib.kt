@@ -22,6 +22,7 @@ import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.core.view.accessibility.AccessibilityEventCompat
 import com.android.android12.disableSensor12
+import com.android.android13.disableSensor13
 import com.android.internal.app.IAppOpsService
 import java.io.*
 
@@ -846,8 +847,10 @@ fun setMode(context: Context, code: Int, packageName: String, mode: Int) {
  * 3.传感器
  */
 fun disableSensor(isDisable: Boolean, sensor: Int) {
-    if (Build.VERSION.SDK_INT > 31) {
+    if (Build.VERSION.SDK_INT == 31 || Build.VERSION.SDK_INT == 32) {
         disableSensor12(isDisable, sensor)
+    } else if (Build.VERSION.SDK_INT == 33) {
+        disableSensor13(isDisable, sensor)
     }
 }
 
