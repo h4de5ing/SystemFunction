@@ -38,9 +38,9 @@ class BackupSettingsActivity : AppCompatActivity() {
         binding.restore.setOnClickListener {
             DialogUtils.selectFile(this, "select file") { files ->
                 try {
-                    val json = files[0].stream().buffered().reader("utf-8").readString()
-                    val bean = parserJson(json)
-                    putSettings(this, bean)
+//                    val json = files[0].stream().buffered().reader("utf-8").readString()
+//                    val bean = parserJson(json)
+//                    putSettings(this, bean)
                     toast("restore settings finish")
                 } catch (e: Exception) {
                     toast("${e.message}")
@@ -75,11 +75,11 @@ class BackupSettingsActivity : AppCompatActivity() {
                 Thread {
                     try {
                         runOnUiThread { showLoading("restore apn progress...") }
-                        val list = files[0].stream().buffered().reader("utf-8").readLines()
-                        println("apn：条数;${list.size}")
-                        setAPN(this, list) { message, done ->
-                            runOnUiThread { if (done) dismissLoading() else update(message) }
-                        }
+//                        val list = files[0].stream().buffered().reader("utf-8").readLines()
+//                        println("apn：条数;${list.size}")
+//                        setAPN(this, list) { message, done ->
+//                            runOnUiThread { if (done) dismissLoading() else update(message) }
+//                        }
                     } catch (e: Exception) {
                         toast("${e.message}")
                         e.printStackTrace()

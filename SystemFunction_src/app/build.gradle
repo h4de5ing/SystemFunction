@@ -8,11 +8,11 @@ android {
     compileSdk 33
     namespace "com.android.systemfunction"
     defaultConfig {
-        applicationId "com.android.systemfunction"
+        applicationId "com.android.systemfunction2"
         minSdk 26
         targetSdk 33
-        versionCode 300
-        versionName "1.1.0"
+        versionCode 3000
+        versionName "1.1.1"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -37,10 +37,10 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_19
+        targetCompatibility JavaVersion.VERSION_19
     }
-    kotlinOptions { jvmTarget = '1.8' }
+    kotlinOptions { jvmTarget = '19' }
     viewBinding { enabled = true }
 }
 
