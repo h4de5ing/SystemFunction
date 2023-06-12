@@ -9,6 +9,7 @@ import android.content.pm.*
 import android.net.*
 import android.net.wifi.WifiConfiguration
 import android.net.wifi.WifiManager
+import android.net.wifi.WifiNetworkSpecifier
 import android.os.*
 import android.os.storage.IStorageManager
 import android.provider.Settings
@@ -21,6 +22,7 @@ import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.core.view.accessibility.AccessibilityEventCompat
 import com.android.android12.disableSensor12
+import com.android.android13.disableSensor13
 import com.android.internal.app.IAppOpsService
 import java.io.*
 
@@ -61,31 +63,31 @@ fun addWifiConfig(context: Context, config: WifiConfiguration): Int {
 /**
  * 创建wifi连接，但是wifi只在app中生效
  */
-//@RequiresApi(api = Build.VERSION_CODES.Q)
-//fun addWifi(context: Context, ssid: String, pass: String) {
-//    val connectivityManager: ConnectivityManager =
-//        context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-//
-//    val specifier: NetworkSpecifier = WifiNetworkSpecifier.Builder()
-//        .setSsidPattern(PatternMatcher(ssid, PatternMatcher.PATTERN_PREFIX))
-//        .setWpa2Passphrase(pass)
-//        .build()
-//    val request: NetworkRequest = NetworkRequest.Builder()
-//        .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
-//        .addCapability(NetworkCapabilities.NET_CAPABILITY_NOT_RESTRICTED)
-//        .addCapability(NetworkCapabilities.NET_CAPABILITY_TRUSTED)
-//        .setNetworkSpecifier(specifier)
-//        .build()
-//    connectivityManager.requestNetwork(request, object : ConnectivityManager.NetworkCallback() {
-//        override fun onAvailable(network: Network) {
-//            super.onAvailable(network)
-//        }
-//
-//        override fun onUnavailable() {
-//            super.onUnavailable()
-//        }
-//    })
-//}
+@RequiresApi(api = Build.VERSION_CODES.Q)
+fun addWifi(context: Context, ssid: String, pass: String) {
+    val connectivityManager: ConnectivityManager =
+        context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+
+    val specifier: NetworkSpecifier = WifiNetworkSpecifier.Builder()
+        .setSsidPattern(PatternMatcher(ssid, PatternMatcher.PATTERN_PREFIX))
+        .setWpa2Passphrase(pass)
+        .build()
+    val request: NetworkRequest = NetworkRequest.Builder()
+        .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+        .addCapability(NetworkCapabilities.NET_CAPABILITY_NOT_RESTRICTED)
+        .addCapability(NetworkCapabilities.NET_CAPABILITY_TRUSTED)
+        .setNetworkSpecifier(specifier)
+        .build()
+    connectivityManager.requestNetwork(request, object : ConnectivityManager.NetworkCallback() {
+        override fun onAvailable(network: Network) {
+            super.onAvailable(network)
+        }
+
+        override fun onUnavailable() {
+            super.onUnavailable()
+        }
+    })
+}
 
 /**
  * 获取所有已连接的wifi信息
@@ -845,8 +847,10 @@ fun setMode(context: Context, code: Int, packageName: String, mode: Int) {
  * 3.传感器
  */
 fun disableSensor(isDisable: Boolean, sensor: Int) {
-    if (Build.VERSION.SDK_INT > 31) {
+    if (Build.VERSION.SDK_INT == 31 || Build.VERSION.SDK_INT == 32) {
         disableSensor12(isDisable, sensor)
+    } else if (Build.VERSION.SDK_INT == 33) {
+        disableSensor13(isDisable, sensor)
     }
 }
 

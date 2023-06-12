@@ -54,9 +54,9 @@ android {
 
 dependencies {
     compileOnly files('libs/classes-header.jar')
-    implementation 'androidx.core:core-ktx:1.9.0'
+    implementation 'androidx.core:core-ktx:1.10.1'
     implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'com.google.android.material:material:1.8.0'
+    implementation 'com.google.android.material:material:1.9.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation "androidx.multidex:multidex:2.0.1"
 //    implementation "com.jiangc.receiver:fileobserver:1.0-20220926"

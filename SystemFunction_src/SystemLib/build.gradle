@@ -10,35 +10,24 @@ android {
     defaultConfig {
         minSdk 21
         targetSdk 33
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-        consumerProguardFiles "consumer-rules.pro"
     }
 
     buildTypes {
         release {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_19
+        targetCompatibility JavaVersion.VERSION_19
     }
-    kotlinOptions { jvmTarget = '1.8' }
-    gradle.projectsEvaluated {
-        tasks.withType(JavaCompile) {
-            Set<File> fileSet = options.bootstrapClasspath.getFiles()
-            List<File> newFileList = new ArrayList<>()
-            newFileList.add(new File("libs/classes.jar"))
-            newFileList.addAll(fileSet)
-            options.bootstrapClasspath = files(newFileList.toArray())
-        }
-    }
+    kotlinOptions { jvmTarget = '19' }
 }
 
 dependencies {
-    implementation 'androidx.core:core-ktx:1.9.0'
+    implementation 'androidx.core:core-ktx:1.10.1'
     api project(path: ':Android12')
+    api project(path: ':Android13')
 //    implementation 'com.android.android12:android12:1.0-20230217'
     compileOnly files('libs/classes.jar')
 }

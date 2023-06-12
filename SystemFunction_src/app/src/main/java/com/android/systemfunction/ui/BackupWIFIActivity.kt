@@ -66,9 +66,9 @@ class BackupWIFIActivity : AppCompatActivity() {
         binding.restore.setOnClickListener {
             DialogUtils.selectFile(this, "select file") { files ->
                 try {
-                    files[0].stream().buffered().reader("utf-8").readLines().forEach { wifiLine ->
-                        parseZxingWifiQrCode(wifiLine)
-                    }
+//                    files[0].stream().buffered().reader("utf-8").readLines().forEach { wifiLine ->
+//                        parseZxingWifiQrCode(wifiLine)
+//                    }
                 } catch (e: Exception) {
                     toast("${e.message}")
                 }
