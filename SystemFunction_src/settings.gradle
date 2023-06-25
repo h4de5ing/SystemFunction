@@ -32,3 +32,4 @@ include ':SystemUIX'
 //include ':FileObserverJni'
 //project(':FileObserverJni').projectDir = new File("D:\\code\\github\\fileObserver\\Tools\\fileobserver")
 //include ':droidwall'
+//include ':Android13'
