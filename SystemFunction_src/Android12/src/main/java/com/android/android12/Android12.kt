@@ -1,6 +1,5 @@
 package com.android.android12
 
-import android.annotation.SuppressLint
 import android.hardware.ISensorPrivacyManager
 import android.hardware.SensorPrivacyManager
 import android.os.Build
@@ -11,7 +10,6 @@ import android.service.SensorPrivacyToggleSourceProto
 /**
  * frameworks/base/services/core/java/com/android/server/SensorPrivacyService.java
  */
-@SuppressLint("WrongConstant")
 fun disableSensor12(isDisable: Boolean, sensor: Int) {
     if (Build.VERSION.SDK_INT == 31 || Build.VERSION.SDK_INT == 32) {
         val sensors = when (sensor) {

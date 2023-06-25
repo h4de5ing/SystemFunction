@@ -275,14 +275,14 @@ fun isSmsDisable(): Boolean {
 }
 
 /**
- * 禁用录音功能
+ * 禁用麦克风功能
  */
 fun setMicrophoneDisable(isDisable: Boolean) {
     mService?.setDisable(ConfigEnum.DISABLE_MICROPHONE.name, isDisable)
 }
 
 /**
- * 查询录音功能禁用状态
+ * 查询麦克风禁用状态
  */
 fun isMicrophoneDisable(): Boolean {
     return mService?.isDisable(ConfigEnum.DISABLE_MICROPHONE.name) ?: false
@@ -373,14 +373,14 @@ fun removeActiveDeviceAdmin(packageName: String, className: String) {
 }
 
 /**
- * 静默设置默认桌面
+ * 静默设置默认Launcher
  */
 fun setDefaultLauncher(packageName: String) {
     mService?.defaultLauncher(packageName, false)
 }
 
 /**
- * 静默移除默认桌面
+ * 静默移除默认Launcher
  */
 fun clearDefaultLauncher(packageName: String) {
     mService?.defaultLauncher(packageName, true)
