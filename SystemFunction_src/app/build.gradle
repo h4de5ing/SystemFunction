@@ -8,7 +8,7 @@ android {
     compileSdk 33
     namespace "com.android.systemfunction"
     defaultConfig {
-        applicationId "com.android.systemfunction2"
+        applicationId "com.android.systemfunction"
         minSdk 26
         targetSdk 33
         versionCode 3000
@@ -18,7 +18,7 @@ android {
     }
     signingConfigs {
         sign {
-            storeFile file("D:\\Android12SignerGUI\\SignFiles\\NewPublic\\platform.jks")
+            storeFile file("D:\\Android12SignerGUI\\SignFiles\\Q865M_Q115M_android11\\platform.jks")
             storePassword('android')
             keyAlias('android')
             keyPassword('android')

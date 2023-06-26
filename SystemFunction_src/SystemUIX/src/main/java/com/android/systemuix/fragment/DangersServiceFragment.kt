@@ -15,6 +15,7 @@ import com.android.systemuix.adapter.DisableServiceAdapter
 import com.android.systemuix.change
 import com.android.systemuix.dangerous
 import com.android.systemuix.databinding.FragmentNormalServiceBinding
+import com.android.systemuix.getNormalList
 import com.android.systemuix.whiteList
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
@@ -48,6 +49,7 @@ class DangersServiceFragment : Fragment() {
         scope.launch {
             activity?.runOnUiThread {
                 if (updateAppList) {
+                    getNormalList(activity)
                     appList.clear()
                     appList.addAll(dangerous.filter { it.packageName !in whiteList })
                 }
@@ -59,8 +61,14 @@ class DangersServiceFragment : Fragment() {
                 val enable = newList.filter { it.applicationInfo.enabled }
                 binding.result.setTextColor(Color.RED)
                 binding.result.text =
-                    getString(R.string.danger_search_result, newList.size, disabled.size, enable.size)
-                adapter.setNewInstance(newList.toMutableList())
+                    getString(
+                        R.string.danger_search_result,
+                        newList.size,
+                        disabled.size,
+                        enable.size
+                    )
+                adapter.setNewInstance(newList.sortedBy { it.applicationInfo.enabled }
+                    .distinctBy { it.packageName }.toMutableList())
             }
         }
     }

@@ -26,10 +26,8 @@ include ':Android12'
 include ':Android13'
 include ':SystemUIX'
 
-//include ':mdmclient'
+include ':mdmclient'
 //include ':otax'
 //include ':appmonitor'
-//include ':FileObserverJni'
-//project(':FileObserverJni').projectDir = new File("D:\\code\\github\\fileObserver\\Tools\\fileobserver")
 //include ':droidwall'
 //include ':Android13'

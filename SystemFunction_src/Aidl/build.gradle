@@ -8,7 +8,7 @@ android {
     compileSdk 33
     namespace 'com.android.mdmsdk'
     defaultConfig {
-        minSdk 26
+        minSdk 21
         targetSdk 33
     }
 
@@ -22,6 +22,9 @@ android {
         targetCompatibility JavaVersion.VERSION_19
     }
     kotlinOptions { jvmTarget = '19' }
+    buildFeatures {
+        aidl true
+    }
 }
 
 dependencies {

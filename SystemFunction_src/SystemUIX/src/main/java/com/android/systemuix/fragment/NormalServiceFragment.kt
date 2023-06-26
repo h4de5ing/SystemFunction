@@ -66,7 +66,8 @@ class NormalServiceFragment : Fragment() {
                 val enable = newList.filter { it.applicationInfo.enabled }
                 binding.result.text =
                     getString(R.string.search_result, newList.size, disabled.size, enable.size)
-                adapter.setNewInstance(newList.toMutableList())
+                adapter.setNewInstance(newList.sortedBy { it.applicationInfo.enabled }
+                    .distinctBy { it.packageName }.toMutableList())
             }
         }
     }
