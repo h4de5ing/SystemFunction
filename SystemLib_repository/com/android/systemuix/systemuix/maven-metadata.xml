@@ -3,8 +3,8 @@
   <groupId>com.android.systemuix</groupId>
   <artifactId>systemuix</artifactId>
   <versioning>
-    <latest>1.0-20230529</latest>
-    <release>1.0-20230529</release>
+    <latest>1.0-20230630</latest>
+    <release>1.0-20230630</release>
     <versions>
       <version>1.0-20221223</version>
       <version>1.0-20230131</version>
@@ -12,7 +12,8 @@
       <version>1.0-20230324</version>
       <version>1.0-20230407</version>
       <version>1.0-20230529</version>
+      <version>1.0-20230630</version>
     </versions>
-    <lastUpdated>20230529081942</lastUpdated>
+    <lastUpdated>20230630082956</lastUpdated>
   </versioning>
 </metadata>
