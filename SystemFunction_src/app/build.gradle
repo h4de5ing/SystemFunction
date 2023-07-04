@@ -16,7 +16,7 @@ android {
     }
     signingConfigs {
         sign {
-            storeFile file("D:\\Android12SignerGUI\\SignFiles\\NewPublic\\platform.jks")
+            storeFile file("D:\\Android12SignerGUI\\SignFiles\\Q865M_Q115M_android11\\platform.jks")
             storePassword('android')
             keyAlias('android')
             keyPassword('android')

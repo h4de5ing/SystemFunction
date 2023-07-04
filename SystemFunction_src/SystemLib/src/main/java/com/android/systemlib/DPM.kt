@@ -30,7 +30,8 @@ fun setActiveProfileOwner(componentName: ComponentName) {
     try {
         setActiveAdmin(componentName)
         setProfileOwner(componentName)
-    } catch (_: Exception) {
+    } catch (e: Exception) {
+        e.printStackTrace()
     }
 }
 
@@ -53,8 +54,9 @@ fun clearProfileOwner(componentName: ComponentName) {
  * 静默取消激活设备管理
  */
 fun removeActiveDeviceAdmin(context: Context, componentName: ComponentName) {
-    (context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
-        .removeActiveAdmin(componentName)
+    (context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager).removeActiveAdmin(
+        componentName
+    )
 }
 
 
@@ -62,18 +64,27 @@ fun removeActiveDeviceAdmin(context: Context, componentName: ComponentName) {
  * 判断是否激活设备管理器
  */
 fun isAdminActive(context: Context, componentName: ComponentName): Boolean {
-    return (context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
-        .isAdminActive(componentName)
+    return (context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager).isAdminActive(
+        componentName
+    )
 }
 
+/**
+ * 获取DeviceOwner的包名
+ */
+fun getDeviceOwnerComponent(): ComponentName? {
+    return IDevicePolicyManager.Stub.asInterface(ServiceManager.getService("device_policy"))
+        .getDeviceOwnerComponent(true)
+}
 
 /**
  * 禁用摄像头
  */
 fun setCameraDisabled(context: Context, componentName: ComponentName, isDisable: Boolean) {
     try {
-        (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
-            .setCameraDisabled(componentName, isDisable)
+        (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager).setCameraDisabled(
+            componentName, isDisable
+        )
     } catch (e: Exception) {
         e.printStackTrace()
     }
@@ -84,8 +95,9 @@ fun setCameraDisabled(context: Context, componentName: ComponentName, isDisable:
  */
 fun getCameraDisabled(context: Context, componentName: ComponentName): Boolean {
     return try {
-        (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
-            .getCameraDisabled(componentName)
+        (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager).getCameraDisabled(
+            componentName
+        )
     } catch (e: Exception) {
         false
     }
@@ -99,18 +111,13 @@ fun getCameraDisabled(context: Context, componentName: ComponentName): Boolean {
  * @param isDisable true 表示禁用 false 表示不禁用
  */
 fun disableMDM(
-    context: Context,
-    componentName: ComponentName,
-    key: String,
-    isDisable: Boolean
+    context: Context, componentName: ComponentName, key: String, isDisable: Boolean
 ) {
     try {
         val dm =
             context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-        if (isDisable)
-            dm.addUserRestriction(componentName, key)
-        else
-            dm.clearUserRestriction(componentName, key)
+        if (isDisable) dm.addUserRestriction(componentName, key)
+        else dm.clearUserRestriction(componentName, key)
     } catch (e: Exception) {
         e.printStackTrace()
     }
@@ -121,22 +128,19 @@ fun disableMDM(
  * //TODO 测试 UserManager.setUserRestriction 是否需要dpm权限
  */
 fun isDisableDMD(context: Context, key: String): Boolean {
-    return (context.applicationContext.getSystemService(Context.USER_SERVICE) as UserManager)
-        .userRestrictions.getBoolean(key)
+    return (context.applicationContext.getSystemService(Context.USER_SERVICE) as UserManager).userRestrictions.getBoolean(
+        key
+    )
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
 fun setDelegatedScopes(
-    context: Context,
-    componentName: ComponentName,
-    packageName: String
+    context: Context, componentName: ComponentName, packageName: String
 ) {
     val dm =
         context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
     dm.setDelegatedScopes(
-        componentName,
-        packageName,
-        arrayListOf(DevicePolicyManager.DELEGATION_BLOCK_UNINSTALL)
+        componentName, packageName, arrayListOf(DevicePolicyManager.DELEGATION_BLOCK_UNINSTALL)
     )
 }
 
@@ -144,9 +148,7 @@ fun setDelegatedScopes(
  * 设置冻结系统升级策略
  */
 fun setSystemUpdatePolicy(
-    context: Context,
-    componentName: ComponentName,
-    policy: SystemUpdatePolicy
+    context: Context, componentName: ComponentName, policy: SystemUpdatePolicy
 ) {
     try {
         if (Build.VERSION.SDK_INT >= 28) {
@@ -168,8 +170,9 @@ public static final int WIPE_RESET_PROTECTION_DATA = 2;
 public static final int WIPE_SILENTLY = 8;
  */
 fun wipeDate(context: Context) {
-    (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
-        .wipeData(DevicePolicyManager.WIPE_EXTERNAL_STORAGE)
+    (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager).wipeData(
+        DevicePolicyManager.WIPE_EXTERNAL_STORAGE
+    )
 }
 
 /**
@@ -178,14 +181,12 @@ fun wipeDate(context: Context) {
  */
 @Deprecated("调用不需要dpm权限的hiddenAPP方法", ReplaceWith(""), DeprecationLevel.WARNING)
 fun hiddenAPP(
-    context: Context,
-    componentName: ComponentName,
-    packageName: String,
-    isDisable: Boolean
+    context: Context, componentName: ComponentName, packageName: String, isDisable: Boolean
 ) {
     try {
-        (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
-            .setApplicationHidden(componentName, packageName, isDisable)
+        (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager).setApplicationHidden(
+            componentName, packageName, isDisable
+        )
     } catch (e: Exception) {
         e.printStackTrace()
     }
@@ -201,8 +202,9 @@ fun isHiddenAPP(
     packageName: String,
 ): Boolean {
     return try {
-        (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
-            .isApplicationHidden(componentName, packageName)
+        (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager).isApplicationHidden(
+            componentName, packageName
+        )
     } catch (e: Exception) {
         false
     }
@@ -214,14 +216,12 @@ fun isHiddenAPP(
 @Deprecated("调用不需要dpm权限的suspendedAPP方法", ReplaceWith(""), DeprecationLevel.WARNING)
 @RequiresApi(Build.VERSION_CODES.N)
 fun suspendedAPP(
-    context: Context,
-    componentName: ComponentName,
-    packageName: String,
-    isDisable: Boolean
+    context: Context, componentName: ComponentName, packageName: String, isDisable: Boolean
 ) {
     try {
-        (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
-            .setPackagesSuspended(componentName, arrayOf(packageName), isDisable)
+        (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager).setPackagesSuspended(
+            componentName, arrayOf(packageName), isDisable
+        )
     } catch (e: Exception) {
         e.printStackTrace()
     }
@@ -238,8 +238,9 @@ fun isSuspendedAPP(
     packageName: String,
 ): Boolean {
     return try {
-        (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
-            .isPackageSuspended(componentName, packageName)
+        (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager).isPackageSuspended(
+            componentName, packageName
+        )
     } catch (e: Exception) {
         false
     }
@@ -250,14 +251,12 @@ fun isSuspendedAPP(
  */
 @Deprecated("调用不需要dpm权限的disUninstallAPP方法", ReplaceWith(""), DeprecationLevel.WARNING)
 fun disUninstallAPP(
-    context: Context,
-    componentName: ComponentName,
-    packageName: String,
-    isDisable: Boolean
+    context: Context, componentName: ComponentName, packageName: String, isDisable: Boolean
 ) {
     try {
-        (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
-            .setUninstallBlocked(componentName, packageName, isDisable)
+        (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager).setUninstallBlocked(
+            componentName, packageName, isDisable
+        )
     } catch (e: Exception) {
         e.printStackTrace()
     }
@@ -273,8 +272,9 @@ fun isDisUninstallAPP(
     packageName: String,
 ): Boolean {
     return try {
-        (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
-            .isUninstallBlocked(componentName, packageName)
+        (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager).isUninstallBlocked(
+            componentName, packageName
+        )
     } catch (e: Exception) {
         false
     }
@@ -284,13 +284,12 @@ fun isDisUninstallAPP(
  * 禁止截图
  */
 fun setScreenCaptureDisabled(
-    context: Context,
-    componentName: ComponentName,
-    isDisable: Boolean
+    context: Context, componentName: ComponentName, isDisable: Boolean
 ) {
     try {
-        (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
-            .setScreenCaptureDisabled(componentName, isDisable)
+        (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager).setScreenCaptureDisabled(
+            componentName, isDisable
+        )
     } catch (e: Exception) {
         e.printStackTrace()
     }
@@ -301,8 +300,9 @@ fun setScreenCaptureDisabled(
  */
 fun getScreenCaptureDisabled(context: Context, componentName: ComponentName): Boolean {
     return try {
-        (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
-            .getScreenCaptureDisabled(componentName)
+        (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager).getScreenCaptureDisabled(
+            componentName
+        )
     } catch (e: Exception) {
         false
     }

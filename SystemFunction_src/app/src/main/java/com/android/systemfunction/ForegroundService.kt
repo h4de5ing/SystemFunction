@@ -113,7 +113,6 @@ class ForegroundService : Service(), LifecycleOwner {
     private var mLocationManager: LocationManager? = null
     private var cm: ConnectivityManager? = null
     private var tm: TelephonyManager? = null
-    private var windowManager: WindowManager? = null
     private var userManager: UserManager? = null
     private var WIFI_AP_STATE_CHANGED_ACTION = "android.net.wifi.WIFI_AP_STATE_CHANGED"
 
@@ -135,7 +134,6 @@ class ForegroundService : Service(), LifecycleOwner {
         mLocationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
         cm = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         tm = getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
-        windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
         userManager = getSystemService(Context.USER_SERVICE) as UserManager
         systemDao.observerConfigChange().observe(this) {
             "MDM服务监控到config更新了".logD()

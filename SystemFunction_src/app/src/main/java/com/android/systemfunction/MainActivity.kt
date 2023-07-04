@@ -14,25 +14,62 @@ import com.android.systemfunction.app.App
 import com.android.systemfunction.databinding.ActivityMainBinding
 import com.android.systemfunction.ui.APPManagerActivity
 import com.android.systemfunction.ui.PackageListActivity
-import com.android.systemfunction.utils.*
-import com.android.systemlib.*
+import com.android.systemfunction.utils.TestUtils
+import com.android.systemfunction.utils.isDebug
+import com.android.systemfunction.utils.isDisableBack
+import com.android.systemfunction.utils.isDisableBluetooth
+import com.android.systemfunction.utils.isDisableCamera
+import com.android.systemfunction.utils.isDisableData
+import com.android.systemfunction.utils.isDisableGPS
+import com.android.systemfunction.utils.isDisableHome
+import com.android.systemfunction.utils.isDisableHotSpot
+import com.android.systemfunction.utils.isDisableInstallApp
+import com.android.systemfunction.utils.isDisableMMS
+import com.android.systemfunction.utils.isDisableMicrophone
+import com.android.systemfunction.utils.isDisableNavigation
+import com.android.systemfunction.utils.isDisablePhoneCall
+import com.android.systemfunction.utils.isDisableRecent
+import com.android.systemfunction.utils.isDisableRestoreFactory
+import com.android.systemfunction.utils.isDisableSMS
+import com.android.systemfunction.utils.isDisableScreenCapture
+import com.android.systemfunction.utils.isDisableScreenShot
+import com.android.systemfunction.utils.isDisableShare
+import com.android.systemfunction.utils.isDisableStatus
+import com.android.systemfunction.utils.isDisableSystemUpdate
+import com.android.systemfunction.utils.isDisableTFCard
+import com.android.systemfunction.utils.isDisableUSBData
+import com.android.systemfunction.utils.isDisableUnInstallApp
+import com.android.systemfunction.utils.isDisableWIFI
+import com.android.systemfunction.utils.updateKT
+import com.android.systemlib.clearProfileOwner
+import com.android.systemlib.getFileType
+import com.android.systemlib.getStorage
+import com.android.systemlib.installAPK
+import com.android.systemlib.isAdminActive
+import com.android.systemlib.ota
+import com.android.systemlib.reboot
+import com.android.systemlib.removeActiveDeviceAdmin
+import com.android.systemlib.reset
+import com.android.systemlib.setActiveProfileOwner
+import com.android.systemlib.setUSBDataDisabled
+import com.android.systemlib.shutdown
 import com.github.h4de5ing.baseui.alertConfirm
 import com.github.h4de5ing.baseui.logD
 import com.github.h4de5ing.filepicker.DialogUtils
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
+    private var scope = MainScope()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         try {
             if (!isAdminActive(this, App.componentName2)) setActiveProfileOwner(
-                this,
-                App.componentName2
+                this, App.componentName2
             )
         } catch (e: Exception) {
             "MainActivity 设置MDM失败".logD()
@@ -120,7 +157,7 @@ class MainActivity : AppCompatActivity() {
             alertConfirm(this, "${getString(R.string.reboot)}?") { if (it) reboot() }
         }
         binding.shot.setOnClickListener {
-            GlobalScope.launch { Instrumentation().sendKeyDownUpSync(KeyEvent.KEYCODE_SYSRQ) }
+            scope.launch { Instrumentation().sendKeyDownUpSync(KeyEvent.KEYCODE_SYSRQ) }
         }
         binding.appManager.setOnClickListener {
             startActivity(
