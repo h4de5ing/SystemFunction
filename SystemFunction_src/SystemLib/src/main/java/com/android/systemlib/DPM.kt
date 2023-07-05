@@ -1,10 +1,12 @@
 package com.android.systemlib
 
+import android.app.Activity
 import android.app.admin.DevicePolicyManager
 import android.app.admin.IDevicePolicyManager
 import android.app.admin.SystemUpdatePolicy
 import android.content.ComponentName
 import android.content.Context
+import android.content.Intent
 import android.os.Build
 import android.os.ServiceManager
 import android.os.UserManager
@@ -51,12 +53,44 @@ fun clearProfileOwner(componentName: ComponentName) {
 }
 
 /**
+ * 判断此包名是否以及申请了DPM权限
+ */
+fun isProfileOwnerApp(context: Context, packageName: String): Boolean {
+    val dpm = context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    return dpm.isProfileOwnerApp(packageName)
+}
+
+/**
+ * 打开DPM页面
+ */
+fun openProfileOwner(activity: Activity, componentName: ComponentName) {
+    val intent = Intent(DevicePolicyManager.ACTION_PROVISION_MANAGED_PROFILE)
+    intent.putExtra(
+        DevicePolicyManager.EXTRA_PROVISIONING_DEVICE_ADMIN_COMPONENT_NAME, componentName
+    )
+    if (intent.resolveActivity(activity.packageManager) != null) {
+        activity.startActivityForResult(intent, 11)
+    }
+}
+
+/**
+ * 手动申请MDM权限
+ */
+fun setAdmin(activity: Activity, componentName: ComponentName) {
+    val intent = Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN)
+    intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, componentName)
+    intent.putExtra(
+        DevicePolicyManager.EXTRA_ADD_EXPLANATION, "激活此设备管理员后可免root停用应用"
+    )
+    activity.startActivityForResult(intent, 12)
+}
+
+/**
  * 静默取消激活设备管理
  */
 fun removeActiveDeviceAdmin(context: Context, componentName: ComponentName) {
-    (context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager).removeActiveAdmin(
-        componentName
-    )
+    (context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
+        .removeActiveAdmin(componentName)
 }
 
 
@@ -64,9 +98,8 @@ fun removeActiveDeviceAdmin(context: Context, componentName: ComponentName) {
  * 判断是否激活设备管理器
  */
 fun isAdminActive(context: Context, componentName: ComponentName): Boolean {
-    return (context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager).isAdminActive(
-        componentName
-    )
+    return (context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
+        .isAdminActive(componentName)
 }
 
 /**
@@ -75,6 +108,20 @@ fun isAdminActive(context: Context, componentName: ComponentName): Boolean {
 fun getDeviceOwnerComponent(): ComponentName? {
     return IDevicePolicyManager.Stub.asInterface(ServiceManager.getService("device_policy"))
         .getDeviceOwnerComponent(true)
+}
+
+/**
+ * 获取系统预设的包名
+frameworks\base\core\res\res\values\config.xml
+<string name="config_defaultSupervisionProfileOwnerComponent" translatable="false">com.android.systemfunction/com.android.systemfunction.AdminReceiver</string>
+ */
+fun getProfileOwnerComponent(context: Context): String {
+    val result = try {
+        context.getString(com.android.internal.R.string.config_defaultSupervisionProfileOwnerComponent)
+    } catch (e: Exception) {
+        ""
+    }
+    return result
 }
 
 /**
@@ -283,13 +330,10 @@ fun isDisUninstallAPP(
 /**
  * 禁止截图
  */
-fun setScreenCaptureDisabled(
-    context: Context, componentName: ComponentName, isDisable: Boolean
-) {
+fun setScreenCaptureDisabled(context: Context, componentName: ComponentName, isDisable: Boolean) {
     try {
-        (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager).setScreenCaptureDisabled(
-            componentName, isDisable
-        )
+        (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
+            .setScreenCaptureDisabled(componentName, isDisable)
     } catch (e: Exception) {
         e.printStackTrace()
     }

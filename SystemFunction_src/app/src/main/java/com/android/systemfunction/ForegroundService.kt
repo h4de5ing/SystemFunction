@@ -374,7 +374,6 @@ class ForegroundService : Service(), LifecycleOwner {
 
             disable(UserManager.DISALLOW_CONFIG_MOBILE_NETWORKS, isDisableData)
             disable(UserManager.DISALLOW_DATA_ROAMING, isDisableData)
-            disable(UserManager.DISALLOW_CONFIG_DATE_TIME, isDisableData)
 
             disable(UserManager.DISALLOW_CONFIG_LOCATION, isDisableGPS)
             disable(UserManager.DISALLOW_SHARE_LOCATION, isDisableGPS)
