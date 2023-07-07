@@ -31,23 +31,23 @@ dependencies {
 //    implementation 'com.android.android12:android12:1.0-20230217'
     compileOnly files('libs/classes.jar')
 }
-//afterEvaluate {
-//    publishing {
-//        publications {
-//            def today = new Date().format('yyyyMMdd')
-//            release(MavenPublication) {
-//                from components.release
-//                groupId = 'com.android.systemlib'
-//                artifactId = 'systemlib'
-//                version = "1.0-$today"
-//            }
-//        }
-//        repositories {
-//            mavenLocal()
-//            maven {
-//                url uri('D:\\code\\SystemFunction\\SystemLib_repository')
-//            }
-//        }
-//    }
-//}
+afterEvaluate {
+    publishing {
+        publications {
+            def today = new Date().format('yyyyMMdd')
+            release(MavenPublication) {
+                from components.release
+                groupId = 'com.android.systemlib'
+                artifactId = 'systemlib'
+                version = "1.0-$today"
+            }
+        }
+        repositories {
+            mavenLocal()
+            maven {
+                url uri('D:\\code\\SystemFunction\\SystemLib_repository')
+            }
+        }
+    }
+}
 //gradlew publish

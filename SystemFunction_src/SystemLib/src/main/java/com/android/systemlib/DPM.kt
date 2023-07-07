@@ -1,5 +1,6 @@
 package com.android.systemlib
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.admin.DevicePolicyManager
 import android.app.admin.IDevicePolicyManager
@@ -89,8 +90,9 @@ fun setAdmin(activity: Activity, componentName: ComponentName) {
  * 静默取消激活设备管理
  */
 fun removeActiveDeviceAdmin(context: Context, componentName: ComponentName) {
-    (context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
-        .removeActiveAdmin(componentName)
+    (context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager).removeActiveAdmin(
+            componentName
+        )
 }
 
 
@@ -98,8 +100,9 @@ fun removeActiveDeviceAdmin(context: Context, componentName: ComponentName) {
  * 判断是否激活设备管理器
  */
 fun isAdminActive(context: Context, componentName: ComponentName): Boolean {
-    return (context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
-        .isAdminActive(componentName)
+    return (context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager).isAdminActive(
+            componentName
+        )
 }
 
 /**
@@ -116,12 +119,15 @@ frameworks\base\core\res\res\values\config.xml
 <string name="config_defaultSupervisionProfileOwnerComponent" translatable="false">com.android.systemfunction/com.android.systemfunction.AdminReceiver</string>
  */
 fun getProfileOwnerComponent(context: Context): String {
-    val result = try {
-        context.getString(com.android.internal.R.string.config_defaultSupervisionProfileOwnerComponent)
+    return try {
+        @SuppressLint("PrivateApi") val c = Class.forName("com.android.internal.R\$string")
+        val obj = c.newInstance()
+        val field = c.getField("config_defaultSupervisionProfileOwnerComponent")
+        val id = field.getInt(obj)
+        context.getString(id)
     } catch (e: Exception) {
         ""
     }
-    return result
 }
 
 /**
@@ -332,8 +338,10 @@ fun isDisUninstallAPP(
  */
 fun setScreenCaptureDisabled(context: Context, componentName: ComponentName, isDisable: Boolean) {
     try {
-        (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
-            .setScreenCaptureDisabled(componentName, isDisable)
+        (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager).setScreenCaptureDisabled(
+                componentName,
+                isDisable
+            )
     } catch (e: Exception) {
         e.printStackTrace()
     }
