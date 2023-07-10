@@ -1,0 +1,131 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "com.android.systemlib",
+    "module": "systemlib",
+    "version": "1.0-20230710",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "8.0"
+    }
+  },
+  "variants": [
+    {
+      "name": "releaseApiElements-published",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.usage": "java-api",
+        "org.jetbrains.kotlin.platform.type": "androidJvm"
+      },
+      "dependencies": [
+        {
+          "group": "com.android.android12",
+          "module": "android12",
+          "version": {
+            "requires": "1.0-20230710"
+          }
+        },
+        {
+          "group": "com.android.android13",
+          "module": "android13",
+          "version": {
+            "requires": "1.0-20230710"
+          }
+        },
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib-jdk8",
+          "version": {
+            "requires": "1.8.22"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "systemlib-1.0-20230710.aar",
+          "url": "systemlib-1.0-20230710.aar",
+          "size": 38059,
+          "sha512": "1ea4943e55af89e54ccecd391cf3b96ad5b88b28d0f7bd954bf41abbbb5bf1c7929d5918c2b638dd3840fa5210f9e842388dd529d9f978a85050eb233fa584a0",
+          "sha256": "15d364f24fc9c2ed6885b21354f30a13f9b842e1884d09830a36d01b6da1e87e",
+          "sha1": "cd83757775829f559a15f0066de823b802da0b23",
+          "md5": "f88c56b2a42f0079781f59ecaf9ee6d8"
+        }
+      ]
+    },
+    {
+      "name": "releaseRuntimeElements-published",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.usage": "java-runtime",
+        "org.jetbrains.kotlin.platform.type": "androidJvm"
+      },
+      "dependencies": [
+        {
+          "group": "androidx.core",
+          "module": "core-ktx",
+          "version": {
+            "requires": "1.10.1"
+          }
+        },
+        {
+          "group": "com.android.android12",
+          "module": "android12",
+          "version": {
+            "requires": "1.0-20230710"
+          }
+        },
+        {
+          "group": "com.android.android13",
+          "module": "android13",
+          "version": {
+            "requires": "1.0-20230710"
+          }
+        },
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib-jdk8",
+          "version": {
+            "requires": "1.8.22"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "systemlib-1.0-20230710.aar",
+          "url": "systemlib-1.0-20230710.aar",
+          "size": 38059,
+          "sha512": "1ea4943e55af89e54ccecd391cf3b96ad5b88b28d0f7bd954bf41abbbb5bf1c7929d5918c2b638dd3840fa5210f9e842388dd529d9f978a85050eb233fa584a0",
+          "sha256": "15d364f24fc9c2ed6885b21354f30a13f9b842e1884d09830a36d01b6da1e87e",
+          "sha1": "cd83757775829f559a15f0066de823b802da0b23",
+          "md5": "f88c56b2a42f0079781f59ecaf9ee6d8"
+        }
+      ]
+    },
+    {
+      "name": "releaseSourcesElements-published",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "sources",
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime",
+        "org.jetbrains.kotlin.platform.type": "androidJvm"
+      },
+      "files": [
+        {
+          "name": "systemlib-1.0-20230710-sources.jar",
+          "url": "systemlib-1.0-20230710-sources.jar",
+          "size": 36471,
+          "sha512": "60706499de3932790dcf2350bbeebba8a11c486449ac3cf0b07852dec43ea773566dd6ef097350fdc5f8d10d23457377917ab1f30225e36c012a6f69cca69d81",
+          "sha256": "d4a51bc4add375fa787b60fac99c49f1144385f29074b272ccf7128fd0bccb40",
+          "sha1": "ea0a42a4a3e99d24150215a97ee6bf5411e2429a",
+          "md5": "c0f67667b6d7b8617f1163a7b1d74a42"
+        }
+      ]
+    }
+  ]
+}
