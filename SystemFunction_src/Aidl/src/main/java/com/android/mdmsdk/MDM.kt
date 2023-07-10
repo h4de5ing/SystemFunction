@@ -11,10 +11,10 @@ import android.os.IBinder
 /**
  * 检查系统是否支持sdk开发，如果不支持，请安装settingc app
  */
-fun checkSupported(context: Context): Boolean {
-
-
-}
+//fun checkSupported(context: Context): Boolean {
+//
+//
+//}
 
 /**
  * 绑定设置服务

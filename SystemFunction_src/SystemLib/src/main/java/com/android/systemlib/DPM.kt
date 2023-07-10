@@ -24,9 +24,20 @@ fun setActiveAdmin(componentName: ComponentName) {
         .setActiveAdmin(componentName, true, 0)
 }
 
+/**
+ * 取消激活设备管理器
+ */
+fun removeActiveAdmin(componentName: ComponentName) {
+    IDevicePolicyManager.Stub.asInterface(ServiceManager.getService("device_policy"))
+        .removeActiveAdmin(componentName, 0)
+}
+
+/**
+ * 激活admin 后直接调用此方法
+ */
 fun setProfileOwner(componentName: ComponentName) {
     IDevicePolicyManager.Stub.asInterface(ServiceManager.getService("device_policy"))
-        .setProfileOwner(componentName, "oemconfig", 0)
+        .setProfileOwner(componentName, componentName.packageName, 0)
 }
 
 fun setActiveProfileOwner(componentName: ComponentName) {
@@ -44,7 +55,26 @@ fun setActiveProfileOwner(componentName: ComponentName) {
 @Deprecated("不要调用这个方法，同时调用上面2个方法，效果等同")
 fun setActiveProfileOwner(context: Context, componentName: ComponentName): Boolean {
     val dm = context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    return dm.setActiveProfileOwner(componentName, "oemconfig")
+    return dm.setActiveProfileOwner(componentName, componentName.packageName)
+}
+
+/**
+ * 获取当前设置的MDM
+ */
+fun getProfileOwnerAsUser(): ComponentName =
+    IDevicePolicyManager.Stub.asInterface(ServiceManager.getService("device_policy"))
+        .getProfileOwnerAsUser(0)
+
+fun test(context: Context, componentName: ComponentName) {
+    val dm = context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+    val idp = IDevicePolicyManager.Stub.asInterface(ServiceManager.getService("device_policy"))
+    try {
+        println("可以执行到这里来了")
+        val result = dm.isProfileOwnerApp(componentName.packageName)
+        println("执行结果:${result}")
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
 }
 
 
@@ -86,15 +116,6 @@ fun setAdmin(activity: Activity, componentName: ComponentName) {
     activity.startActivityForResult(intent, 12)
 }
 
-/**
- * 静默取消激活设备管理
- */
-fun removeActiveDeviceAdmin(context: Context, componentName: ComponentName) {
-    (context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager).removeActiveAdmin(
-            componentName
-        )
-}
-
 
 /**
  * 判断是否激活设备管理器
@@ -105,13 +126,6 @@ fun isAdminActive(context: Context, componentName: ComponentName): Boolean {
         )
 }
 
-/**
- * 获取DeviceOwner的包名
- */
-fun getDeviceOwnerComponent(): ComponentName? {
-    return IDevicePolicyManager.Stub.asInterface(ServiceManager.getService("device_policy"))
-        .getDeviceOwnerComponent(true)
-}
 
 /**
  * 获取系统预设的包名
@@ -136,8 +150,9 @@ fun getProfileOwnerComponent(context: Context): String {
 fun setCameraDisabled(context: Context, componentName: ComponentName, isDisable: Boolean) {
     try {
         (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager).setCameraDisabled(
-            componentName, isDisable
-        )
+                componentName,
+                isDisable
+            )
     } catch (e: Exception) {
         e.printStackTrace()
     }
@@ -149,8 +164,8 @@ fun setCameraDisabled(context: Context, componentName: ComponentName, isDisable:
 fun getCameraDisabled(context: Context, componentName: ComponentName): Boolean {
     return try {
         (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager).getCameraDisabled(
-            componentName
-        )
+                componentName
+            )
     } catch (e: Exception) {
         false
     }
@@ -339,9 +354,8 @@ fun isDisUninstallAPP(
 fun setScreenCaptureDisabled(context: Context, componentName: ComponentName, isDisable: Boolean) {
     try {
         (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager).setScreenCaptureDisabled(
-                componentName,
-                isDisable
-            )
+            componentName, isDisable
+        )
     } catch (e: Exception) {
         e.printStackTrace()
     }
