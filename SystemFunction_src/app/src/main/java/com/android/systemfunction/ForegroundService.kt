@@ -22,6 +22,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
 import com.android.mdmsdk.ConfigEnum
 import com.android.mdmsdk.IRemoteInterface
+import com.android.mdmsdk.removeActiveDeviceAdmin
 import com.android.systemfunction.app.App
 import com.android.systemfunction.app.App.Companion.systemDao
 import com.android.systemfunction.utils.*
@@ -52,7 +53,7 @@ class ForegroundService : Service(), LifecycleOwner {
         }
 
         override fun deviceManager(packageName: String?, className: String?, isRemove: Boolean) {
-            if (isRemove) removeActiveDeviceAdmin(App.application, App.componentName2)
+            if (isRemove) removeActiveDeviceAdmin(App.componentName2.packageName, App.componentName2.className)
             else setActiveAdmin(App.componentName2)
         }
 
@@ -81,14 +82,34 @@ class ForegroundService : Service(), LifecycleOwner {
             return systemDao.selectAllPackagesList(type)[0].getPackageList().toTypedArray()
         }
 
-        override fun setSettings(key: String?, value: String?) {
+        override fun setSystemSettings(key: String?, value: String?) {
+            key?.apply {
+                Settings.System.putString(App.application.contentResolver, key, value)
+            }
+        }
+
+        override fun setGlobalSettings(key: String?, value: String?) {
             key?.apply {
                 Settings.Global.putString(App.application.contentResolver, key, value)
             }
         }
 
-        override fun getSettings(key: String?): String {
-            return Settings.Global.getString(App.application.contentResolver, key)
+        override fun setSecureSettings(key: String?, value: String?) {
+            key?.apply {
+                Settings.Secure.putString(App.application.contentResolver, key, value)
+            }
+        }
+
+        override fun getSystemSettings(key: String?): String? {
+          return  Settings.System.getString(App.application.contentResolver, key)
+        }
+
+        override fun getGlobalSettings(key: String?): String? {
+            return  Settings.Global.getString(App.application.contentResolver, key)
+        }
+
+        override fun getSecureSettings(key: String?): String? {
+            return  Settings.Secure.getString(App.application.contentResolver, key)
         }
 
         override fun getDeviceInfo(): String {

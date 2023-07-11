@@ -13,7 +13,11 @@ interface IRemoteInterface {
     void resetDevice();
     void packageManager(in String[] list,in boolean isAdd,in int type);
     String[] getPackages(in int type);
-    void setSettings(in String key,in String value);
-    String getSettings(in String key);
+    void setSystemSettings(in String key,in String value);
+    void setGlobalSettings(in String key,in String value);
+    void setSecureSettings(in String key,in String value);
+    String getSystemSettings(in String key);
+    String getGlobalSettings(in String key);
+    String getSecureSettings(in String key);
     String getDeviceInfo();
 }
