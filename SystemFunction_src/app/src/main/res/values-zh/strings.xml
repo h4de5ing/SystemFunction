@@ -21,7 +21,7 @@
     <string name="disable_microphone">禁用麦克风</string>
     <string name="disable_screen_shot">禁用截屏</string>
     <string name="disable_screen_capture">禁用录屏</string>
-    <string name="disable_tf_card">禁用TF卡</string>
+    <string name="disable_tf_card">禁用扩展存储</string>
     <string name="disable_phone_call">禁用打电话</string>
     <string name="disable_hot_spot">禁用热点</string>
     <string name="disable_sms">禁用短信</string>

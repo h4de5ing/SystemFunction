@@ -95,12 +95,6 @@
         android:text="@string/disable_screen_shot" />
 
     <androidx.appcompat.widget.AppCompatCheckBox
-        android:id="@+id/screen_capture"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/disable_screen_capture" />
-
-    <androidx.appcompat.widget.AppCompatCheckBox
         android:id="@+id/tf_card"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -123,18 +117,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/disable_sms" />
-
-    <androidx.appcompat.widget.AppCompatCheckBox
-        android:id="@+id/mms"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/disable_mms" />
-
-    <androidx.appcompat.widget.AppCompatCheckBox
-        android:id="@+id/share"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/disable_share" />
 
     <androidx.appcompat.widget.AppCompatCheckBox
         android:id="@+id/system_update"

@@ -15,7 +15,6 @@ import android.net.wifi.WifiManager
 import android.os.*
 import android.provider.Settings
 import android.telephony.TelephonyManager
-import android.view.WindowManager
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
@@ -28,7 +27,6 @@ import com.android.systemfunction.app.App.Companion.systemDao
 import com.android.systemfunction.utils.*
 import com.android.systemlib.*
 import com.github.h4de5ing.baseui.logD
-import java.io.File
 import java.util.*
 
 //https://blog.csdn.net/qq_35501560/article/details/105948631
@@ -44,16 +42,16 @@ class ForegroundService : Service(), LifecycleOwner {
             updateKT("$key", if (disable) "0" else "1")
         }
 
-        override fun isDisable(key: String?): Boolean {
-            return getKt("$key") == "0"
-        }
+        override fun isDisable(key: String?): Boolean = getKt("$key") == "0"
 
         override fun removeWifi(ssid: String?) {
             removeWifiConfig(App.application, "$ssid")
         }
 
         override fun deviceManager(packageName: String?, className: String?, isRemove: Boolean) {
-            if (isRemove) removeActiveDeviceAdmin(App.componentName2.packageName, App.componentName2.className)
+            if (isRemove) removeActiveDeviceAdmin(
+                App.componentName2.packageName, App.componentName2.className
+            )
             else setActiveAdmin(App.componentName2)
         }
 
@@ -78,9 +76,8 @@ class ForegroundService : Service(), LifecycleOwner {
         }
 
         //获取包
-        override fun getPackages(type: Int): Array<String> {
-            return systemDao.selectAllPackagesList(type)[0].getPackageList().toTypedArray()
-        }
+        override fun getPackages(type: Int): Array<String> =
+            systemDao.selectAllPackagesList(type)[0].getPackageList().toTypedArray()
 
         override fun setSystemSettings(key: String?, value: String?) {
             key?.apply {
@@ -100,33 +97,22 @@ class ForegroundService : Service(), LifecycleOwner {
             }
         }
 
-        override fun getSystemSettings(key: String?): String? {
-          return  Settings.System.getString(App.application.contentResolver, key)
-        }
+        override fun getSystemSettings(key: String?): String? =
+            Settings.System.getString(App.application.contentResolver, key)
 
-        override fun getGlobalSettings(key: String?): String? {
-            return  Settings.Global.getString(App.application.contentResolver, key)
-        }
+        override fun getGlobalSettings(key: String?): String? =
+            Settings.Global.getString(App.application.contentResolver, key)
 
-        override fun getSecureSettings(key: String?): String? {
-            return  Settings.Secure.getString(App.application.contentResolver, key)
-        }
+        override fun getSecureSettings(key: String?): String? =
+            Settings.Secure.getString(App.application.contentResolver, key)
 
-        override fun getDeviceInfo(): String {
-            return Build.getSerial()
-        }
+        override fun getDeviceInfo(): String = Build.getSerial()
     }
 
     override fun onUnbind(intent: Intent?): Boolean {
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_STOP)
         return super.onUnbind(intent)
     }
-
-//    @Deprecated("Deprecated in Java")
-//    override fun onStart(intent: Intent?, startId: Int) {
-//        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_START)
-//        super.onStart(intent, startId)
-//    }
 
     private val lifecycleRegistry = LifecycleRegistry(this)
     private var wifiManager: WifiManager? = null
@@ -135,7 +121,7 @@ class ForegroundService : Service(), LifecycleOwner {
     private var cm: ConnectivityManager? = null
     private var tm: TelephonyManager? = null
     private var userManager: UserManager? = null
-    private var WIFI_AP_STATE_CHANGED_ACTION = "android.net.wifi.WIFI_AP_STATE_CHANGED"
+    private var wifiAPStateChangedAction = "android.net.wifi.WIFI_AP_STATE_CHANGED"
 
     @RequiresApi(Build.VERSION_CODES.R)
     override fun onCreate() {
@@ -144,8 +130,7 @@ class ForegroundService : Service(), LifecycleOwner {
         "MDM ForegroundService 启动了".logD()
         try {
             if (!isAdminActive(this, App.componentName2)) setActiveProfileOwner(
-                this,
-                App.componentName2
+                this, App.componentName2
             )
         } catch (e: Exception) {
             "ForegroundService设置MDM失败".logD()
@@ -161,32 +146,27 @@ class ForegroundService : Service(), LifecycleOwner {
             firstUpdate(systemDao.selectAllConfig())
             updateAllState()
         }
-        systemDao.observerPackagesList()
-            .observe(this) {
-                "MDM服务监控到packages更新了".logD()
-                firstUpdatePackage(systemDao.selectAllPackages())
-            }
+        systemDao.observerPackagesList().observe(this) {
+            "MDM服务监控到packages更新了".logD()
+            firstUpdatePackage(systemDao.selectAllPackages())
+        }
         initReceiver()
         observer("mobile_data") { updateData() }
         observer("adb_enabled") { updateADB() }
         //startService(Intent(this, OnePixelWindowService::class.java))
-        if (BuildConfig.DEBUG)
-            Settings.System.putInt(contentResolver, "screen_off_timeout", Int.MAX_VALUE)
+        if (BuildConfig.DEBUG) Settings.System.putInt(
+            contentResolver, "screen_off_timeout", Int.MAX_VALUE
+        )
         loadApp()
         updateAllState()
-        val test = "isDemoUser:${userManager?.isDemoUser} " +
-                "isManagedProfile:${userManager?.isManagedProfile} " +
-                "isDemoUser:${userManager?.isDemoUser} " +
-                "isSystemUser：${userManager?.isSystemUser} " +
-                "isUserAGoat：${userManager?.isUserAGoat} " +
-                "isUserUnlocked：${userManager?.isUserUnlocked} " +
-                "isQuietModeEnabled：${
-                    userManager?.isQuietModeEnabled(
-                        UserHandle.getUserHandleForUid(
-                            0
-                        )
+        val test =
+            "isDemoUser:${userManager?.isDemoUser} " + "isManagedProfile:${userManager?.isManagedProfile} " + "isDemoUser:${userManager?.isDemoUser} " + "isSystemUser：${userManager?.isSystemUser} " + "isUserAGoat：${userManager?.isUserAGoat} " + "isUserUnlocked：${userManager?.isUserUnlocked} " + "isQuietModeEnabled：${
+                userManager?.isQuietModeEnabled(
+                    UserHandle.getUserHandleForUid(
+                        0
                     )
-                }"
+                )
+            }"
         test.logD()
         if (isDebug()) setUSBDataDisabled(this, false)
     }
@@ -218,14 +198,20 @@ class ForegroundService : Service(), LifecycleOwner {
                 //数据流量状态
                 ConnectivityManager.CONNECTIVITY_ACTION -> updateData()
                 //热点状态
-                WIFI_AP_STATE_CHANGED_ACTION -> updateAP()
+                wifiAPStateChangedAction -> updateAP()
                 WifiManager.NETWORK_STATE_CHANGED_ACTION -> {}
                 //wifi状态
-                WifiManager.WIFI_STATE_CHANGED_ACTION ->
-                    updateWIFI(intent.getIntExtra(WifiManager.EXTRA_WIFI_STATE, 0))
+                WifiManager.WIFI_STATE_CHANGED_ACTION -> updateWIFI(
+                    intent.getIntExtra(
+                        WifiManager.EXTRA_WIFI_STATE, 0
+                    )
+                )
                 //蓝牙状态
-                BluetoothAdapter.ACTION_STATE_CHANGED ->
-                    updateBluetooth(intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, 0))
+                BluetoothAdapter.ACTION_STATE_CHANGED -> updateBluetooth(
+                    intent.getIntExtra(
+                        BluetoothAdapter.EXTRA_STATE, 0
+                    )
+                )
                 //gps状态
                 LocationManager.PROVIDERS_CHANGED_ACTION -> updateGPS()
                 Intent.ACTION_PACKAGE_ADDED -> updateInstallAPK()
@@ -247,7 +233,7 @@ class ForegroundService : Service(), LifecycleOwner {
         filter.addAction(BluetoothDevice.ACTION_ACL_CONNECTED)
         filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED)
         filter.addAction(LocationManager.PROVIDERS_CHANGED_ACTION)
-        filter.addAction(WIFI_AP_STATE_CHANGED_ACTION)
+        filter.addAction(wifiAPStateChangedAction)
         val filter2 = IntentFilter()
         filter2.addAction(Intent.ACTION_PACKAGE_ADDED)
         filter2.addAction(Intent.ACTION_PACKAGE_REMOVED)
@@ -277,8 +263,7 @@ class ForegroundService : Service(), LifecycleOwner {
 
     private fun isGPSOpen(): Boolean {
         val state =
-            (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P)
-                mLocationManager!!.isLocationEnabled
+            (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) mLocationManager!!.isLocationEnabled
             else mLocationManager!!.isProviderEnabled(Settings.System.LOCATION_PROVIDERS_ALLOWED))
 //        val gps = mLocationManager?.isProviderEnabled(LocationManager.GPS_PROVIDER)
         val network = mLocationManager?.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
@@ -291,9 +276,7 @@ class ForegroundService : Service(), LifecycleOwner {
     private fun updateGPS() {
         if (isGPSOpen() && isDisableGPS) {
             Settings.Secure.putInt(
-                contentResolver,
-                Settings.Secure.LOCATION_MODE,
-                Settings.Secure.LOCATION_MODE_OFF
+                contentResolver, Settings.Secure.LOCATION_MODE, Settings.Secure.LOCATION_MODE_OFF
             )
             showToast("根据安全策略，禁止使用GPS")
         }
@@ -333,23 +316,13 @@ class ForegroundService : Service(), LifecycleOwner {
     }
 
     private fun updateTFCard() {
-        if (isDisableTFCard) {
-            unmount(this)
-        }
-    }
-
-    private fun updateShare() {
-        setSystemGlobal(
-            this,
-            ConfigEnum.DISABLE_SHARE.name.lowercase(Locale.ROOT),
-            if (isDisableShare) "1" else "0"
-        )
+        if (isDisableTFCard) unmount(this)
     }
 
     private fun updateSystemUpdate() {
         setSystemGlobal(
             this,
-            ConfigEnum.DISABLE_SYSTEM_UPDATE.name.lowercase(Locale.ROOT),
+            ConfigEnum.DISABLE_SYSTEM_UPDATE_VALUE.name.lowercase(Locale.ROOT),
             if (isDisableSystemUpdate) "1" else "0"
         )
         disable(UserManager.DISALLOW_SAFE_BOOT, isDisableBluetooth)
@@ -379,7 +352,6 @@ class ForegroundService : Service(), LifecycleOwner {
         updateInstallAPK()
         updateWindow()
         updateTFCard()
-        updateShare()
         updateSystemUpdate()
         updateMMS()
         try {
@@ -443,14 +415,5 @@ class ForegroundService : Service(), LifecycleOwner {
 
     private fun showToast(message: String) {
         message.logD()
-    }
-
-    @RequiresApi(Build.VERSION_CODES.Q)
-    class SDCardListener(path: File) : FileObserver(path, ALL_EVENTS) {
-        override fun onEvent(event: Int, path: String?) {
-            when (event) {
-
-            }
-        }
     }
 }

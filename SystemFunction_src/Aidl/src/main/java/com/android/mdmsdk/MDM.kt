@@ -233,7 +233,7 @@ fun isDataConnectivityDisabled(): Boolean =
  */
 fun setScreenShotDisable(isDisable: Boolean) {
     mService?.setDisable(
-        ConfigEnum.DISABLE_SCREEN_SHOT_Value.name.lowercase(Locale.getDefault()),
+        ConfigEnum.DISABLE_SCREEN_SHOT_VALUE.name.lowercase(Locale.getDefault()),
         isDisable
     )
 }
@@ -242,7 +242,7 @@ fun setScreenShotDisable(isDisable: Boolean) {
  * 是否禁用设备截屏
  */
 fun isScreenShot(): Boolean =
-    mService?.isDisable(ConfigEnum.DISABLE_SCREEN_SHOT_Value.name.lowercase(Locale.getDefault()))
+    mService?.isDisable(ConfigEnum.DISABLE_SCREEN_SHOT_VALUE.name.lowercase(Locale.getDefault()))
         ?: false
 
 

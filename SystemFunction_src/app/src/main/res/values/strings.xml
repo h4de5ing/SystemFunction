@@ -138,7 +138,7 @@
     <string name="disable_microphone">disable microphone</string>
     <string name="disable_screen_shot">disable screen shot</string>
     <string name="disable_screen_capture">disable screen capture</string>
-    <string name="disable_tf_card">disable tfCard</string>
+    <string name="disable_tf_card">disable storage</string>
     <string name="disable_phone_call">disable phone call</string>
     <string name="disable_hot_spot">disable hotspot</string>
     <string name="disable_sms">disable sms</string>
