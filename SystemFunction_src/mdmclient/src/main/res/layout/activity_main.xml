@@ -74,6 +74,12 @@
             android:text="禁用GPS" />
 
         <androidx.appcompat.widget.AppCompatCheckBox
+            android:id="@+id/camera"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="禁用相机" />
+
+        <androidx.appcompat.widget.AppCompatCheckBox
             android:id="@+id/microphone"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -84,12 +90,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="禁用截屏" />
-
-        <androidx.appcompat.widget.AppCompatCheckBox
-            android:id="@+id/screen_capture"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="禁用录屏" />
 
         <androidx.appcompat.widget.AppCompatCheckBox
             android:id="@+id/tf_card"
@@ -116,12 +116,6 @@
             android:text="禁用短信" />
 
         <androidx.appcompat.widget.AppCompatCheckBox
-            android:id="@+id/mms"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="禁用彩信" />
-
-        <androidx.appcompat.widget.AppCompatCheckBox
             android:id="@+id/system_update"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -132,6 +126,18 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="禁用恢复出厂设置" />
+
+        <androidx.appcompat.widget.AppCompatCheckBox
+            android:id="@+id/disable_install"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="禁用安装应用" />
+
+        <androidx.appcompat.widget.AppCompatCheckBox
+            android:id="@+id/disable_uninstall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="禁用卸载应用" />
 
         <androidx.appcompat.widget.AppCompatCheckBox
             android:id="@+id/dis_install"
@@ -174,11 +180,13 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="添加/移除禁止卸载" />
+
         <androidx.appcompat.widget.AppCompatTextView
             android:id="@+id/text_uninstall"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             tools:text="[com.android.a,com.google.b,com.facebook.c,com.baidu.d,com.android.e]" />
+
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/get_dis_uninstall"
             android:layout_width="wrap_content"
@@ -190,11 +198,13 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="添加/移除保活名单" />
+
         <androidx.appcompat.widget.AppCompatTextView
             android:id="@+id/text_persistent"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             tools:text="[com.android.a,com.google.b,com.facebook.c,com.baidu.d,com.android.e]" />
+
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/get_persistent"
             android:layout_width="wrap_content"
@@ -206,11 +216,13 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="添加/移除受信任名单" />
+
         <androidx.appcompat.widget.AppCompatTextView
             android:id="@+id/text_super"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             tools:text="[com.android.a,com.google.b,com.facebook.c,com.baidu.d,com.android.e]" />
+
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/get_super_white"
             android:layout_width="wrap_content"

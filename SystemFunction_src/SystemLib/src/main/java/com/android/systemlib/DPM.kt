@@ -65,18 +65,6 @@ fun getProfileOwnerAsUser(): ComponentName =
     IDevicePolicyManager.Stub.asInterface(ServiceManager.getService("device_policy"))
         .getProfileOwnerAsUser(0)
 
-fun test(context: Context, componentName: ComponentName) {
-    val dm = context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    val idp = IDevicePolicyManager.Stub.asInterface(ServiceManager.getService("device_policy"))
-    try {
-        println("可以执行到这里来了")
-        val result = dm.isProfileOwnerApp(componentName.packageName)
-        println("执行结果:${result}")
-    } catch (e: Exception) {
-        e.printStackTrace()
-    }
-}
-
 
 fun clearProfileOwner(componentName: ComponentName) {
     IDevicePolicyManager.Stub.asInterface(ServiceManager.getService("device_policy"))

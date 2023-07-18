@@ -26,7 +26,7 @@ include ':Android12'
 include ':Android13'
 include ':SystemUIX'
 
-//include ':mdmclient'
+include ':mdmclient'
 //include ':otax'
 //include ':appmonitor'
 //include ':droidwall'
