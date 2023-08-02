@@ -972,7 +972,7 @@ fun get_recent(context: Context) {
     }
 }
 
-fun runCommand(command: String): String? {
+fun runCommand(command: String): String {
     var process: java.lang.Process? = null
     var result = ""
     var os: DataOutputStream? = null
@@ -1005,4 +1005,31 @@ fun getAs() {
     val am: IAccessibilityManager =
         IAccessibilityManager.Stub.asInterface(ServiceManager.getService(Context.ACCESSIBILITY_SERVICE))
     am.getInstalledAccessibilityServiceList(0)
+}
+fun ethernetListener(onChange: (String, Boolean) -> Unit) {
+    val iEthernetManager =
+        IEthernetManager.Stub.asInterface(ServiceManager.getService("ethernet")) as IEthernetManager
+    iEthernetManager.addListener(object : android.net.IEthernetServiceListener.Stub() {
+        override fun onAvailabilityChanged(iface: String, isAvailable: Boolean) {
+            onChange(iface, isAvailable)
+        }
+    })
+}
+
+fun isAvailable(iface: String): Boolean {
+    val iEthernetManager =
+        IEthernetManager.Stub.asInterface(ServiceManager.getService("ethernet")) as IEthernetManager
+    return iEthernetManager.isAvailable(iface)
+}
+
+fun ethernetStart() {
+    val iEthernetManager =
+        IEthernetManager.Stub.asInterface(ServiceManager.getService("ethernet")) as IEthernetManager
+    iEthernetManager.Trackstart()
+}
+
+fun ethernetStop() {
+    val iEthernetManager =
+        IEthernetManager.Stub.asInterface(ServiceManager.getService("ethernet")) as IEthernetManager
+    iEthernetManager.Trackstop()
 }
