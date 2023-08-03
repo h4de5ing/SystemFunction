@@ -37,7 +37,10 @@ android {
         targetCompatibility JavaVersion.VERSION_19
     }
     kotlinOptions { jvmTarget = '19' }
-    viewBinding { enabled = true }
+    buildFeatures {
+        buildConfig true
+        viewBinding true
+    }
 }
 
 dependencies {

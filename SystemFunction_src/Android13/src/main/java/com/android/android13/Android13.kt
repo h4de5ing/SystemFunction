@@ -70,15 +70,16 @@ fun removeIndividualSensorPrivacyListener() {
     }
 }
 
-fun cameraListener(StatusChanged: ((Int) -> Unit), TorchStatusChanged: ((Int) -> Unit)) {
+fun cameraListener(
+    onStatusChanged: ((Int, String) -> Unit),
+    onTorchStatusChanged: ((Int, String) -> Unit)
+) {
     try {
         val cameraService =
             ICameraService.Stub.asInterface(ServiceManager.getService("media.camera"))
         cameraService.addListener(object : ICameraServiceListener.Stub() {
-            override fun onStatusChanged(status: Int, cameraId: String) {
-                //status -2 占用 1释放
-                StatusChanged(status)
-            }
+            override fun onStatusChanged(status: Int, cameraId: String) =
+                onStatusChanged(status, cameraId)
 
             override fun onPhysicalCameraStatusChanged(
                 status: Int,
@@ -87,11 +88,8 @@ fun cameraListener(StatusChanged: ((Int) -> Unit), TorchStatusChanged: ((Int) ->
             ) {
             }
 
-            override fun onTorchStatusChanged(status: Int, cameraId: String) {
-                if (cameraId != "2") {
-                    TorchStatusChanged(status)
-                }
-            }
+            override fun onTorchStatusChanged(status: Int, cameraId: String) =
+                onTorchStatusChanged(status, cameraId)
 
             override fun onTorchStrengthLevelChanged(s: String, i: Int) {}
             override fun onCameraAccessPrioritiesChanged() {}
