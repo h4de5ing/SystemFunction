@@ -107,14 +107,13 @@ fun cameraListener(
 
 var iEthernetManager: IEthernetManager? = null
 var ethernetListener: IEthernetServiceListener1? = null
-var flag = true
 fun disableEthernet13(disable: Boolean) {
     iEthernetManager =
         IEthernetManager.Stub.asInterface(ServiceManager.getService("ethernet"))
     iEthernetManager?.setEthernetEnabled(!disable)
 }
 
-fun addEthernetListener13(change: () -> Unit) {
+fun addEthernetListener13() {
     iEthernetManager =
         IEthernetManager.Stub.asInterface(ServiceManager.getService("ethernet"))
     ethernetListener = IEthernetServiceListener1()
@@ -131,6 +130,7 @@ class IEthernetServiceListener1 : IEthernetServiceListener.Stub() {
     private var disable = false
     private var whatEth: String? = null
     override fun onEthernetStateChanged(state: Int) {
+        //当state=0时代表以太网被禁用。
         disable = (state == 0)
     }
 
@@ -141,17 +141,19 @@ class IEthernetServiceListener1 : IEthernetServiceListener.Stub() {
         configuration: IpConfiguration?
     ) {
         if (state == 2) {
+            //state=2表示网线连接到了机器
             isInsert = true
             whatEth = iface
         }
         //当网线拔出时，且此时状态为禁用状态，则先将以太网设置为允许，在设置为不允许，防止当再次插上网线后，无法启用以太网问题。
-        //当以太网拔出时，p1=1, p0作用是判断具体端口好。disable是判断有没有被禁用。isInsert是判断网线是否被
+        //当以太网拔出时state == 1, iface.equals(whatEth)作用是判断具体端口号是否是插入时记录的端口号。disable是判断有没有被禁用。
+        //isInsert的作用是限制下面的代码在不连接网线作用下不断的点击禁用启用时执行
         if (state == 1 && iface.equals(whatEth) && disable && isInsert) {
             isInsert = false
             iEthernetManager?.setEthernetEnabled(true)
             iEthernetManager?.setEthernetEnabled(false)
         }
+        //下面这个判断的作用是当网线拔出时，点击禁用后再启用时，不执行上面的if语句中的代码！
+        if (state == 1 && iface.equals(whatEth)) isInsert = false
     }
-
-
 }

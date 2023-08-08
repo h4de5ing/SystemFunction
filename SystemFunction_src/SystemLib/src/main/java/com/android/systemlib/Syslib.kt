@@ -1057,7 +1057,7 @@ fun addEthernetListener(change: () -> Unit){
     if (Build.VERSION.SDK_INT < 33) {
         addEthernetListener12(change)
     } else if (Build.VERSION.SDK_INT == 33) {
-        addEthernetListener13(change)
+        addEthernetListener13()
     }
 }
 
