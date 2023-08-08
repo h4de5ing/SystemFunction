@@ -178,7 +178,6 @@ fun disableMDM(
 
 /**
  * 查询xx是否被禁用
- * //TODO 测试 UserManager.setUserRestriction 是否需要dpm权限
  */
 fun isDisableDMD(context: Context, key: String): Boolean {
     return (context.applicationContext.getSystemService(Context.USER_SERVICE) as UserManager).userRestrictions.getBoolean(

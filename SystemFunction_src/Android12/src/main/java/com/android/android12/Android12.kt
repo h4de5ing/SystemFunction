@@ -5,7 +5,6 @@ import android.hardware.SensorPrivacyManager
 import android.net.IEthernetManager
 import android.net.IEthernetServiceListener
 import android.os.Build
-import android.os.IBinder
 import android.os.ServiceManager
 import android.service.SensorPrivacyIndividualEnabledSensorProto
 import android.service.SensorPrivacyToggleSourceProto

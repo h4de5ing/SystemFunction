@@ -9,8 +9,6 @@ import androidx.annotation.RequiresApi
 import com.android.droidwall.services.ForegroundService
 
 class BootReceiver : BroadcastReceiver() {
-    @SuppressLint("UnsafeProtectedBroadcastReceiver")
-    @RequiresApi(Build.VERSION_CODES.O)
     override fun onReceive(context: Context, intent: Intent) {
         try {
             context.startService(Intent(context, ForegroundService::class.java))
