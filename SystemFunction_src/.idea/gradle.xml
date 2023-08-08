@@ -15,9 +15,7 @@
             <option value="$PROJECT_DIR$/Android12" />
             <option value="$PROJECT_DIR$/Android13" />
             <option value="$PROJECT_DIR$/SystemLib" />
-            <option value="$PROJECT_DIR$/SystemUIX" />
             <option value="$PROJECT_DIR$/app" />
-            <option value="$PROJECT_DIR$/mdmclient" />
           </set>
         </option>
       </GradleProjectSettings>
