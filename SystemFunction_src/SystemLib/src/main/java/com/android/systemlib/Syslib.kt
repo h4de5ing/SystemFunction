@@ -21,8 +21,14 @@ import android.webkit.MimeTypeMap
 import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.core.view.accessibility.AccessibilityEventCompat
+import com.android.android12.addEthernetListener12
+import com.android.android12.disableEthernet12
 import com.android.android12.disableSensor12
+import com.android.android12.removeEthernetListener12
+import com.android.android13.addEthernetListener13
+import com.android.android13.disableEthernet13
 import com.android.android13.disableSensor13
+import com.android.android13.removeEthernetListener13
 import com.android.internal.app.IAppOpsService
 import java.io.*
 
@@ -1005,4 +1011,33 @@ fun getAs() {
     val am: IAccessibilityManager =
         IAccessibilityManager.Stub.asInterface(ServiceManager.getService(Context.ACCESSIBILITY_SERVICE))
     am.getInstalledAccessibilityServiceList(0)
+}
+
+/**
+ * @description 是否禁用以太网功能
+ * @param disable true：禁用， false 启用
+ * @return null
+ */
+fun disableEthernet(disable: Boolean){
+    if (Build.VERSION.SDK_INT < 33) {
+        disableEthernet12(disable)
+    } else if (Build.VERSION.SDK_INT == 33) {
+        disableEthernet13(disable)
+    }
+}
+
+fun addEthernetListener(change: () -> Unit){
+    if (Build.VERSION.SDK_INT < 33) {
+        addEthernetListener12(change)
+    } else if (Build.VERSION.SDK_INT == 33) {
+        addEthernetListener13(change)
+    }
+}
+
+fun removeEthernetListener(){
+    if (Build.VERSION.SDK_INT < 33) {
+        removeEthernetListener12()
+    } else if (Build.VERSION.SDK_INT == 33) {
+        removeEthernetListener13()
+    }
 }
