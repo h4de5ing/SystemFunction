@@ -2,7 +2,10 @@ package com.android.android12
 
 import android.hardware.ISensorPrivacyManager
 import android.hardware.SensorPrivacyManager
+import android.net.IEthernetManager
+import android.net.IEthernetServiceListener
 import android.os.Build
+import android.os.IBinder
 import android.os.ServiceManager
 import android.service.SensorPrivacyIndividualEnabledSensorProto
 import android.service.SensorPrivacyToggleSourceProto
@@ -36,4 +39,29 @@ fun disableSensor12(isDisable: Boolean, sensor: Int) {
 //移除监听
 //    spm.removeIndividualSensorPrivacyListener(SensorPrivacyManager.Sensors.CAMERA, null)
     }
+}
+
+var iEthernetManager: IEthernetManager? = null
+var ethernetListener: IEthernetServiceListener1? = null
+fun disableEthernet12(disable: Boolean) {
+    iEthernetManager =
+        IEthernetManager.Stub.asInterface(ServiceManager.getService("ethernet"))
+    if (disable) iEthernetManager?.Trackstop()
+    else iEthernetManager?.Trackstart()
+}
+
+fun addEthernetListener12(change: () -> Unit) {
+    ethernetListener = IEthernetServiceListener1(change)
+    iEthernetManager?.addListener(ethernetListener)
+}
+
+fun removeEthernetListener12() {
+    iEthernetManager?.removeListener(ethernetListener)
+}
+
+class IEthernetServiceListener1(val change: () -> Unit) : IEthernetServiceListener.Stub() {
+    override fun onAvailabilityChanged(iface: String?, isAvailable: Boolean) {
+        change()
+    }
+
 }
