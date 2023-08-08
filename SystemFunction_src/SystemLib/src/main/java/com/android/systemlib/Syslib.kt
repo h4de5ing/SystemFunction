@@ -11,7 +11,11 @@ import android.net.wifi.WifiConfiguration
 import android.net.wifi.WifiManager
 import android.net.wifi.WifiNetworkSpecifier
 import android.os.*
+import android.os.storage.DiskInfo
+import android.os.storage.IStorageEventListener
 import android.os.storage.IStorageManager
+import android.os.storage.VolumeInfo
+import android.os.storage.VolumeRecord
 import android.provider.Settings
 import android.telephony.TelephonyManager
 import android.text.TextUtils
@@ -75,15 +79,13 @@ fun addWifi(context: Context, ssid: String, pass: String) {
         context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 
     val specifier: NetworkSpecifier = WifiNetworkSpecifier.Builder()
-        .setSsidPattern(PatternMatcher(ssid, PatternMatcher.PATTERN_PREFIX))
-        .setWpa2Passphrase(pass)
+        .setSsidPattern(PatternMatcher(ssid, PatternMatcher.PATTERN_PREFIX)).setWpa2Passphrase(pass)
         .build()
-    val request: NetworkRequest = NetworkRequest.Builder()
-        .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
-        .addCapability(NetworkCapabilities.NET_CAPABILITY_NOT_RESTRICTED)
-        .addCapability(NetworkCapabilities.NET_CAPABILITY_TRUSTED)
-        .setNetworkSpecifier(specifier)
-        .build()
+    val request: NetworkRequest =
+        NetworkRequest.Builder().addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+            .addCapability(NetworkCapabilities.NET_CAPABILITY_NOT_RESTRICTED)
+            .addCapability(NetworkCapabilities.NET_CAPABILITY_TRUSTED)
+            .setNetworkSpecifier(specifier).build()
     connectivityManager.requestNetwork(request, object : ConnectivityManager.NetworkCallback() {
         override fun onAvailable(network: Network) {
             super.onAvailable(network)
@@ -178,8 +180,7 @@ fun getSystemDefaultLauncher2(context: Context): ComponentName? {
                 val appName = resolveInfo.activityInfo.loadLabel(pm).toString()
                 if (!TextUtils.isEmpty(appName) && isSystemResolveInfo(resolveInfo)) {
                     componentName = ComponentName(
-                        resolveInfo.activityInfo.packageName,
-                        resolveInfo.activityInfo.name
+                        resolveInfo.activityInfo.packageName, resolveInfo.activityInfo.name
                     )
                 }
             }
@@ -195,9 +196,9 @@ fun getSystemDefaultLauncher2(context: Context): ComponentName? {
 fun clearDefaultLauncher(context: Context, packageName: String) {
     val pm = context.packageManager
     pm.queryIntentActivities(HOME_INTENT, 0).forEach { resolveInfo ->
-        if (resolveInfo != null)
-            if (packageName == resolveInfo.activityInfo.packageName)
-                pm.clearPackagePreferredActivities(resolveInfo.activityInfo.packageName)
+        if (resolveInfo != null) if (packageName == resolveInfo.activityInfo.packageName) pm.clearPackagePreferredActivities(
+            resolveInfo.activityInfo.packageName
+        )
     }
     //IRoleManager.Stub.asInterface(ServiceManager.getService(Context.ROLE_SERVICE))
 }
@@ -207,9 +208,7 @@ fun clearDefaultLauncher(context: Context, packageName: String) {
  */
 fun setUSBDataDisabled(context: Context, isDisable: Boolean) {
     Settings.Global.putInt(
-        context.contentResolver,
-        Settings.Global.ADB_ENABLED,
-        if (isDisable) 0 else 1
+        context.contentResolver, Settings.Global.ADB_ENABLED, if (isDisable) 0 else 1
     )
     write2File("${getSystemPropertyString(USB_SWITCH_PATH)}", if (isDisable) "1" else "0", false)
 }
@@ -237,8 +236,9 @@ fun shutdown() = IPowerManager.Stub.asInterface(ServiceManager.getService(Contex
  * 关机
  */
 fun shutdown(context: Context) {
-    (context.applicationContext.getSystemService(Context.POWER_SERVICE) as PowerManager)
-        .shutdown(false, "shutdown", false)
+    (context.applicationContext.getSystemService(Context.POWER_SERVICE) as PowerManager).shutdown(
+        false, "shutdown", false
+    )
 //    val intent = Intent("com.android.internal.intent.action.REQUEST_SHUTDOWN")
 //    intent.putExtra("com.android.internal.intent.action.REQUEST_SHUTDOWN", false)
 //    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
@@ -323,9 +323,7 @@ fun installAPK(context: Context, apkFilePath: String, change: ((Int) -> Unit)) {
 }
 
 private fun copyInstallFile(
-    packageInstaller: PackageInstaller,
-    sessionId: Int, apkFilePath: String,
-    change: ((Int) -> Unit)
+    packageInstaller: PackageInstaller, sessionId: Int, apkFilePath: String, change: ((Int) -> Unit)
 ): Boolean {
     var `in`: InputStream? = null
     var out: OutputStream? = null
@@ -358,20 +356,14 @@ private fun copyInstallFile(
 
 @SuppressLint("UnspecifiedImmutableFlag")
 private fun execInstallCommand(
-    context: Context,
-    packageInstaller: PackageInstaller,
-    sessionId: Int,
-    change: ((Int) -> Unit)
+    context: Context, packageInstaller: PackageInstaller, sessionId: Int, change: ((Int) -> Unit)
 ) {
     var session: PackageInstaller.Session? = null
     try {
         session = packageInstaller.openSession(sessionId)
         session.commit(
             PendingIntent.getBroadcast(
-                context,
-                1,
-                Intent(),
-                PendingIntent.FLAG_IMMUTABLE
+                context, 1, Intent(), PendingIntent.FLAG_IMMUTABLE
             ).intentSender
         )
         change(0)
@@ -490,19 +482,15 @@ fun uninstall(context: Context, packageName: String) {
  */
 fun disableApp(context: Context, componentName: ComponentName, isDisable: Boolean) {
     context.packageManager.setComponentEnabledSetting(
-        componentName,
-        if (isDisable) PackageManager.COMPONENT_ENABLED_STATE_DISABLED
-        else PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
-        PackageManager.DONT_KILL_APP
+        componentName, if (isDisable) PackageManager.COMPONENT_ENABLED_STATE_DISABLED
+        else PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP
     )
 }
 
 fun disableAppUser(context: Context, componentName: ComponentName, isDisable: Boolean) {
     context.packageManager.setComponentEnabledSetting(
-        componentName,
-        if (isDisable) PackageManager.COMPONENT_ENABLED_STATE_DISABLED_USER
-        else PackageManager.COMPONENT_ENABLED_STATE_DEFAULT,
-        PackageManager.DONT_KILL_APP
+        componentName, if (isDisable) PackageManager.COMPONENT_ENABLED_STATE_DISABLED_USER
+        else PackageManager.COMPONENT_ENABLED_STATE_DEFAULT, PackageManager.DONT_KILL_APP
     )
 }
 
@@ -545,13 +533,7 @@ fun isHiddenAPP(packageName: String): Boolean {
 fun suspendedAPP(packageName: String, isHidden: Boolean) {
     val mIPackageManager = IPackageManager.Stub.asInterface(ServiceManager.getService("package"))
     mIPackageManager.setPackagesSuspendedAsUser(
-        arrayOf(packageName),
-        isHidden,
-        null,
-        null,
-        null,
-        "android",
-        0
+        arrayOf(packageName), isHidden, null, null, null, "android", 0
     )
 }
 
@@ -715,8 +697,7 @@ fun getPowerSaveWhitelistApp(context: Context): List<String> {
  */
 fun canBackup(context: Context, packageName: String): Boolean {
     val flags = (context.applicationContext.packageManager.getApplicationInfo(
-        packageName,
-        0
+        packageName, 0
     )).flags
     return (flags and ApplicationInfo.FLAG_ALLOW_BACKUP) == ApplicationInfo.FLAG_ALLOW_BACKUP
 }
@@ -780,9 +761,7 @@ fun grantAllPermission(packageName: String) {
     try {
         val ipm = IPackageManager.Stub.asInterface(ServiceManager.getService("package"))
         ipm.getPackageInfo(
-            packageName,
-            PackageManager.GET_PERMISSIONS,
-            0
+            packageName, PackageManager.GET_PERMISSIONS, 0
         ).requestedPermissions.forEach {
             try {
                 ipm.grantRuntimePermission(packageName, it, 0)
@@ -797,8 +776,7 @@ fun grantAllPermission(packageName: String) {
 fun getwhite(context: Context, packageName: String) {
     val pm = context.packageManager
     pm.getWhitelistedRestrictedPermissions(
-        packageName,
-        PackageManager.FLAG_PERMISSION_WHITELIST_UPGRADE
+        packageName, PackageManager.FLAG_PERMISSION_WHITELIST_UPGRADE
     ).forEach {
         println("white:${it}")
     }
@@ -866,8 +844,7 @@ fun disableSensor(isDisable: Boolean, sensor: Int) {
 @RequiresApi(Build.VERSION_CODES.N)
 fun unmount(context: Context) {
     try {
-        val iStorageManager =
-            IStorageManager.Stub.asInterface(ServiceManager.getService("mount"))
+        val iStorageManager = IStorageManager.Stub.asInterface(ServiceManager.getService("mount"))
         iStorageManager.getVolumeList(0, context.packageName, 0)
             .forEach { if (it.isRemovable) iStorageManager.unmount(it.id) }
     } catch (_: Exception) {
@@ -879,26 +856,21 @@ fun unmount(context: Context) {
  */
 fun getStorage(context: Context, tv: TextView) {
     try {
-        val iStorageManager =
-            IStorageManager.Stub.asInterface(ServiceManager.getService("mount"))
-        iStorageManager.getVolumes(0)
-            .forEach {
-                it.getDisk()?.isUsb?.apply {
-                    val totalBytes = it.getPath().totalSpace
-                    val freeBytes = it.getPath().freeSpace
-                    val usedBytes = totalBytes - freeBytes
-                    val used = Formatter.formatFileSize(context, usedBytes)
-                    val total = Formatter.formatFileSize(context, totalBytes)
-                    val read = File(it.path).canRead()
-                    val write = File(it.path).canWrite()
-                    tv.append(
-                        it.path +
-                                " r:${read} w:${write} " +
-                                " ${used}/${total}"
-                                + "\n"
-                    )
-                }
+        val iStorageManager = IStorageManager.Stub.asInterface(ServiceManager.getService("mount"))
+        iStorageManager.getVolumes(0).forEach {
+            it.getDisk()?.isUsb?.apply {
+                val totalBytes = it.getPath().totalSpace
+                val freeBytes = it.getPath().freeSpace
+                val usedBytes = totalBytes - freeBytes
+                val used = Formatter.formatFileSize(context, usedBytes)
+                val total = Formatter.formatFileSize(context, totalBytes)
+                val read = File(it.path).canRead()
+                val write = File(it.path).canWrite()
+                tv.append(
+                    it.path + " r:${read} w:${write} " + " ${used}/${total}" + "\n"
+                )
             }
+        }
     } catch (e: Exception) {
         e.printStackTrace()
     }
@@ -942,8 +914,7 @@ fun getFileType(context: Context) {
 //    usageStatsManager.isAppInactive("")//判断app是否还活跃
 
     //BugreportManagerService 用于捕获bugreport
-    val bugreportManager =
-        context.getSystemService(Context.BUGREPORT_SERVICE) as BugreportManager
+    val bugreportManager = context.getSystemService(Context.BUGREPORT_SERVICE) as BugreportManager
 //    bugreportManager.startConnectivityBugreport()
 }
 
@@ -1012,6 +983,7 @@ fun getAs() {
         IAccessibilityManager.Stub.asInterface(ServiceManager.getService(Context.ACCESSIBILITY_SERVICE))
     am.getInstalledAccessibilityServiceList(0)
 }
+
 fun ethernetListener(onChange: (String, Boolean) -> Unit) {
     val iEthernetManager =
         IEthernetManager.Stub.asInterface(ServiceManager.getService("ethernet")) as IEthernetManager
@@ -1043,28 +1015,61 @@ fun ethernetStop() {
 /**
  * @description 是否禁用以太网功能
  * @param disable true：禁用， false 启用
- * @return null
  */
-fun disableEthernet(disable: Boolean){
-    if (Build.VERSION.SDK_INT < 33) {
-        disableEthernet12(disable)
-    } else if (Build.VERSION.SDK_INT == 33) {
-        disableEthernet13(disable)
-    }
+fun disableEthernet(disable: Boolean) {
+    if (Build.VERSION.SDK_INT < 33) disableEthernet12(disable)
+    else if (Build.VERSION.SDK_INT == 33) disableEthernet13(disable)
 }
 
-fun addEthernetListener(change: () -> Unit){
-    if (Build.VERSION.SDK_INT < 33) {
-        addEthernetListener12(change)
-    } else if (Build.VERSION.SDK_INT == 33) {
-        addEthernetListener13(change)
-    }
+fun addEthernetListener(change: () -> Unit) {
+    if (Build.VERSION.SDK_INT < 33) addEthernetListener12(change)
+    else if (Build.VERSION.SDK_INT == 33) addEthernetListener13(change)
 }
 
-fun removeEthernetListener(){
-    if (Build.VERSION.SDK_INT < 33) {
-        removeEthernetListener12()
-    } else if (Build.VERSION.SDK_INT == 33) {
-        removeEthernetListener13()
+fun removeEthernetListener() {
+    if (Build.VERSION.SDK_INT < 33) removeEthernetListener12()
+    else if (Build.VERSION.SDK_INT == 33) removeEthernetListener13()
+}
+
+private var iStorageManager: IStorageManager? = null
+private var listener: MyStorageEventListener? = null
+fun registerStorageListener(onChange: ((String?, String?, Int?, Int?) -> Unit) = { _, _, _, _ -> }) {
+    iStorageManager = IStorageManager.Stub.asInterface(ServiceManager.getService("mount"))
+    listener = MyStorageEventListener()
+    iStorageManager?.registerListener(listener)
+}
+
+fun unregisterStorageListener() {
+    iStorageManager?.unregisterListener(listener)
+}
+
+fun getVolumes(): List<Triple<String, Int, Int>> =
+    iStorageManager?.getVolumes(0)?.map { Triple(it.id, it.type, it.state) }?.toList()
+        ?: emptyList()
+
+fun mount(id: String) {
+    iStorageManager?.mount(id)
+}
+
+fun unmount(id: String) {
+    iStorageManager?.unmount(id)
+}
+
+class MyStorageEventListener(val onChange: ((String?, String?, Int?, Int?) -> Unit) = { _, _, _, _ -> }) :
+    IStorageEventListener.Stub() {
+    override fun onUsbMassStorageConnectionChanged(p0: Boolean) = Unit
+
+    override fun onStorageStateChanged(p0: String?, p1: String?, p2: String?) = Unit
+
+    override fun onVolumeStateChanged(vol: VolumeInfo?, oldState: Int, newState: Int) {
+        onChange(vol?.id, vol?.path, vol?.type, vol?.state)
     }
+
+    override fun onVolumeRecordChanged(p0: VolumeRecord?) = Unit
+
+    override fun onVolumeForgotten(p0: String?) = Unit
+
+    override fun onDiskScanned(p0: DiskInfo?, p1: Int) = Unit
+
+    override fun onDiskDestroyed(p0: DiskInfo?) = Unit
 }
