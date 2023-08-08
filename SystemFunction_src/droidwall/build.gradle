@@ -2,7 +2,7 @@ plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
     id 'kotlin-android-extensions'
-    id 'kotlin-kapt'
+    id 'com.google.devtools.ksp'
 }
 
 android {
@@ -39,12 +39,14 @@ android {
     }
     kotlinOptions { jvmTarget = '1.8' }
     gradle.projectsEvaluated {
-        tasks.withType(JavaCompile) {
-            Set<File> fileSet = options.bootstrapClasspath.getFiles()
-            List<File> newFileList = new ArrayList<>()
-            newFileList.add(new File("libs/classes.jar"))
-            newFileList.addAll(fileSet)
-            options.bootstrapClasspath = files(newFileList.toArray())
+        tasks.withType(JavaCompile).tap {
+            configureEach {
+                Set<File> fileSet = options.bootstrapClasspath.getFiles()
+                List<File> newFileList = new ArrayList<>()
+                newFileList.add(new File("libs/classes.jar"))
+                newFileList.addAll(fileSet)
+                options.bootstrapClasspath = files(newFileList.toArray())
+            }
         }
     }
 }
@@ -58,7 +60,7 @@ dependencies {
     implementation 'com.github.CymChad:BaseRecyclerViewAdapterHelper:3.0.7'
     implementation "androidx.room:room-runtime:2.5.2"
     annotationProcessor "androidx.room:room-compiler:2.5.2"
-    kapt "androidx.room:room-compiler:2.5.2"
+    ksp "androidx.room:room-compiler:2.5.2"
     debugImplementation 'com.guolindev.glance:glance:1.1.0'
     implementation "androidx.lifecycle:lifecycle-viewmodel:2.6.1"
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.1"

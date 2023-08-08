@@ -39,12 +39,14 @@ android {
     }
     kotlinOptions { jvmTarget = '1.8' }
     gradle.projectsEvaluated {
-        tasks.withType(JavaCompile) {
-            Set<File> fileSet = options.bootstrapClasspath.getFiles()
-            List<File> newFileList = new ArrayList<>()
-            newFileList.add(new File("libs/classes-header.jar"))
-            newFileList.addAll(fileSet)
-            options.bootstrapClasspath = files(newFileList.toArray())
+        tasks.withType(JavaCompile).tap {
+            configureEach {
+                Set<File> fileSet = options.bootstrapClasspath.getFiles()
+                List<File> newFileList = new ArrayList<>()
+                newFileList.add(new File("libs/classes-header.jar"))
+                newFileList.addAll(fileSet)
+                options.bootstrapClasspath = files(newFileList.toArray())
+            }
         }
     }
 }

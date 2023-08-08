@@ -109,9 +109,8 @@ fun setAdmin(activity: Activity, componentName: ComponentName) {
  * 判断是否激活设备管理器
  */
 fun isAdminActive(context: Context, componentName: ComponentName): Boolean {
-    return (context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager).isAdminActive(
-            componentName
-        )
+    return (context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
+        .isAdminActive(componentName)
 }
 
 
@@ -137,10 +136,8 @@ fun getProfileOwnerComponent(context: Context): String {
  */
 fun setCameraDisabled(context: Context, componentName: ComponentName, isDisable: Boolean) {
     try {
-        (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager).setCameraDisabled(
-                componentName,
-                isDisable
-            )
+        (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
+            .setCameraDisabled(componentName, isDisable)
     } catch (e: Exception) {
         e.printStackTrace()
     }
@@ -152,8 +149,8 @@ fun setCameraDisabled(context: Context, componentName: ComponentName, isDisable:
 fun getCameraDisabled(context: Context, componentName: ComponentName): Boolean {
     return try {
         (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager).getCameraDisabled(
-                componentName
-            )
+            componentName
+        )
     } catch (e: Exception) {
         false
     }
