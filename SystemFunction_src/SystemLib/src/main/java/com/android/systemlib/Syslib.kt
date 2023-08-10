@@ -1021,9 +1021,12 @@ fun disableEthernet(disable: Boolean) {
     else if (Build.VERSION.SDK_INT == 33) disableEthernet13(disable)
 }
 
-fun addEthernetListener(change: () -> Unit) {
-    if (Build.VERSION.SDK_INT < 33) addEthernetListener12(change)
-    else if (Build.VERSION.SDK_INT == 33) addEthernetListener13(change)
+fun addEthernetListener(change: () -> Unit){
+    if (Build.VERSION.SDK_INT < 33) {
+        addEthernetListener12(change)
+    } else if (Build.VERSION.SDK_INT == 33) {
+        addEthernetListener13()
+    }
 }
 
 fun removeEthernetListener() {
