@@ -113,8 +113,7 @@ fun disableEthernet13(disable: Boolean) {
     iEthernetManager?.setEthernetEnabled(!disable)
 }
 
-<<<<<<< HEAD
-fun addEthernetListener13(change: () -> Unit) {
+fun addEthernetListener13() {
     try {
         iEthernetManager =
             IEthernetManager.Stub.asInterface(ServiceManager.getService("ethernet"))
@@ -123,13 +122,6 @@ fun addEthernetListener13(change: () -> Unit) {
     } catch (e: Exception) {
         e.printStackTrace()
     }
-=======
-fun addEthernetListener13() {
-    iEthernetManager =
-        IEthernetManager.Stub.asInterface(ServiceManager.getService("ethernet"))
-    ethernetListener = IEthernetServiceListener1()
-    iEthernetManager?.addListener(ethernetListener)
->>>>>>> b033e74fdd34426575ee783ff0bc0827182549db
 }
 
 fun removeEthernetListener13() {
@@ -162,12 +154,8 @@ class IEthernetServiceListener1 : IEthernetServiceListener.Stub() {
             whatEth = iface
         }
         //当网线拔出时，且此时状态为禁用状态，则先将以太网设置为允许，在设置为不允许，防止当再次插上网线后，无法启用以太网问题。
-<<<<<<< HEAD
-        //当以太网拔出时，state=1, iface 网卡名称。disable是判断有没有被禁用。isInsert是判断网线是否被
-=======
         //当以太网拔出时state == 1, iface.equals(whatEth)作用是判断具体端口号是否是插入时记录的端口号。disable是判断有没有被禁用。
         //isInsert的作用是限制下面的代码在不连接网线作用下不断的点击禁用启用时执行
->>>>>>> b033e74fdd34426575ee783ff0bc0827182549db
         if (state == 1 && iface.equals(whatEth) && disable && isInsert) {
             isInsert = false
             iEthernetManager?.setEthernetEnabled(true)
