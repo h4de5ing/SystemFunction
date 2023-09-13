@@ -1001,15 +1001,23 @@ fun isAvailable(iface: String): Boolean {
 }
 
 fun ethernetStart() {
-    val iEthernetManager =
-        IEthernetManager.Stub.asInterface(ServiceManager.getService("ethernet")) as IEthernetManager
-    iEthernetManager.Trackstart()
+    try {
+        val iEthernetManager =
+            IEthernetManager.Stub.asInterface(ServiceManager.getService("ethernet")) as IEthernetManager
+        iEthernetManager.Trackstart()
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
 }
 
 fun ethernetStop() {
-    val iEthernetManager =
-        IEthernetManager.Stub.asInterface(ServiceManager.getService("ethernet")) as IEthernetManager
-    iEthernetManager.Trackstop()
+    try {
+        val iEthernetManager =
+            IEthernetManager.Stub.asInterface(ServiceManager.getService("ethernet")) as IEthernetManager
+        iEthernetManager.Trackstop()
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
 }
 
 /**
@@ -1021,7 +1029,7 @@ fun disableEthernet(disable: Boolean) {
     else if (Build.VERSION.SDK_INT == 33) disableEthernet13(disable)
 }
 
-fun addEthernetListener(change: () -> Unit){
+fun addEthernetListener(change: () -> Unit) {
     if (Build.VERSION.SDK_INT < 33) {
         addEthernetListener12(change)
     } else if (Build.VERSION.SDK_INT == 33) {
@@ -1038,7 +1046,7 @@ private var iStorageManager: IStorageManager? = null
 private var listener: MyStorageEventListener? = null
 fun registerStorageListener(onChange: ((String?, String?, Int?, Int?) -> Unit) = { _, _, _, _ -> }) {
     iStorageManager = IStorageManager.Stub.asInterface(ServiceManager.getService("mount"))
-    listener = MyStorageEventListener()
+    listener = MyStorageEventListener(onChange)
     iStorageManager?.registerListener(listener)
 }
 
@@ -1046,15 +1054,19 @@ fun unregisterStorageListener() {
     iStorageManager?.unregisterListener(listener)
 }
 
-fun getVolumes(): List<Triple<String, Int, Int>> =
-    iStorageManager?.getVolumes(0)?.map { Triple(it.id, it.type, it.state) }?.toList()
+fun getVolumes(): List<Triple<String, Int, Int>> {
+    return iStorageManager?.getVolumes(0)?.map { Triple(it.id, it.type, it.state) }?.toList()
         ?: emptyList()
+}
+
 
 fun mount(id: String) {
+    println("挂载 $id")
     iStorageManager?.mount(id)
 }
 
 fun unmount(id: String) {
+    println("卸载 $id")
     iStorageManager?.unmount(id)
 }
 

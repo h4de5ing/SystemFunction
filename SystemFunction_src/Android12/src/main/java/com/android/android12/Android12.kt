@@ -43,15 +43,23 @@ fun disableSensor12(isDisable: Boolean, sensor: Int) {
 var iEthernetManager: IEthernetManager? = null
 var ethernetListener: IEthernetServiceListener1? = null
 fun disableEthernet12(disable: Boolean) {
-    iEthernetManager =
-        IEthernetManager.Stub.asInterface(ServiceManager.getService("ethernet"))
-    if (disable) iEthernetManager?.Trackstop()
-    else iEthernetManager?.Trackstart()
+    try {
+        iEthernetManager =
+            IEthernetManager.Stub.asInterface(ServiceManager.getService("ethernet"))
+        if (disable) iEthernetManager?.Trackstop()
+        else iEthernetManager?.Trackstart()
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
 }
 
 fun addEthernetListener12(change: () -> Unit) {
-    ethernetListener = IEthernetServiceListener1(change)
-    iEthernetManager?.addListener(ethernetListener)
+    try {
+        ethernetListener = IEthernetServiceListener1(change)
+        iEthernetManager?.addListener(ethernetListener)
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
 }
 
 fun removeEthernetListener12() {
@@ -62,5 +70,4 @@ class IEthernetServiceListener1(val change: () -> Unit) : IEthernetServiceListen
     override fun onAvailabilityChanged(iface: String?, isAvailable: Boolean) {
         change()
     }
-
 }

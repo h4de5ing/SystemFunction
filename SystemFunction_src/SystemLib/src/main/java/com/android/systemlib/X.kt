@@ -275,11 +275,7 @@ fun drawable2Bitmap(icon: Drawable): Bitmap {
     return bitmap
 }
 
-//TODO 获取sim卡相关的信息
-fun getPhoneNumber() {
-//    val telephonyManager = getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
-//    println("手机号码:${telephonyManager.line1Number}")
-}
+
 
 fun getDefaultConfig() {
     com.android.internal.R.string.config_defaultSupervisionProfileOwnerComponent
