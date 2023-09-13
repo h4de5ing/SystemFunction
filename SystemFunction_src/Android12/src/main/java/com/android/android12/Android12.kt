@@ -24,10 +24,7 @@ fun disableSensor12(isDisable: Boolean, sensor: Int) {
 //    val result = spm.isIndividualSensorPrivacyEnabled(0, SensorPrivacyManager.Sensors.CAMERA)
 //    println("摄像头状态:${result}")
         spm.setIndividualSensorPrivacy(
-            0,
-            SensorPrivacyToggleSourceProto.SETTINGS,
-            sensors,
-            !isDisable
+            0, SensorPrivacyToggleSourceProto.SETTINGS, sensors, !isDisable
         )
 //    spm.addIndividualSensorPrivacyListener(0, SensorPrivacyManager.Sensors.CAMERA,
 //        object : ISensorPrivacyListener.Stub() {
@@ -44,10 +41,14 @@ var iEthernetManager: IEthernetManager? = null
 var ethernetListener: IEthernetServiceListener1? = null
 fun disableEthernet12(disable: Boolean) {
     try {
-        iEthernetManager =
-            IEthernetManager.Stub.asInterface(ServiceManager.getService("ethernet"))
-        if (disable) iEthernetManager?.Trackstop()
-        else iEthernetManager?.Trackstart()
+        iEthernetManager = IEthernetManager.Stub.asInterface(ServiceManager.getService("ethernet"))
+        val methods = iEthernetManager?.javaClass?.methods?.map { it.name }
+        methods?.apply {
+            if (contains("Trackstop") && contains("Trackstart")) {
+                if (disable) iEthernetManager?.Trackstop()
+                else iEthernetManager?.Trackstart()
+            }
+        }
     } catch (e: Exception) {
         e.printStackTrace()
     }
