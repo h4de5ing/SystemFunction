@@ -28,6 +28,7 @@ import androidx.core.view.accessibility.AccessibilityEventCompat
 import com.android.android12.addEthernetListener12
 import com.android.android12.disableEthernet12
 import com.android.android12.disableSensor12
+import com.android.android12.iEthernetManager
 import com.android.android12.removeEthernetListener12
 import com.android.android13.addEthernetListener13
 import com.android.android13.disableEthernet13
@@ -1018,6 +1019,25 @@ fun ethernetStop() {
     } catch (e: Exception) {
         e.printStackTrace()
     }
+}
+
+/**
+ * @description 判断是否支持禁用以太网
+ * @return 支持返回ture,否则返回false
+ */
+fun hasEthernetControlInterface(): Boolean{
+    if(Build.VERSION.SDK_INT < 31 || Build.VERSION.SDK_INT == 33) return true
+    try {
+        iEthernetManager = IEthernetManager.Stub.asInterface(ServiceManager.getService("ethernet"))
+        val methods = iEthernetManager?.javaClass?.methods?.map { it.name }
+        methods?.apply {
+            if (contains("Trackstop") && contains("Trackstart")) return true
+        }
+    } catch (e: Exception) {
+        e.printStackTrace()
+        return false
+    }
+    return false
 }
 
 /**
