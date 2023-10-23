@@ -39,22 +39,24 @@ android {
     kotlinOptions { jvmTarget = '1.8' }
     viewBinding { enabled = true }
     gradle.projectsEvaluated {
-        tasks.withType(JavaCompile) {
-            Set<File> fileSet = options.bootstrapClasspath.getFiles()
-            List<File> newFileList = new ArrayList<>()
-            newFileList.add(new File("libs/classes.jar"))
-            newFileList.addAll(fileSet)
-            options.bootstrapClasspath = files(newFileList.toArray())
+        tasks.withType(JavaCompile).tap {
+            configureEach {
+                Set<File> fileSet = options.bootstrapClasspath.getFiles()
+                List<File> newFileList = new ArrayList<>()
+                newFileList.add(new File("libs/classes.jar"))
+                newFileList.addAll(fileSet)
+                options.bootstrapClasspath = files(newFileList.toArray())
+            }
         }
     }
 }
 
 dependencies {
-    implementation 'androidx.core:core-ktx:1.10.1'
+    implementation 'androidx.core:core-ktx:1.12.0'
     implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'com.google.android.material:material:1.9.0'
+    implementation 'com.google.android.material:material:1.10.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-    implementation 'com.github.h4de5ing.filepicker:filepicker:1.0-20221213'
+    implementation 'com.github.h4de5ing.filepicker:filepicker:1.0-20230411'
     implementation project(path: ':SystemLib')
     compileOnly files('libs/classes.jar')
 }
