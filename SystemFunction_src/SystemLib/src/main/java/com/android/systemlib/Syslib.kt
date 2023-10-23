@@ -1092,20 +1092,26 @@ class MyStorageEventListener(val onChange: ((String?, String?, Int?, Int?) -> Un
 
 fun ota(file: File, onStatusUpdate: ((Int, Float) -> Unit), onErrorCode: ((Int) -> Unit)) {
     try {
-        val updateEngine = UpdateEngine()
-        updateEngine.bind(object : UpdateEngineCallback() {
-            override fun onStatusUpdate(status: Int, percent: Float) {
-                onStatusUpdate(status, percent)
-            }
+        val slot = getSystemPropertyString("ro.boot.slot_suffix")
+        if (TextUtils.isEmpty(slot)) {
+            onStatusUpdate(UpdateEngine.UpdateStatusConstants.DISABLED, 0f)
+            onErrorCode(UpdateEngine.ErrorCodeConstants.PAYLOAD_MISMATCHED_TYPE_ERROR)
+        } else {
+            val updateEngine = UpdateEngine()
+            updateEngine.bind(object : UpdateEngineCallback() {
+                override fun onStatusUpdate(status: Int, percent: Float) {
+                    onStatusUpdate(status, percent)
+                }
 
-            override fun onPayloadApplicationComplete(errorCode: Int) {
-                onErrorCode(errorCode)
-            }
-        })
-        val specs = PayloadSpecs().forNonStreaming(file)
-        updateEngine.applyPayload(
-            specs.url, specs.offset, specs.size, specs.properties.toTypedArray()
-        )
+                override fun onPayloadApplicationComplete(errorCode: Int) {
+                    onErrorCode(errorCode)
+                }
+            })
+            val specs = PayloadSpecs().forNonStreaming(file)
+            updateEngine.applyPayload(
+                specs.url, specs.offset, specs.size, specs.properties.toTypedArray()
+            )
+        }
     } catch (e: Exception) {
         e.printStackTrace()
     }
