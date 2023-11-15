@@ -1026,8 +1026,8 @@ fun ethernetStop() {
  * @description 判断是否支持禁用以太网
  * @return 支持返回ture,否则返回false
  */
-fun hasEthernetControlInterface(): Boolean{
-    if(Build.VERSION.SDK_INT < 31 || Build.VERSION.SDK_INT == 33) return true
+fun hasEthernetControlInterface(): Boolean {
+    if (Build.VERSION.SDK_INT < 31 || Build.VERSION.SDK_INT == 33) return true
     try {
         iEthernetManager = IEthernetManager.Stub.asInterface(ServiceManager.getService("ethernet"))
         val methods = iEthernetManager?.javaClass?.methods?.map { it.name }
@@ -1199,4 +1199,59 @@ fun getUpdateError(errorCode: Int): String {
         e.printStackTrace()
     }
     return message.toString()
+}
+
+/**
+ * 开启本app的辅助服务
+ */
+fun enableAccessibilityService(
+    context: Context,
+    packageName: String,
+    accessibilityService: String
+) {
+    val addComponent = "${packageName}/${accessibilityService}"
+    val enabledAccessibilityServices =
+        Settings.Secure.getString(context.contentResolver, "enabled_accessibility_services")
+    if (TextUtils.isEmpty(enabledAccessibilityServices)) {
+        Settings.Secure.putString(
+            context.contentResolver,
+            "enabled_accessibility_services",
+            addComponent
+        )
+    } else {
+        if (!enabledAccessibilityServices.split(":").toList().contains(addComponent)) {
+            Settings.Secure.putString(
+                context.contentResolver,
+                "enabled_accessibility_services",
+                "${enabledAccessibilityServices}:${addComponent}"
+            )
+        }
+    }
+}
+
+/**
+ * 关闭本app的辅助服务
+ */
+fun disableAccessibilityService(
+    context: Context,
+    packageName: String,
+    accessibilityService: String
+) {
+    val addComponent = "${packageName}/${accessibilityService}"
+    val enabledAccessibilityServices =
+        Settings.Secure.getString(context.contentResolver, "enabled_accessibility_services")
+    if (!TextUtils.isEmpty(enabledAccessibilityServices)) {
+        if (enabledAccessibilityServices.split(":").toList().contains(addComponent)) {
+            val newStr = if (enabledAccessibilityServices.startsWith(addComponent)) {
+                enabledAccessibilityServices.replace(addComponent, "")
+            } else {
+                enabledAccessibilityServices.replace(":$addComponent", "")
+            }
+            Settings.Secure.putString(
+                context.contentResolver,
+                "enabled_accessibility_services",
+                newStr
+            )
+        }
+    }
 }
