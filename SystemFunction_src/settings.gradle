@@ -28,6 +28,7 @@ include ':SystemUIX'
 
 include ':mdmclient'
 //include ':otax'
-//include ':appmonitor'
+include ':appmonitor'
 //include ':droidwall'
 //include ':Android13'
+include ':applicationoperation'

@@ -17,6 +17,8 @@
             <option value="$PROJECT_DIR$/SystemLib" />
             <option value="$PROJECT_DIR$/SystemUIX" />
             <option value="$PROJECT_DIR$/app" />
+            <option value="$PROJECT_DIR$/applicationoperation" />
+            <option value="$PROJECT_DIR$/appmonitor" />
             <option value="$PROJECT_DIR$/mdmclient" />
           </set>
         </option>
