@@ -7,6 +7,9 @@ import android.app.usage.UsageStatsManager
 import android.content.*
 import android.content.pm.*
 import android.net.*
+import android.net.wifi.SoftApCapability
+import android.net.wifi.SoftApInfo
+import android.net.wifi.WifiClient
 import android.net.wifi.WifiConfiguration
 import android.net.wifi.WifiManager
 import android.net.wifi.WifiNetworkSpecifier
@@ -37,6 +40,8 @@ import com.android.android13.removeEthernetListener13
 import com.android.internal.app.IAppOpsService
 import com.android.systemlib.ota.PayloadSpecs
 import java.io.*
+import java.lang.reflect.Proxy
+import java.util.concurrent.Executor
 
 /**
  * 移除WIFI配置
@@ -1253,5 +1258,86 @@ fun disableAccessibilityService(
                 newStr
             )
         }
+    }
+}
+
+/**
+ * 判断AP是否打开，这个方法不是很准确
+ */
+fun isWifiApEnabled(context: Context): Boolean =
+    (context.getSystemService(Context.WIFI_SERVICE) as WifiManager).wifiState == 13
+
+/**
+ * 打开AP
+ */
+@SuppressLint("WrongConstant")
+fun startTethering(context: Context) {
+    try {
+        (context.getSystemService("tethering") as TetheringManager)
+            .startTethering(0, { }, object : TetheringManager.StartTetheringCallback {})
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+}
+
+/**
+ * 关闭AP
+ */
+@SuppressLint("WrongConstant")
+fun stopTethering(context: Context) {
+    try {
+        (context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager).stopTethering(
+            0
+        )
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+}
+
+fun registerSoftApCallback(context: Context) {
+    try {
+        val wifiManager = context.getSystemService(Context.WIFI_SERVICE) as WifiManager
+        val callbackClass = Class.forName("android.net.wifi.WifiManager\$SoftApCallback")
+        val callback = Proxy.newProxyInstance(
+            callbackClass.classLoader, arrayOf(callbackClass)
+        ) { proxy, method, args ->
+            println("实现接口方法逻辑 " + method.name)
+            when (method.name) {
+                "onStateChanged" -> {
+                    val state = args[0] as Int
+                    val failureReason = args[1] as Int
+                    println("onStateChanged ,state=$state,failureReason=$failureReason")
+                }
+
+                "onConnectedClientsChanged" -> {
+                    val clients = args[0] as List<WifiClient>
+                    println("onConnectedClientsChanged = " + clients.size)
+                }
+
+                "onInfoChanged" -> if (args[0] is SoftApInfo) {
+                    val softApInfo = args[0] as SoftApInfo
+                    println("onInfoChanged = $softApInfo")
+                }
+
+                "onCapabilityChanged" -> if (args[0] is SoftApCapability) {
+                    val softApCapability = args[0] as SoftApCapability
+                    println("onCapabilityChanged = $softApCapability")
+                }
+
+                "onBlockedClientConnecting" -> {
+                    val client = args[0] as WifiClient
+                    val blockedReason = args[1] as Int
+                    println("blockedReason ,blockedReason=$blockedReason")
+                }
+            }
+            null
+        }
+        val method = WifiManager::class.java.getDeclaredMethod(
+            "registerSoftApCallback",
+            Executor::class.java, callbackClass
+        )
+        method.invoke(wifiManager, HandlerExecutor(Handler(Looper.getMainLooper())), callback)
+    } catch (e: Exception) {
+        e.printStackTrace()
     }
 }
