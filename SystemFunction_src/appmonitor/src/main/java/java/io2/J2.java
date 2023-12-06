@@ -10,6 +10,7 @@ import java.util.List;
 
 public class J2 {
     public static final String packagePath = "/data/local/tmp/packages";
+    public static final String logPath = "/data/local/tmp/log";
 
     public void test2() {
         SystemLogKt.setAppPermissionRequestListener((s, s2, integer) -> {

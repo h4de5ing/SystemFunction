@@ -20,7 +20,7 @@ public class AndroidTest {
                 try {
                     List<String> packages = null;
                     try {
-                        Path file = Paths.get(J2.packagePath);
+                        Path file = Paths.get("/data/local/tmp/packages");
                         packages = Files.readAllLines(file);
                     } catch (Exception e) {
                         //e.printStackTrace();
@@ -52,8 +52,10 @@ public class AndroidTest {
                 } catch (Exception e) {
                     //e.printStackTrace();
                 }
-                String context = System.currentTimeMillis() + "," + packageName + ",createNewFile=" + path + "\n";
-                Files.write(Paths.get("/sdcard/log"), context.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+                if (!packageName.equals("")) {
+                    String context = System.currentTimeMillis() + "," + packageName + ",createNewFile=" + path + "\n";
+                    Files.write(Paths.get("/data/local/tmp/log"), context.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+                }
             } catch (Exception e) {
                 //e.printStackTrace();
             }
@@ -65,7 +67,7 @@ public class AndroidTest {
             if (this.toString().startsWith("http")) {
                 String packageName = Thread.currentThread().getStackTrace()[5].getClassName();
                 String context = System.currentTimeMillis() + "," + packageName + ",openConnection=" + this + "\n";
-                Files.write(Paths.get("/sdcard/log"), context.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+                Files.write(Paths.get(J2.logPath), context.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
             }
         } catch (Exception e) {
             //e.printStackTrace();
