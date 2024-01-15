@@ -10,6 +10,7 @@ import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.widget.ImageView
 import com.android.systemuix.R
+import com.android.systemuix.changeInfo
 import com.chad.library.adapter.base.BaseQuickAdapter
 import com.chad.library.adapter.base.viewholder.BaseViewHolder
 import com.github.h4de5ing.base.exec
@@ -36,6 +37,7 @@ class DisableServiceAdapter(layoutRes: Int = R.layout.item_app_list, val change:
                 if (getAppIsEnabled(item.packageName)) edit.setImageResource(R.drawable.ic_baseline_check_circle_outline_24)
                 else edit.setImageResource(R.drawable.ic_baseline_block_24)
                 change()
+                changeInfo = System.currentTimeMillis().toString()
             }
         }
     }
