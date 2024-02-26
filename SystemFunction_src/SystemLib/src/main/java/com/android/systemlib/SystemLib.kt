@@ -1,13 +1,23 @@
 package com.android.systemlib
 
 import android.annotation.SuppressLint
+import android.app.ActivityManager
+import android.bluetooth.BluetoothManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
+import android.net.wifi.WifiManager
+import android.os.Build
+import android.os.ServiceManager
+import android.os.SystemProperties
+import android.os.storage.IStorageManager
 import android.provider.Settings
+import android.telephony.TelephonyManager
 import android.text.TextUtils
 import android.view.View
+import java.net.Inet4Address
+import java.net.NetworkInterface
 
 val HOME_INTENT = Intent("android.intent.action.MAIN")
     .addCategory("android.intent.category.HOME")
@@ -249,4 +259,113 @@ fun getSystemPropertyString(key: String): String? {
 
 fun setSystemPropertyString(key: String, value: String) {
     android.os.SystemProperties.set(key, value)
+}
+
+@SuppressLint("MissingPermission")
+fun getSN(): String {
+    val sn: String
+    val meigSerial = SystemProperties.get("persist.radio.sn")
+    sn = if (!TextUtils.isEmpty(meigSerial) && meigSerial.length >= 8) {
+        meigSerial
+    } else {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) Build.getSerial() else SystemProperties.get(
+            "ro.serialno"
+        )
+    }
+    return sn
+}
+
+fun getSystemVersion(): String {
+    var version = ""
+    try {
+        version = SystemProperties.get("ro.product.version")
+        if (TextUtils.isEmpty(version)) version = SystemProperties.get("ro.build.display.id")
+    } catch (e: java.lang.Exception) {
+        e.printStackTrace()
+    }
+    return version
+}
+
+@SuppressLint("MissingPermission")
+fun getImei(context: Context): String? {
+    return (context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager).deviceId
+}
+
+fun getWifiMac(context: Context): String {
+    var mac = ""
+    try {
+        val wifiManager =
+            context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+        mac = wifiManager.connectionInfo.macAddress
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+    return mac
+}
+
+fun getBTMac(context: Context): String {
+    var mac = ""
+    try {
+        val bluetoothManager =
+            context.applicationContext.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+        mac = bluetoothManager.adapter.address
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+    return mac
+}
+
+fun getIp(): String {
+    var ip = ""
+    try {
+        for (networkInterface in NetworkInterface.getNetworkInterfaces()) {
+            if (networkInterface.isUp) {
+                networkInterface.interfaceAddresses.forEach {
+                    when (it.address) {
+                        is Inet4Address -> {
+                            it.address.hostAddress?.apply { ip = this }
+                        }
+                    }
+                }
+            }
+        }
+    } catch (_: Exception) {
+    }
+    return ip
+}
+
+fun getSDCard(context: Context): Triple<Long, Long, Long> {
+    var pair: Triple<Long, Long, Long> = Triple(0, 0, 1)
+    try {
+        val iStorageManager =
+            IStorageManager.Stub.asInterface(ServiceManager.getService(Context.STORAGE_SERVICE))
+        iStorageManager.getVolumes(0)?.forEach {
+            if (it.path.contains("emulated")) {
+                try {
+                    val file = it.getPath()
+                    val totalSize = file.totalSpace
+                    val availableSize = file.usableSpace
+                    val usedSize =
+                        file.totalSpace - file.usableSpace
+                    pair = Triple(usedSize, availableSize, totalSize)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+        }
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+    return pair
+}
+
+
+fun getRomMemorySize(context: Context): Triple<Long, Long, Long> {
+    val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+    val outInfo = ActivityManager.MemoryInfo()
+    activityManager.getMemoryInfo(outInfo)
+    val total = outInfo.totalMem
+    val avail = outInfo.availMem
+    val used = outInfo.totalMem - outInfo.availMem
+    return Triple(used, avail, total)
 }

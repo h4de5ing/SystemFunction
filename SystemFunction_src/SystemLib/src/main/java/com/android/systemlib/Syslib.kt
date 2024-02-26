@@ -7,9 +7,6 @@ import android.app.usage.UsageStatsManager
 import android.content.*
 import android.content.pm.*
 import android.net.*
-import android.net.wifi.SoftApCapability
-import android.net.wifi.SoftApInfo
-import android.net.wifi.WifiClient
 import android.net.wifi.WifiConfiguration
 import android.net.wifi.WifiManager
 import android.net.wifi.WifiNetworkSpecifier
@@ -37,11 +34,8 @@ import com.android.android13.addEthernetListener13
 import com.android.android13.disableEthernet13
 import com.android.android13.disableSensor13
 import com.android.android13.removeEthernetListener13
-import com.android.internal.app.IAppOpsService
 import com.android.systemlib.ota.PayloadSpecs
 import java.io.*
-import java.lang.reflect.Proxy
-import java.util.concurrent.Executor
 
 /**
  * 移除WIFI配置
@@ -298,14 +292,15 @@ fun setHotSpotDisabled(context: Context, isDisable: Boolean) {
 fun isHotSpotDisabled(context: Context): Boolean {
     val wifiManager =
         context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
-    return wifiManager.isWifiApEnabled()
+    return wifiManager.isWifiApEnabled
 }
 
 //启用 禁用数据流量  //TODO 没有测试通过
+@SuppressLint("MissingPermission")
 fun mobile_data(context: Context, isDisable: Boolean) {
     val tm =
         context.applicationContext.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
-    if (isDisable) tm.enableDataConnectivity() else tm.disableDataConnectivity()
+//    if (isDisable) tm.enableDataConnectivity() else tm.disableDataConnectivity()
 }
 
 /**
@@ -806,17 +801,17 @@ fun getwhite(context: Context, packageName: String) {
  * resetAllModes 重置全部权限
  */
 fun setMode(context: Context, code: Int, packageName: String, mode: Int) {
-    val uid = UserHandle.getCallingUserId()
-    println("uid:${uid}")
+//    val uid = UserHandle.getCallingUserId()
+//    println("uid:${uid}")
     val opsManager = context.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
 //    opsManager.unsafeCheckOp(op,uid,packageName)//检测是否就有操作权限
 //    opsManager.unsafeCheckOpNoThrow(op, uid, packageName)//不抛出异常
 //    opsManager.noteOp(op,uid,packageName,"","")//检测权限，会做记录
 //    opsManager.noteOpNoThrow()
-    val iAppOpsManager =
-        IAppOpsService.Stub.asInterface(ServiceManager.getService(Context.APP_OPS_SERVICE))
+//    val iAppOpsManager =
+//        IAppOpsService.Stub.asInterface(ServiceManager.getService(Context.APP_OPS_SERVICE))
 //    iAppOpsManager.checkPackage()//检测权限有没有被绕过
-    iAppOpsManager.setMode(code, uid, packageName, mode)
+//    iAppOpsManager.setMode(code, uid, packageName, mode)
 //    val list = iAppOpsManager.getOpsForPackage(uid, packageName, null)
 //    list?.apply {
 //        this.forEach {
@@ -825,7 +820,7 @@ fun setMode(context: Context, code: Int, packageName: String, mode: Int) {
 //            }
 //        }
 //    }
-    iAppOpsManager.resetAllModes(0, packageName)
+//    iAppOpsManager.resetAllModes(0, packageName)
 }
 
 /**
@@ -1258,86 +1253,5 @@ fun disableAccessibilityService(
                 newStr
             )
         }
-    }
-}
-
-/**
- * 判断AP是否打开，这个方法不是很准确
- */
-fun isWifiApEnabled(context: Context): Boolean =
-    (context.getSystemService(Context.WIFI_SERVICE) as WifiManager).wifiState == 13
-
-/**
- * 打开AP
- */
-@SuppressLint("WrongConstant")
-fun startTethering(context: Context) {
-    try {
-        (context.getSystemService("tethering") as TetheringManager)
-            .startTethering(0, { }, object : TetheringManager.StartTetheringCallback {})
-    } catch (e: Exception) {
-        e.printStackTrace()
-    }
-}
-
-/**
- * 关闭AP
- */
-@SuppressLint("WrongConstant")
-fun stopTethering(context: Context) {
-    try {
-        (context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager).stopTethering(
-            0
-        )
-    } catch (e: Exception) {
-        e.printStackTrace()
-    }
-}
-
-fun registerSoftApCallback(context: Context) {
-    try {
-        val wifiManager = context.getSystemService(Context.WIFI_SERVICE) as WifiManager
-        val callbackClass = Class.forName("android.net.wifi.WifiManager\$SoftApCallback")
-        val callback = Proxy.newProxyInstance(
-            callbackClass.classLoader, arrayOf(callbackClass)
-        ) { proxy, method, args ->
-            println("实现接口方法逻辑 " + method.name)
-            when (method.name) {
-                "onStateChanged" -> {
-                    val state = args[0] as Int
-                    val failureReason = args[1] as Int
-                    println("onStateChanged ,state=$state,failureReason=$failureReason")
-                }
-
-                "onConnectedClientsChanged" -> {
-                    val clients = args[0] as List<WifiClient>
-                    println("onConnectedClientsChanged = " + clients.size)
-                }
-
-                "onInfoChanged" -> if (args[0] is SoftApInfo) {
-                    val softApInfo = args[0] as SoftApInfo
-                    println("onInfoChanged = $softApInfo")
-                }
-
-                "onCapabilityChanged" -> if (args[0] is SoftApCapability) {
-                    val softApCapability = args[0] as SoftApCapability
-                    println("onCapabilityChanged = $softApCapability")
-                }
-
-                "onBlockedClientConnecting" -> {
-                    val client = args[0] as WifiClient
-                    val blockedReason = args[1] as Int
-                    println("blockedReason ,blockedReason=$blockedReason")
-                }
-            }
-            null
-        }
-        val method = WifiManager::class.java.getDeclaredMethod(
-            "registerSoftApCallback",
-            Executor::class.java, callbackClass
-        )
-        method.invoke(wifiManager, HandlerExecutor(Handler(Looper.getMainLooper())), callback)
-    } catch (e: Exception) {
-        e.printStackTrace()
     }
 }
