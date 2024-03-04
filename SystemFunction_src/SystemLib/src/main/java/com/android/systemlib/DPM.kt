@@ -12,6 +12,7 @@ import android.os.Build
 import android.os.ServiceManager
 import android.os.UserManager
 import androidx.annotation.RequiresApi
+import com.android.android14.setProfileOwner14
 
 /**
  * 需要DevicePolicyManage权限才能调用的接口
@@ -36,8 +37,16 @@ fun removeActiveAdmin(componentName: ComponentName) {
  * 激活admin 后直接调用此方法
  */
 fun setProfileOwner(componentName: ComponentName) {
-    IDevicePolicyManager.Stub.asInterface(ServiceManager.getService("device_policy"))
-        .setProfileOwner(componentName, componentName.packageName, 0)
+    try {
+        if (Build.VERSION.SDK_INT < 34) {
+            IDevicePolicyManager.Stub.asInterface(ServiceManager.getService("device_policy"))
+                .setProfileOwner(componentName, componentName.packageName, 0)
+        } else {
+            setProfileOwner14(componentName)
+        }
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
 }
 
 fun setActiveProfileOwner(componentName: ComponentName) {
