@@ -9,13 +9,13 @@ import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
 import android.net.wifi.WifiManager
 import android.os.Build
-import android.os.ServiceManager
 import android.os.SystemProperties
-import android.os.storage.IStorageManager
+import android.os.storage.StorageManager
 import android.provider.Settings
 import android.telephony.TelephonyManager
 import android.text.TextUtils
 import android.view.View
+import java.io.File
 import java.net.Inet4Address
 import java.net.NetworkInterface
 
@@ -337,17 +337,18 @@ fun getIp(): String {
 fun getSDCard(context: Context): Triple<Long, Long, Long> {
     var pair: Triple<Long, Long, Long> = Triple(0, 0, 1)
     try {
-        val iStorageManager =
-            IStorageManager.Stub.asInterface(ServiceManager.getService(Context.STORAGE_SERVICE))
-        iStorageManager.getVolumes(0)?.forEach {
-            if (it.path.contains("emulated")) {
+        val sm = context.getSystemService(Context.STORAGE_SERVICE) as StorageManager
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            sm.storageVolumes.forEach {
                 try {
-                    val file = it.getPath()
-                    val totalSize = file.totalSpace
-                    val availableSize = file.usableSpace
-                    val usedSize =
-                        file.totalSpace - file.usableSpace
-                    pair = Triple(usedSize, availableSize, totalSize)
+                    val file = File("${it.getInternalPath()}")
+                    if (file.absolutePath.contains("emulated")) {// -> /storage/emulated/0
+                        val totalSize = file.totalSpace
+                        val availableSize = file.usableSpace
+                        val usedSize =
+                            file.totalSpace - file.usableSpace
+                        pair = Triple(usedSize, availableSize, totalSize)
+                    }
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }
@@ -359,7 +360,9 @@ fun getSDCard(context: Context): Triple<Long, Long, Long> {
     return pair
 }
 
-
+/**
+ * 获取内存是已使用，剩余，总共的容量
+ */
 fun getRomMemorySize(context: Context): Triple<Long, Long, Long> {
     val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
     val outInfo = ActivityManager.MemoryInfo()

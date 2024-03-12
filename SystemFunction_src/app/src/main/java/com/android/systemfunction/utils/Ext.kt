@@ -8,7 +8,6 @@ import android.content.pm.ResolveInfo
 import android.net.Uri
 import androidx.core.widget.addTextChangedListener
 import androidx.core.widget.doOnTextChanged
-import com.android.mdmsdk.BuildConfig
 import com.android.mdmsdk.ConfigEnum
 import com.android.mdmsdk.PackageTypeEnum
 import com.android.systemfunction.app.App.Companion.application
@@ -171,7 +170,7 @@ fun updateInstallAPK() {
     delayed(1000) {
         setSystemGlobal(
             application,
-            ConfigEnum.DISABLE_INSTALL_APP.name.lowercase(Locale.ROOT),
+            ConfigEnum.DISABLE_INSTALL_APP_VALUE.name.lowercase(Locale.ROOT),
             allDBPackages.firstOrNull { it.type == PackageTypeEnum.DISABLE_INSTALL.ordinal }
                 ?.getPackageList().toString()
         )
@@ -200,54 +199,54 @@ fun getKt(key: String): String? = configs.firstOrNull { it.key == key }?.value
 fun firstUpdate(data: List<Config>) {
     configs.clear()
     configs.addAll(data)
-    isDisableHome =
-        configs.firstOrNull { it.key == ConfigEnum.DISABLE_HOME.name }?.value.toString() == "0"
-    isDisableBack =
-        configs.firstOrNull { it.key == ConfigEnum.DISABLE_BACK.name }?.value.toString() == "0"
-    isDisableRecent =
-        configs.firstOrNull { it.key == ConfigEnum.DISABLE_RECENT.name }?.value.toString() == "0"
-    isDisableNavigation =
-        configs.firstOrNull { it.key == ConfigEnum.DISABLE_NAVIGATION.name }?.value.toString() == "0"
-    isDisableStatus =
-        configs.firstOrNull { it.key == ConfigEnum.DISABLE_STATUS.name }?.value.toString() == "0"
-    isDisableUSBData =
-        configs.firstOrNull { it.key == ConfigEnum.DISABLE_USB_DATA.name }?.value.toString() == "0"
-    isDisableBluetooth =
-        configs.firstOrNull { it.key == ConfigEnum.DISABLE_BLUETOOTH.name }?.value.toString() == "0"
-    isDisableWIFI =
-        configs.firstOrNull { it.key == ConfigEnum.DISABLE_WIFI.name }?.value.toString() == "0"
-    isDisableData =
-        configs.firstOrNull { it.key == ConfigEnum.DISABLE_DATA_CONNECTIVITY.name }?.value.toString() == "0"
-    isDisableGPS =
-        configs.firstOrNull { it.key == ConfigEnum.DISABLE_GPS.name }?.value.toString() == "0"
-    isDisableCamera =
-        configs.firstOrNull { it.key == ConfigEnum.DISABLE_CAMERA.name }?.value.toString() == "0"
-    isDisableMicrophone =
-        configs.firstOrNull { it.key == ConfigEnum.DISABLE_MICROPHONE.name }?.value.toString() == "0"
-    isDisableScreenShot =
-        configs.firstOrNull { it.key == ConfigEnum.DISABLE_SCREEN_SHOT.name }?.value.toString() == "0"
-    isDisableScreenCapture =
-        configs.firstOrNull { it.key == ConfigEnum.DISABLE_SCREEN_CAPTURE.name }?.value.toString() == "0"
-    isDisableTFCard =
-        configs.firstOrNull { it.key == ConfigEnum.DISABLE_TF_CARD.name }?.value.toString() == "0"
-    isDisablePhoneCall =
-        configs.firstOrNull { it.key == ConfigEnum.DISABLE_PHONE_CALL.name }?.value.toString() == "0"
-    isDisableHotSpot =
-        configs.firstOrNull { it.key == ConfigEnum.DISABLE_HOT_SPOT.name }?.value.toString() == "0"
-    isDisableSMS =
-        configs.firstOrNull { it.key == ConfigEnum.DISABLE_SMS.name }?.value.toString() == "0"
-    isDisableMMS =
-        configs.firstOrNull { it.key == ConfigEnum.DISABLE_MMS.name }?.value.toString() == "0"
-    isDisableShare =
-        configs.firstOrNull { it.key == ConfigEnum.DISABLE_SHARE.name }?.value.toString() == "0"
-    isDisableSystemUpdate =
-        configs.firstOrNull { it.key == ConfigEnum.DISABLE_SYSTEM_UPDATE.name }?.value.toString() == "0"
-    isDisableRestoreFactory =
-        configs.firstOrNull { it.key == ConfigEnum.DISABLE_RESTORE_FACTORY.name }?.value.toString() == "0"
-    isDisableInstallApp =
-        configs.firstOrNull { it.key == ConfigEnum.DISABLE_INSTALL_APP.name }?.value.toString() == "0"
-    isDisableUnInstallApp =
-        configs.firstOrNull { it.key == ConfigEnum.DISABLE_UNINSTALL_APP.name }?.value.toString() == "0"
+//    isDisableHome =
+//        configs.firstOrNull { it.key == ConfigEnum.DISABLE_HOME_VALUE.name }?.value.toString() == "0"
+//    isDisableBack =
+//        configs.firstOrNull { it.key == ConfigEnum.DISABLE_BACK_VALUE.name }?.value.toString() == "0"
+//    isDisableRecent =
+//        configs.firstOrNull { it.key == ConfigEnum.DISABLE_RECENT_VALUE.name }?.value.toString() == "0"
+//    isDisableNavigation =
+//        configs.firstOrNull { it.key == ConfigEnum.DISABLE_NAVIGATION_VALUE.name }?.value.toString() == "0"
+//    isDisableStatus =
+//        configs.firstOrNull { it.key == ConfigEnum.DISABLE_STATUS_VALUE.name }?.value.toString() == "0"
+//    isDisableUSBData =
+//        configs.firstOrNull { it.key == ConfigEnum.DISABLE_USB_DATA.name }?.value.toString() == "0"
+//    isDisableBluetooth =
+//        configs.firstOrNull { it.key == ConfigEnum.DISABLE_BLUETOOTH_VALUE.name }?.value.toString() == "0"
+//    isDisableWIFI =
+//        configs.firstOrNull { it.key == ConfigEnum.DISABLE_WIFI_VALUE.name }?.value.toString() == "0"
+//    isDisableData =
+//        configs.firstOrNull { it.key == ConfigEnum.DISABLE_DATA_CONNECTIVITY.name }?.value.toString() == "0"
+//    isDisableGPS =
+//        configs.firstOrNull { it.key == ConfigEnum.DISABLE_GPS_VALUE.name }?.value.toString() == "0"
+//    isDisableCamera =
+//        configs.firstOrNull { it.key == ConfigEnum.DISABLE_CAMERA_VALUE.name }?.value.toString() == "0"
+//    isDisableMicrophone =
+//        configs.firstOrNull { it.key == ConfigEnum.DISABLE_MICROPHONE_VALUE.name }?.value.toString() == "0"
+//    isDisableScreenShot =
+//        configs.firstOrNull { it.key == ConfigEnum.DISABLE_SCREEN_SHOT_VALUE.name }?.value.toString() == "0"
+//    isDisableScreenCapture =
+//        configs.firstOrNull { it.key == ConfigEnum.DISABLE_SCREEN_CAPTURE_VALUE.name }?.value.toString() == "0"
+//    isDisableTFCard =
+//        configs.firstOrNull { it.key == ConfigEnum.DISABLE_TF_CARD.name }?.value.toString() == "0"
+//    isDisablePhoneCall =
+//        configs.firstOrNull { it.key == ConfigEnum.DISABLE_PHONE_CALL.name }?.value.toString() == "0"
+//    isDisableHotSpot =
+//        configs.firstOrNull { it.key == ConfigEnum.DISABLE_HOT_SPOT.name }?.value.toString() == "0"
+//    isDisableSMS =
+//        configs.firstOrNull { it.key == ConfigEnum.DISABLE_SMS.name }?.value.toString() == "0"
+//    isDisableMMS =
+//        configs.firstOrNull { it.key == ConfigEnum.DISABLE_MMS.name }?.value.toString() == "0"
+//    isDisableShare =
+//        configs.firstOrNull { it.key == ConfigEnum.DISABLE_SHARE.name }?.value.toString() == "0"
+//    isDisableSystemUpdate =
+//        configs.firstOrNull { it.key == ConfigEnum.DISABLE_SYSTEM_UPDATE.name }?.value.toString() == "0"
+//    isDisableRestoreFactory =
+//        configs.firstOrNull { it.key == ConfigEnum.DISABLE_RESTORE_FACTORY.name }?.value.toString() == "0"
+//    isDisableInstallApp =
+//        configs.firstOrNull { it.key == ConfigEnum.DISABLE_INSTALL_APP.name }?.value.toString() == "0"
+//    isDisableUnInstallApp =
+//        configs.firstOrNull { it.key == ConfigEnum.DISABLE_UNINSTALL_APP.name }?.value.toString() == "0"
 }
 
 interface ChangeBoolean {

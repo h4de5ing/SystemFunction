@@ -37,15 +37,11 @@ fun removeActiveAdmin(componentName: ComponentName) {
  * 激活admin 后直接调用此方法
  */
 fun setProfileOwner(componentName: ComponentName) {
-    try {
-        if (Build.VERSION.SDK_INT < 34) {
-            IDevicePolicyManager.Stub.asInterface(ServiceManager.getService("device_policy"))
-                .setProfileOwner(componentName, componentName.packageName, 0)
-        } else {
-            setProfileOwner14(componentName)
-        }
-    } catch (e: Exception) {
-        e.printStackTrace()
+    if (Build.VERSION.SDK_INT < 34) {
+        IDevicePolicyManager.Stub.asInterface(ServiceManager.getService("device_policy"))
+            .setProfileOwner(componentName, componentName.packageName, 0)
+    } else {
+        setProfileOwner14(componentName)
     }
 }
 
