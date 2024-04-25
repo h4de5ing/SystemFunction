@@ -2,22 +2,37 @@ package com.android.systemlib
 
 import android.annotation.SuppressLint
 import android.app.ActivityManager
+import android.app.IActivityManager
 import android.bluetooth.BluetoothManager
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.pm.IPackageDataObserver
+import android.content.pm.IPackageManager
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.net.wifi.WifiManager
 import android.os.Build
+import android.os.Process
+import android.os.ServiceManager
 import android.os.SystemProperties
 import android.os.storage.StorageManager
 import android.provider.Settings
 import android.telephony.TelephonyManager
 import android.text.TextUtils
+import android.util.Log
 import android.view.View
+import java.io.BufferedReader
 import java.io.File
+import java.io.FileInputStream
+import java.io.IOException
+import java.io.InputStream
+import java.io.InputStreamReader
 import java.net.Inet4Address
 import java.net.NetworkInterface
+
 
 val HOME_INTENT = Intent("android.intent.action.MAIN")
     .addCategory("android.intent.category.HOME")
@@ -254,13 +269,19 @@ fun enabledAccessibilityServices(context: Context, enable: Boolean) {
  * 获取getprop里面字段值
  */
 fun getSystemPropertyString(key: String): String? {
-    return android.os.SystemProperties.get(key, "")
+    return SystemProperties.get(key, "")
 }
 
+/**
+ * 设置prop里面的值，需要有权限才可以调用成果
+ */
 fun setSystemPropertyString(key: String, value: String) {
-    android.os.SystemProperties.set(key, value)
+    SystemProperties.set(key, value)
 }
 
+/**
+ * 查看系统SN号
+ */
 @SuppressLint("MissingPermission")
 fun getSN(): String {
     val sn: String
@@ -275,12 +296,15 @@ fun getSN(): String {
     return sn
 }
 
+/**
+ * 查看系统版本号，主要用于检查OTA升级前后的版本变化
+ */
 fun getSystemVersion(): String {
     var version = ""
     try {
         version = SystemProperties.get("ro.product.version")
         if (TextUtils.isEmpty(version)) version = SystemProperties.get("ro.build.display.id")
-    } catch (e: java.lang.Exception) {
+    } catch (e: Exception) {
         e.printStackTrace()
     }
     return version
@@ -372,3 +396,99 @@ fun getRomMemorySize(context: Context): Triple<Long, Long, Long> {
     val used = outInfo.totalMem - outInfo.availMem
     return Triple(used, avail, total)
 }
+
+fun getProperty(key: String, defaultValue: String): String {
+    return try {
+        try {
+            val c = Class.forName("android.os.SystemProperties")
+            val get = c.getMethod(
+                "get",
+                String::class.java,
+                String::class.java
+            )
+            get.invoke(c, key, defaultValue) as String
+        } catch (e: Exception) {
+            e.printStackTrace()
+            defaultValue
+        }
+    } catch (th: Throwable) {
+        defaultValue
+    }
+}
+
+fun setProperty(key: String, value: String?) {
+    try {
+        val c = Class.forName("android.os.SystemProperties")
+        val set = c.getMethod("set", String::class.java, String::class.java)
+        set.invoke(c, key, value)
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+}
+
+/**
+ * 获取总内存
+ */
+fun getTotalRam(context: Context): Long {
+    val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+    return activityManager.getTotalRam() / 1024L / 1024L / 1024L
+}
+
+/**
+ * 清除单个应用的全部数据
+ */
+fun clearApplicationUserData(packageName: String, onChange: ((String, Boolean) -> Unit)) {
+    val iam = IActivityManager.Stub.asInterface(
+        ServiceManager.getService(Context.ACTIVITY_SERVICE)
+    )
+    iam.clearApplicationUserData(packageName, false, object : IPackageDataObserver.Stub() {
+        override fun onRemoveCompleted(p0: String, p1: Boolean) {
+            println("把${p0}的数据清除,${if (p1) "成功" else "失败"}")
+            onChange(p0, p1)
+        }
+    }, 0)
+}
+
+@SuppressLint("MissingPermission")
+fun isNetAvailable(context: Context): Boolean {
+    var networkCapabilities: NetworkCapabilities? = null
+    val manager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+    return if (Build.VERSION.SDK_INT < 23 || manager.getNetworkCapabilities(manager.activeNetwork)
+            ?.also { networkCapabilities = it } == null
+    ) {
+        false
+    } else networkCapabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) ?: false
+}
+
+fun ping(): Int {
+    var result: Int
+    var sb: StringBuilder
+    try {
+        val p: java.lang.Process = Runtime.getRuntime().exec("ping -c 3 -w 100 www.baidu.com")
+        val input: InputStream = p.inputStream
+        val br = BufferedReader(InputStreamReader(input))
+        val strBuffer = StringBuffer()
+        while (true) {
+            val content = br.readLine() ?: break
+            strBuffer.append(content)
+        }
+        Log.d("---ping", "result data = $strBuffer")
+        val status: Int = p.waitFor()
+        result = if (status == 0) 200 else 404
+        sb = StringBuilder()
+    } catch (e: Exception) {
+        result = 404
+        sb = StringBuilder()
+    } catch (th: Throwable) {
+        Log.d("---ping", "result code = 0")
+        throw th
+    }
+    Log.d("---ping", sb.append("result code = ").append(result).toString())
+    return result
+}
+
+fun setHomeActivity(className: ComponentName) {
+    IPackageManager.Stub.asInterface(ServiceManager.getService("package"))
+        .setHomeActivity(className, 0)
+}
+

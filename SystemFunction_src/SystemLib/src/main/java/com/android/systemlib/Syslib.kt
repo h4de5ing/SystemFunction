@@ -88,13 +88,6 @@ fun addWifi(context: Context, ssid: String, pass: String) {
             .addCapability(NetworkCapabilities.NET_CAPABILITY_TRUSTED)
             .setNetworkSpecifier(specifier).build()
     connectivityManager.requestNetwork(request, object : ConnectivityManager.NetworkCallback() {
-        override fun onAvailable(network: Network) {
-            super.onAvailable(network)
-        }
-
-        override fun onUnavailable() {
-            super.onUnavailable()
-        }
     })
 }
 
@@ -748,9 +741,8 @@ fun amTask(taskId: Int) {
 /**
  * 获取所有应用包名
  */
-fun getAllPackages(): List<String> {
-    return IPackageManager.Stub.asInterface(ServiceManager.getService("package")).allPackages
-}
+fun getAllPackages(): List<String> =
+    IPackageManager.Stub.asInterface(ServiceManager.getService("package")).allPackages
 
 /**
  * 应用权限操作
