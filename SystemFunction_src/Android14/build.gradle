@@ -31,3 +31,23 @@ android {
 dependencies {
     compileOnly files('libs/classes-header.jar')
 }
+afterEvaluate {
+    publishing {
+        publications {
+            def today = new Date().format('yyyyMMdd')
+            release(MavenPublication) {
+                from components.release
+                groupId = 'com.android.android14'
+                artifactId = 'android14'
+                version = "1.0-$today"
+            }
+        }
+        repositories {
+            mavenLocal()
+            maven {
+                url uri('D:\\code\\SystemFunction\\SystemLib_repository')
+            }
+        }
+    }
+}
+//gradlew publish

@@ -37,10 +37,10 @@
           }
         },
         {
-          "group": "SystemFunction",
-          "module": "Android14",
+          "group": "com.android.android14",
+          "module": "android14",
           "version": {
-            "requires": "unspecified"
+            "requires": "1.0-20240506"
           }
         },
         {
@@ -93,10 +93,10 @@
           }
         },
         {
-          "group": "SystemFunction",
-          "module": "Android14",
+          "group": "com.android.android14",
+          "module": "android14",
           "version": {
-            "requires": "unspecified"
+            "requires": "1.0-20240506"
           }
         },
         {
