@@ -7,6 +7,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
+import android.graphics.Matrix
 import android.graphics.PixelFormat
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
@@ -272,9 +273,16 @@ fun drawable2Bitmap(icon: Drawable): Bitmap {
     val canvas = Canvas(bitmap)
     icon.setBounds(0, 0, icon.intrinsicWidth, icon.intrinsicHeight)
     icon.draw(canvas)
-    return bitmap
+    return bitmap.thumbnail()
 }
 
+fun Bitmap.thumbnail(): Bitmap {
+    val scaleWidth = 72.0f / width
+    val scaleHeight = 72.0f / height
+    val matrix = Matrix()
+    matrix.postScale(scaleWidth, scaleHeight)
+    return Bitmap.createBitmap(this, 0, 0, width, height, matrix, true)
+}
 
 
 fun getDefaultConfig() {
