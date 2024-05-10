@@ -27,11 +27,3 @@ frameworks\base\core\res\res\values\config.xml
   * TelecomLoaderService
 
   * apn 设置可以参考ApnEditor.java ApnPreference.java ApnSettings.java
-
-
-## TODO
-- [x] 移除截屏 采用快捷键替代 
-
-
-## 已实现接口
-- 禁用
