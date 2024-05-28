@@ -300,7 +300,7 @@ fun mobile_data(context: Context, isDisable: Boolean) {
 /**
  * 静默安装apk
  */
-fun installAPK(context: Context, apkFilePath: String, change: ((Int) -> Unit)) {
+fun installAPK(context: Context, apkFilePath: String, change: ((Int) -> Unit) = {}) {
     try {
         val apkFile = File(apkFilePath)
         val packageInstaller = context.packageManager.packageInstaller

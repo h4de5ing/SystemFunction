@@ -362,3 +362,14 @@ fun getScreenCaptureDisabled(context: Context, componentName: ComponentName): Bo
         false
     }
 }
+
+@RequiresApi(Build.VERSION_CODES.M)
+fun setStatusBarDisabled(context: Context, componentName: ComponentName, isDisable: Boolean) {
+    try {
+        (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager).setStatusBarDisabled(
+            componentName, isDisable
+        )
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+}
