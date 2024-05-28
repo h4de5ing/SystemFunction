@@ -2,6 +2,7 @@ package com.android.systemlib
 
 import android.annotation.SuppressLint
 import android.app.*
+import android.app.PendingIntent.FLAG_IMMUTABLE
 import android.app.backup.IBackupManager
 import android.app.usage.UsageStatsManager
 import android.content.*
@@ -464,7 +465,7 @@ fun canUninstall(context: Context, packageName: String): Boolean {
 fun uninstall(context: Context, packageName: String) {
     val intent = Intent()
     intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-    val sender = PendingIntent.getActivity(context, 0, intent, 0)
+    val sender = PendingIntent.getActivity(context, 0, intent, FLAG_IMMUTABLE)
     val packageInstaller: PackageInstaller = context.packageManager.packageInstaller
     packageInstaller.uninstall(packageName, sender.intentSender)
 }
