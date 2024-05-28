@@ -29,7 +29,6 @@ jobs:
       env:
         BODY: ${{ github.event.head_commit.message }}
       else: ${{ github.event_name == 'pull_request' }}
-      env:
         BODY: ${{ github.event.pull_request.title }}
       run: |
         curl -X POST 'http://localhost:8080/robot/send' -H 'Content-Type: application/json' -d '{"msgtype":"markdown","markdown":{"title":"${{ github.repository }}","text":"### ${{ github.repository }}\n#### ${{ github.event.pusher.name }}\n>$BODY"}}'
