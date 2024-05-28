@@ -26,4 +26,4 @@ jobs:
 
     - name: Send message using DingTalk Robot
       run: |
-        curl -X POST 'http://localhost:8080/robot/send' -H 'Content-Type: application/json' -d '{"msgtype":"markdown","markdown":{"title":"${{ github.repository }}","text":"### ${{ github.repository }}\n#### ${{ github.event.pusher.name }}\n<p>${{ github.event.head_commit.message }}</p>"}}'
+        curl -X POST 'http://localhost:8080/robot/send' -H 'Content-Type: application/json' -d '{"msgtype":"markdown","markdown":{"title":"","text":"### ${{ github.repository }}\n#### ${{ github.event.pusher.name }}"}}'
