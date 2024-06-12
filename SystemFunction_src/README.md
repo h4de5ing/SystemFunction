@@ -25,5 +25,6 @@ frameworks\base\core\res\res\values\config.xml
   * 其他重要的系统服务
   * KeyChainSystemService
   * TelecomLoaderService
+  * NsdManager 内网服务器发现服务
 
   * apn 设置可以参考ApnEditor.java ApnPreference.java ApnSettings.java

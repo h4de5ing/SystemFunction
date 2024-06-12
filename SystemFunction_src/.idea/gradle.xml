@@ -9,16 +9,11 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
-            <option value="$PROJECT_DIR$/Aidl" />
             <option value="$PROJECT_DIR$/Android12" />
             <option value="$PROJECT_DIR$/Android13" />
             <option value="$PROJECT_DIR$/Android14" />
             <option value="$PROJECT_DIR$/SystemLib" />
             <option value="$PROJECT_DIR$/SystemUIX" />
-            <option value="$PROJECT_DIR$/app" />
-            <option value="$PROJECT_DIR$/applicationoperation" />
-            <option value="$PROJECT_DIR$/appmonitor" />
-            <option value="$PROJECT_DIR$/mdmclient" />
             <option value="$PROJECT_DIR$/t" />
           </set>
         </option>
