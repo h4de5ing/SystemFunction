@@ -1,7 +1,0 @@
-<resources>
-    <string name="please_enter_key">请输入关键字：</string>
-    <string name="search_result">筛选出%1$d个服务，其中禁用%2$d个、启用%3$d个！</string>
-    <string name="danger_search_result">禁用危险服务，可能会引起系统不稳定，请谨慎操作\n筛选出%1$d个服务，其中禁用%2$d个、启用%3$d个！</string>
-    <string name="normal_service">一般服务</string>
-    <string name="danger_service">危险服务</string>
-</resources>
