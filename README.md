@@ -26,7 +26,7 @@ build.gradle
 //添加系统签名
 signingConfigs {
     sign {
-        storeFile file("D:\\platform.jks")
+        storeFile file("platform.jks")
         storePassword('android')
         keyAlias('android')
         keyPassword('android')

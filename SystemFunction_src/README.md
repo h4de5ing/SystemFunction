@@ -2,10 +2,10 @@
 
 - System权限+系统签名才能实现的功能  
 - 调用SystemLib的app必须申明为系统App+系统签名才能正常使用
-- SystemLib 为系统层功能的抽象层,如果这个接口是Android5~Android12都有的接口，那么直接由SystemLib实现，如果这个接口每个版本的实现方式不一样，那么就采用对应版本的实现
+- SystemLib 为系统层功能的抽象层,如果这个接口是Android5~Android14都有的接口，那么直接由SystemLib实现，如果这个接口每个版本的实现方式不一样，那么就采用对应版本的实现
 Android12 保存Android12特有接口    
 ...  
-- App依赖->SystemLib(抽象层)->(Android5、Android6、Android7、Android8、Android9、Android10、Android11、Android12)
+- App依赖->SystemLib(抽象层)->(Android5~Android14)
 - DPM.kt中的接口必须要setActiveProfileOwner激活以后才能正常使用。具体请参考[官方文档](https://developer.android.com/guide/topics/admin/device-admin)
 
 
