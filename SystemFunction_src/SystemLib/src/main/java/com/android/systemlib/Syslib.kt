@@ -1249,3 +1249,19 @@ fun disableAccessibilityService(
         }
     }
 }
+
+/**
+ * 默认给某些app授权
+ */
+fun grant(context: Context, packageName: String, permName: String) {
+    //system调用PackageManager的grantRuntimePermission方法给其他app默认授权
+    val packageManager = context.packageManager
+    val info = packageManager.getPackageInfo(packageName, PackageManager.GET_PERMISSIONS)
+    if (info?.requestedPermissions != null) {
+        info.requestedPermissions.forEach {
+            println("${packageName}->${it}")
+        }
+        val ipm = IPackageManager.Stub.asInterface(ServiceManager.getService("package"))
+        ipm.grantRuntimePermission(packageName, permName, 0)
+    }
+}

@@ -1,10 +1,10 @@
 package com.android.t
 
-import android.os.AsyncTask
 import android.os.Bundle
 import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import com.android.systemlib.grant
 
 
 class MainActivity : AppCompatActivity() {
@@ -15,14 +15,20 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         tv = findViewById(R.id.tv)
         findViewById<Button>(R.id.test).setOnClickListener {
-            processCPUTime = 0L
-            AndroidAppProcessLoader(this) {
-                it.forEach {
-                    processCPUTime += it.stat().utime()
-                    processCPUTime += it.stat().stime()
-                }
-                tv?.text = "$processCPUTime"
-            }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
+//            processCPUTime = 0L
+//            AndroidAppProcessLoader(this) {
+//                it.forEach {
+//                    processCPUTime += it.stat().utime()
+//                    processCPUTime += it.stat().stime()
+//                }
+//                tv?.text = "$processCPUTime"
+//            }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR)
+//            grant(
+//                this,
+//                "com.guoshi.httpcanary",
+//                "android.permission.WRITE_EXTERNAL_STORAGE"
+//            )
+            grant(this, "com.guoshi.httpcanary", "android.permission.WRITE_EXTERNAL_STORAGE")
         }
     }
 }
