@@ -376,3 +376,26 @@ fun setStatusBarDisabled(context: Context, componentName: ComponentName, isDisab
         e.printStackTrace()
     }
 }
+
+fun kiosk(context: Context, admin: ComponentName, packageName: String): Boolean {
+    return try {
+        (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
+            .setLockTaskPackages(admin, arrayOf(packageName))
+        true
+    } catch (e: Exception) {
+        false
+    }
+}
+
+/**
+ * 立即锁定设备
+ */
+fun lock(): Boolean {
+    return try {
+        IDevicePolicyManager.Stub.asInterface(ServiceManager.getService("device_policy"))
+            .lockNow(0, false)
+        true
+    } catch (e: Exception) {
+        false
+    }
+}
