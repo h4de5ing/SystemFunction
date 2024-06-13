@@ -157,5 +157,4 @@ public class AndroidAppProcess extends AndroidProcess {
       super(String.format("The process %d does not belong to any application", pid));
     }
   }
-
 }

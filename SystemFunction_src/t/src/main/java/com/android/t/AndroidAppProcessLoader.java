@@ -6,8 +6,6 @@ import android.os.AsyncTask;
 import com.android.processes.AndroidProcesses;
 import com.android.processes.models.AndroidAppProcess;
 
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 public class AndroidAppProcessLoader extends AsyncTask<Void, Void, List<AndroidAppProcess>> {
