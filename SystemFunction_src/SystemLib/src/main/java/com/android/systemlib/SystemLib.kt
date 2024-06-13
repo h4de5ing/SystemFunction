@@ -15,7 +15,6 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.net.wifi.WifiManager
 import android.os.Build
-import android.os.Process
 import android.os.ServiceManager
 import android.os.SystemProperties
 import android.os.storage.StorageManager
@@ -24,9 +23,9 @@ import android.telephony.TelephonyManager
 import android.text.TextUtils
 import android.util.Log
 import android.view.View
+import androidx.annotation.RequiresApi
 import java.io.BufferedReader
 import java.io.File
-import java.io.FileInputStream
 import java.io.IOException
 import java.io.InputStream
 import java.io.InputStreamReader
@@ -315,6 +314,24 @@ fun getImei(context: Context): String? {
     return (context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager).deviceId
 }
 
+@RequiresApi(Build.VERSION_CODES.M)
+@SuppressLint("MissingPermission")
+fun getImeis(context: Context): Pair<String, String> {
+    var pair = Pair("", "")
+    var imei1 = ""
+    var imei2 = ""
+    val telephonyManager = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+    try {
+        imei1 = telephonyManager.getDeviceId(0)
+    } catch (_: Exception) {
+    }
+    try {
+        imei2 = telephonyManager.getDeviceId(1)
+    } catch (_: Exception) {
+    }
+    return Pair(imei1, imei2)
+}
+
 fun getWifiMac(context: Context): String {
     var mac = ""
     try {
@@ -491,4 +508,10 @@ fun setHomeActivity(className: ComponentName) {
     IPackageManager.Stub.asInterface(ServiceManager.getService("package"))
         .setHomeActivity(className, 0)
 }
-
+fun isRoot():Boolean{
+    return try {
+        Runtime.getRuntime().exec("su") != null
+    } catch (e: IOException) {
+        false
+    }
+}

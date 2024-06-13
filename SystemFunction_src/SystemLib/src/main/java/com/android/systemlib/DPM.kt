@@ -169,14 +169,17 @@ fun getCameraDisabled(context: Context, componentName: ComponentName): Boolean {
  * @param isDisable true 表示禁用 false 表示不禁用
  */
 fun disableMDM(
-    context: Context, componentName: ComponentName, key: String, isDisable: Boolean
+    context: Context, componentName: ComponentName, key: String, isDisable: Boolean,
+    change: (Boolean) -> Unit = {}
 ) {
     try {
         val dm =
             context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
         if (isDisable) dm.addUserRestriction(componentName, key)
         else dm.clearUserRestriction(componentName, key)
+        change(true)
     } catch (e: Exception) {
+        change(false)
         e.printStackTrace()
     }
 }
