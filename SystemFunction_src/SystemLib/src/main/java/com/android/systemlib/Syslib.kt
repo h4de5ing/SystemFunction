@@ -35,9 +35,9 @@ import com.android.android13.addEthernetListener13
 import com.android.android13.disableEthernet13
 import com.android.android13.disableSensor13
 import com.android.android13.removeEthernetListener13
-import com.android.internal.app.IAppOpsService
 import com.android.systemlib.ota.PayloadSpecs
 import java.io.*
+
 
 /**
  * 移除WIFI配置
@@ -783,7 +783,7 @@ fun getwhite(context: Context, packageName: String) {
 
 /**
  * 授权
- * @param code 代表具体的操作权限
+ * @param code 代表具体的操作权限 https://android.googlesource.com/platform/frameworks/base/+/727e195ee8be4e9f2ac3f4c47c9c2bfb1e8916e9/core/proto/android/app/enums.proto
  * @param uid user id
  * @param packageName 应用包名
  * @param mode 代币要更改的类型 允许/禁止/提示
@@ -795,17 +795,20 @@ fun getwhite(context: Context, packageName: String) {
  * resetAllModes 重置全部权限
  */
 fun setMode(context: Context, code: Int, packageName: String, mode: Int) {
-    val uid = 0;//UserHandle.getCallingUserId()
-//    println("uid:${uid}")
+    val packageManager = context.packageManager
+    val applicationInfo = packageManager.getApplicationInfo(packageName, 0)
+    val uid = applicationInfo.uid
     val opsManager = context.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
+    opsManager.setUidMode(code, uid, mode)
+//    opsManager.setMode("android:manage_external_storage",uid,packageName,AppOpsManager.MODE_ALLOWED)
 //    opsManager.unsafeCheckOp(op,uid,packageName)//检测是否就有操作权限
 //    opsManager.unsafeCheckOpNoThrow(op, uid, packageName)//不抛出异常
 //    opsManager.noteOp(op,uid,packageName,"","")//检测权限，会做记录
 //    opsManager.noteOpNoThrow()
-    val iAppOpsManager =
-        IAppOpsService.Stub.asInterface(ServiceManager.getService(Context.APP_OPS_SERVICE))
+//    val iAppOpsManager =
+//        IAppOpsService.Stub.asInterface(ServiceManager.getService(Context.APP_OPS_SERVICE))
 //    iAppOpsManager.checkPackage()//检测权限有没有被绕过
-    iAppOpsManager.setMode(code, uid, packageName, mode)
+//    iAppOpsManager.setMode(code, uid, packageName, mode)
 //    val list = iAppOpsManager.getOpsForPackage(uid, packageName, null)
 //    list?.apply {
 //        this.forEach {

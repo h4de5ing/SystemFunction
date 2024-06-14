@@ -7,21 +7,21 @@
     android:orientation="vertical"
     tools:context=".MainActivity">
 
-    <Button
+    <Switch
         android:id="@+id/test"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="test1" />
+        android:text="授权" />
 
     <Button
         android:id="@+id/test2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="test2" />
+        android:text="所有app页面" />
 
-    <TextView
-        android:id="@+id/tv"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@+id/test" />
+    <Button
+        android:id="@+id/test3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="具体app页面" />
 </LinearLayout>

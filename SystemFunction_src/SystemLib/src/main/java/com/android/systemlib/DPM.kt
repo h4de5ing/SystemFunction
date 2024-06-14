@@ -377,10 +377,13 @@ fun setStatusBarDisabled(context: Context, componentName: ComponentName, isDisab
     }
 }
 
-fun kiosk(context: Context, admin: ComponentName, packageName: String): Boolean {
+/**
+ * kiosk模式
+ */
+fun kiosk(context: Context, admin: ComponentName, packages: Array<String>): Boolean {
     return try {
         (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
-            .setLockTaskPackages(admin, arrayOf(packageName))
+            .setLockTaskPackages(admin, packages)
         true
     } catch (e: Exception) {
         false
