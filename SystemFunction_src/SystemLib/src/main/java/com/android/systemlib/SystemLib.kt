@@ -508,10 +508,26 @@ fun setHomeActivity(className: ComponentName) {
     IPackageManager.Stub.asInterface(ServiceManager.getService("package"))
         .setHomeActivity(className, 0)
 }
-fun isRoot():Boolean{
+
+fun isRoot(): Boolean {
     return try {
         Runtime.getRuntime().exec("su") != null
     } catch (e: IOException) {
         false
     }
+}
+
+fun getBatteryCapacity(context: Context): Int {
+    var batteryCapacity = 0
+    val mPowerProfile: Any
+    try {
+        val POWER_PROFILE_CLASS = "com.android.internal.os.PowerProfile"
+        mPowerProfile = Class.forName(POWER_PROFILE_CLASS).getConstructor(Context::class.java)
+            .newInstance(context)
+        batteryCapacity = (Class.forName(POWER_PROFILE_CLASS).getMethod("getBatteryCapacity")
+            .invoke(mPowerProfile) as Double).toInt()
+    } catch (e: java.lang.Exception) {
+        e.printStackTrace()
+    }
+    return batteryCapacity
 }
