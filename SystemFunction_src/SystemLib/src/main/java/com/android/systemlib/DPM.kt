@@ -12,6 +12,10 @@ import android.os.Build
 import android.os.ServiceManager
 import android.os.UserManager
 import androidx.annotation.RequiresApi
+import com.android.android12.disableEthernet12
+import com.android.android13.disableEthernet13
+import com.android.android13.setLock
+import com.android.android14.setLock14
 import com.android.android14.setProfileOwner14
 
 /**
@@ -393,12 +397,7 @@ fun kiosk(context: Context, admin: ComponentName, packages: Array<String>): Bool
 /**
  * 立即锁定设备
  */
-fun lock(): Boolean {
-    return try {
-        IDevicePolicyManager.Stub.asInterface(ServiceManager.getService("device_policy"))
-            .lockNow(0, false)
-        true
-    } catch (e: Exception) {
-        false
-    }
+fun lock(callerPackageName: String): Boolean {
+    return if (Build.VERSION.SDK_INT >= 34) setLock14(callerPackageName)
+    else setLock()
 }
