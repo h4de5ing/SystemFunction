@@ -29,6 +29,7 @@ import androidx.core.view.accessibility.AccessibilityEventCompat
 import com.android.android12.addEthernetListener12
 import com.android.android12.disableEthernet12
 import com.android.android12.disableSensor12
+import com.android.android12.getAdbWirelessPort12
 import com.android.android12.iEthernetManager
 import com.android.android12.removeEthernetListener12
 import com.android.android13.addEthernetListener13
@@ -37,6 +38,8 @@ import com.android.android13.disableSensor13
 import com.android.android13.removeEthernetListener13
 import com.android.systemlib.ota.PayloadSpecs
 import java.io.*
+import java.net.Inet4Address
+import java.net.NetworkInterface
 
 
 /**
@@ -1083,8 +1086,12 @@ fun mount(id: String) {
     iStorageManager?.mount(id)
 }
 
+
 fun unmount(id: String) {
     println("卸载 $id")
+//    IStoraged.Stub.asInterface(ServiceManager.getService("storaged"))
+//    val iVold = IVold.Stub.asInterface(ServiceManager.getService("vold"))
+    //iVold 需要关掉selinux，如果不关掉，会报错空指针异常
     iStorageManager?.unmount(id)
 }
 
@@ -1267,4 +1274,65 @@ fun grant(context: Context, packageName: String, permName: String) {
         val ipm = IPackageManager.Stub.asInterface(ServiceManager.getService("package"))
         ipm.grantRuntimePermission(packageName, permName, 0)
     }
+}
+
+/**
+ * 获取本机IP地址
+ */
+fun getDefaultIpAddresses(): String {
+    var ip = "127.0.0.1"
+    try {
+        for (networkInterface in NetworkInterface.getNetworkInterfaces()) {
+            if (networkInterface.isUp && !networkInterface.isLoopback) {
+                networkInterface.interfaceAddresses.forEach {
+                    when (it.address) {
+                        is Inet4Address -> {
+                            it.address.hostAddress?.apply { ip = this }
+                        }
+                    }
+                }
+            }
+        }
+    } catch (_: Exception) {
+    }
+    return ip
+}
+
+/**
+ * 获取默认的IP地址
+ */
+@SuppressLint("MissingPermission")
+@RequiresApi(Build.VERSION_CODES.M)
+fun getDefaultIpAddresses(context: Context): String {
+    val mCM = context.getSystemService(ConnectivityManager::class.java) as ConnectivityManager
+    return formatIpAddresses(mCM.getLinkProperties(mCM.activeNetwork))
+}
+
+fun formatIpAddresses(prop: LinkProperties?): String {
+    val addresses = StringBuilder()
+    try {
+        val iterator: Iterator<LinkAddress>? = prop?.getAllLinkAddresses()?.iterator()
+        if (iterator != null) {
+            while (iterator.hasNext()) {
+                val addr = iterator.next().address
+                if (addr is Inet4Address) {
+                    addresses.append(addr.getHostAddress())
+                    break
+                }
+            }
+        }
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+    return addresses.toString()
+}
+
+fun getAdbWirelessPort(): Int {
+    var port = 5555
+    try {
+        if (Build.VERSION.SDK_INT >= 31) port = getAdbWirelessPort12()
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+    return port
 }

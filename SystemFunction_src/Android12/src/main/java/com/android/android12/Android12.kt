@@ -1,5 +1,6 @@
 package com.android.android12
 
+import android.debug.IAdbManager
 import android.hardware.ISensorPrivacyManager
 import android.hardware.SensorPrivacyManager
 import android.net.IEthernetManager
@@ -71,4 +72,15 @@ class IEthernetServiceListener1(val change: () -> Unit) : IEthernetServiceListen
     override fun onAvailabilityChanged(iface: String?, isAvailable: Boolean) {
         change()
     }
+}
+
+fun getAdbWirelessPort12(): Int {
+    var port = 5555
+    try {
+        val adb = IAdbManager.Stub.asInterface(ServiceManager.getService("adb"))
+        port = adb.adbWirelessPort
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+    return port
 }
