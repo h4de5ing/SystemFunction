@@ -11,3 +11,14 @@ fun setProfileOwner14(componentName: ComponentName) {
             .setProfileOwner(componentName, 0)
     }
 }
+
+
+fun setLock14(callerPackageName: String): Boolean {
+    return try {
+        IDevicePolicyManager.Stub.asInterface(ServiceManager.getService("device_policy"))
+            .lockNow(0, callerPackageName, false)
+        true
+    } catch (e: Exception) {
+        false
+    }
+}

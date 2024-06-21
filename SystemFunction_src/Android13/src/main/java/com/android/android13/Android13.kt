@@ -1,5 +1,6 @@
 package com.android.android13
 
+import android.app.admin.IDevicePolicyManager
 import android.hardware.ICameraService
 import android.hardware.ICameraServiceListener
 import android.hardware.ISensorPrivacyListener
@@ -111,6 +112,7 @@ fun disableEthernet13(disable: Boolean) {
     iEthernetManager =
         IEthernetManager.Stub.asInterface(ServiceManager.getService("ethernet"))
     iEthernetManager?.setEthernetEnabled(!disable)
+    isDisable = disable
 }
 
 fun addEthernetListener13() {
@@ -132,14 +134,10 @@ fun removeEthernetListener13() {
     }
 }
 
-private var isInsert = false
+private var isDisable = false
 
 class IEthernetServiceListener1 : IEthernetServiceListener.Stub() {
-    private var disable = false
-    private var whatEth: String? = null
     override fun onEthernetStateChanged(state: Int) {
-        //当state=0时代表以太网被禁用。
-        disable = (state == 0)
     }
 
     override fun onInterfaceStateChanged(
@@ -148,20 +146,21 @@ class IEthernetServiceListener1 : IEthernetServiceListener.Stub() {
         role: Int,
         configuration: IpConfiguration?
     ) {
-        if (state == 2) {
-            //state=2表示网线连接到了机器
-            isInsert = true
-            whatEth = iface
-        }
-        //当网线拔出时，且此时状态为禁用状态，则先将以太网设置为允许，在设置为不允许，防止当再次插上网线后，无法启用以太网问题。
-        //当以太网拔出时state == 1, iface.equals(whatEth)作用是判断具体端口号是否是插入时记录的端口号。disable是判断有没有被禁用。
-        //isInsert的作用是限制下面的代码在不连接网线作用下不断的点击禁用启用时执行
-        if (state == 1 && iface.equals(whatEth) && disable && isInsert) {
-            isInsert = false
-            iEthernetManager?.setEthernetEnabled(true)
-            iEthernetManager?.setEthernetEnabled(false)
-        }
-        //下面这个判断的作用是当网线拔出时，点击禁用后再启用时，不执行上面的if语句中的代码！
-        if (state == 1 && iface.equals(whatEth)) isInsert = false
+        //state == 1代表网线拔出，此时启用以太网，防止再次插入时无法识别
+        //state == 2代表网线插入，此时根据情况决定是否再次禁用以太网
+        //当以太网被禁用时，插拔网线不会触发此回调
+        if (state == 1)  iEthernetManager?.setEthernetEnabled(true)
+        else iEthernetManager?.setEthernetEnabled(!isDisable)
+    }
+}
+
+
+fun setLock(): Boolean {
+    return try {
+        IDevicePolicyManager.Stub.asInterface(ServiceManager.getService("device_policy"))
+            .lockNow(0, false)
+        true
+    } catch (e: Exception) {
+        false
     }
 }

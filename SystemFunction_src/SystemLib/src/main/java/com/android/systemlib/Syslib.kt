@@ -1027,7 +1027,7 @@ fun ethernetStop() {
  * @return 支持返回ture,否则返回false
  */
 fun hasEthernetControlInterface(): Boolean {
-    if (Build.VERSION.SDK_INT < 31 || Build.VERSION.SDK_INT == 33) return true
+    if (Build.VERSION.SDK_INT < 31 || Build.VERSION.SDK_INT == 33 || Build.VERSION.SDK_INT == 34) return true
     try {
         iEthernetManager = IEthernetManager.Stub.asInterface(ServiceManager.getService("ethernet"))
         val methods = iEthernetManager?.javaClass?.methods?.map { it.name }
@@ -1047,20 +1047,17 @@ fun hasEthernetControlInterface(): Boolean {
  */
 fun disableEthernet(disable: Boolean) {
     if (Build.VERSION.SDK_INT < 33) disableEthernet12(disable)
-    else if (Build.VERSION.SDK_INT == 33) disableEthernet13(disable)
+    else if (Build.VERSION.SDK_INT == 33 || Build.VERSION.SDK_INT == 34) disableEthernet13(disable)
 }
 
 fun addEthernetListener(change: () -> Unit) {
-    if (Build.VERSION.SDK_INT < 33) {
-        addEthernetListener12(change)
-    } else if (Build.VERSION.SDK_INT == 33) {
-        addEthernetListener13()
-    }
+    if (Build.VERSION.SDK_INT < 33) addEthernetListener12(change)
+    else if (Build.VERSION.SDK_INT == 33 || Build.VERSION.SDK_INT == 34) addEthernetListener13()
 }
 
 fun removeEthernetListener() {
     if (Build.VERSION.SDK_INT < 33) removeEthernetListener12()
-    else if (Build.VERSION.SDK_INT == 33) removeEthernetListener13()
+    else if (Build.VERSION.SDK_INT == 33 || Build.VERSION.SDK_INT == 34) removeEthernetListener13()
 }
 
 private var iStorageManager: IStorageManager? = null

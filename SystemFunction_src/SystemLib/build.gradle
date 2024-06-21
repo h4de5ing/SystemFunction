@@ -27,10 +27,10 @@ android {
 
 dependencies {
     implementation 'androidx.core:core-ktx:1.13.1'
-    api project(path: ':Android12')
-    api project(path: ':Android13')
-    api project(path: ':Android14')
-    compileOnly files('libs/classes.jar')//jar包基于SDK Q(Android 10)打包的
+    implementation project(path: ':Android12')
+    implementation project(path: ':Android13')
+    implementation project(path: ':Android14')
+    compileOnly files('libs/classes.jar')
 }
 afterEvaluate {
     publishing {
