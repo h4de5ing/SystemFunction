@@ -895,8 +895,13 @@ fun ota(context: Context, fileName: String) {
 /**
  * 获取设置配置项
  */
-fun getSystemGlobal(context: Context, key: String): String =
-    Settings.Global.getString(context.contentResolver, key)
+fun getSystemGlobal(context: Context, key: String): String {
+    return try {
+        Settings.Global.getString(context.contentResolver, key)
+    } catch (e: Exception) {
+        ""
+    }
+}
 
 /**
  * 写入到设置里面去

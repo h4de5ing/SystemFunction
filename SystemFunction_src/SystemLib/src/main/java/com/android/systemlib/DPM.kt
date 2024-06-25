@@ -12,8 +12,6 @@ import android.os.Build
 import android.os.ServiceManager
 import android.os.UserManager
 import androidx.annotation.RequiresApi
-import com.android.android12.disableEthernet12
-import com.android.android13.disableEthernet13
 import com.android.android13.setLock
 import com.android.android14.setLock14
 import com.android.android14.setProfileOwner14
@@ -400,4 +398,34 @@ fun kiosk(context: Context, admin: ComponentName, packages: Array<String>): Bool
 fun lock(callerPackageName: String): Boolean {
     return if (Build.VERSION.SDK_INT >= 34) setLock14(callerPackageName)
     else setLock()
+}
+
+fun getPasswordQuality(context: Context): List<Pair<String, Int>> {
+    try {
+        val dpm =
+            (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
+        return Class.forName("android.app.admin.DevicePolicyManager").fields.filter {
+            it.name.startsWith(
+                "PASSWORD_QUALITY_"
+            )
+        }.map {
+            Pair(it.name, it.getInt(dpm))
+        }
+    } catch (e: Exception) {
+        return listOf()
+    }
+}
+
+/**
+ * 设置密码强度
+ */
+fun setPasswordQuality(context: Context, admin: ComponentName,quality:Int) {
+    try {
+        println("设置密码质量:")
+        val dpm =
+            (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
+        dpm.setPasswordQuality(admin, quality)
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
 }
