@@ -1338,3 +1338,29 @@ fun getAdbWirelessPort(): Int {
     }
     return port
 }
+
+/**
+ * 触发系统获取日志报告
+ *     public static final int BUGREPORT_MODE_FULL = 0;
+ *     public static final int BUGREPORT_MODE_INTERACTIVE = 1;
+ *     public static final int BUGREPORT_MODE_REMOTE = 2;
+ *     public static final int BUGREPORT_MODE_WEAR = 3;
+ *     public static final int BUGREPORT_MODE_TELEPHONY = 4;
+ *     public static final int BUGREPORT_MODE_WIFI = 5;
+ */
+fun bugreport() {
+    try {
+        val iam = IActivityManager.Stub.asInterface(ServiceManager.getService("activity"))
+        iam.requestBugReport(0)
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+}
+
+/**
+ * 设置Http代理
+ * @host 格式：host:port   127.0.0.1:8080
+ */
+fun setHttpProxy(context: Context, host: String) {
+    setSystemGlobal(context, "http_proxy", host)
+}

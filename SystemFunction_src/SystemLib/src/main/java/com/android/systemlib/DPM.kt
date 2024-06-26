@@ -8,6 +8,7 @@ import android.app.admin.SystemUpdatePolicy
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.net.ProxyInfo
 import android.os.Build
 import android.os.ServiceManager
 import android.os.UserManager
@@ -15,6 +16,8 @@ import androidx.annotation.RequiresApi
 import com.android.android13.setLock
 import com.android.android14.setLock14
 import com.android.android14.setProfileOwner14
+import java.net.InetSocketAddress
+import java.net.Proxy
 
 /**
  * 需要DevicePolicyManage权限才能调用的接口
@@ -116,8 +119,9 @@ fun setAdmin(activity: Activity, componentName: ComponentName) {
  * 判断是否激活设备管理器
  */
 fun isAdminActive(context: Context, componentName: ComponentName): Boolean {
-    return (context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
-        .isAdminActive(componentName)
+    return (context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager).isAdminActive(
+        componentName
+    )
 }
 
 
@@ -143,8 +147,10 @@ fun getProfileOwnerComponent(context: Context): String {
  */
 fun setCameraDisabled(context: Context, componentName: ComponentName, isDisable: Boolean) {
     try {
-        (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
-            .setCameraDisabled(componentName, isDisable)
+        (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager).setCameraDisabled(
+            componentName,
+            isDisable
+        )
     } catch (e: Exception) {
         e.printStackTrace()
     }
@@ -171,7 +177,10 @@ fun getCameraDisabled(context: Context, componentName: ComponentName): Boolean {
  * @param isDisable true 表示禁用 false 表示不禁用
  */
 fun disableMDM(
-    context: Context, componentName: ComponentName, key: String, isDisable: Boolean,
+    context: Context,
+    componentName: ComponentName,
+    key: String,
+    isDisable: Boolean,
     change: (Boolean) -> Unit = {}
 ) {
     try {
@@ -384,8 +393,10 @@ fun setStatusBarDisabled(context: Context, componentName: ComponentName, isDisab
  */
 fun kiosk(context: Context, admin: ComponentName, packages: Array<String>): Boolean {
     return try {
-        (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
-            .setLockTaskPackages(admin, packages)
+        (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager).setLockTaskPackages(
+            admin,
+            packages
+        )
         true
     } catch (e: Exception) {
         false
@@ -419,12 +430,137 @@ fun getPasswordQuality(context: Context): List<Pair<String, Int>> {
 /**
  * 设置密码强度
  */
-fun setPasswordQuality(context: Context, admin: ComponentName,quality:Int) {
+fun setPasswordQuality(context: Context, admin: ComponentName, quality: Int) {
     try {
-        println("设置密码质量:")
         val dpm =
             (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
         dpm.setPasswordQuality(admin, quality)
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+}
+
+/**
+ * 设置密码最小长度
+ */
+fun setPasswordMinimumLength(context: Context, admin: ComponentName, length: Int) {
+    try {
+        val dpm =
+            (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
+        dpm.setPasswordMinimumLength(admin, length)
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+}
+
+/**
+ * 设置密码xx时间失效
+ */
+fun setPasswordExpirationTimeout(context: Context, admin: ComponentName, timeout: Long) {
+    try {
+        val dpm =
+            (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
+        dpm.setPasswordExpirationTimeout(admin, timeout)
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+}
+
+/**
+ * 设置xx 毫秒后锁屏
+ */
+fun setMaximumTimeToLock(context: Context, admin: ComponentName, timeMs: Long) {
+    try {
+        val dpm =
+            (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
+        dpm.setMaximumTimeToLock(admin, timeMs)
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+}
+
+/**
+ * 重置锁屏密码
+ */
+fun resetPassword(context: Context, password: String) {
+    try {
+        val dpm =
+            (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
+        dpm.resetPassword(password, DevicePolicyManager.RESET_PASSWORD_REQUIRE_ENTRY)
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+}
+
+/**
+ * @param context 上下文
+ * @param admin DPM的包名
+ * @param type 类型 @see Proxy.Type,有3个选项Proxy.Type.HTTP,Proxy.Type.SOCKS,Proxy.Type.DIRECT
+ * @param host 127.0.0.1:8080
+ * @param exclusionList 代理白名单,就是不走代理的域名
+ *
+ */
+fun setGlobalProxy(
+    context: Context,
+    admin: ComponentName,
+    type: String,
+    host: String,
+    exclusionList: List<String>
+) {
+    try {
+        val dpm =
+            (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
+        val address = InetSocketAddress(host.split(":")[0], host.split(":")[1].toInt())
+        val type1 = when (type) {
+            "http" -> Proxy.Type.HTTP
+            "socks" -> Proxy.Type.SOCKS
+            else -> Proxy.Type.DIRECT
+        }
+        dpm.setGlobalProxy(admin, Proxy(type1, address), exclusionList)
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+}
+
+
+fun setRecommendedGlobalProxy(
+    context: Context,
+    admin: ComponentName,
+    proxyInfo: ProxyInfo
+) {
+    try {
+        val dpm =
+            (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
+        dpm.setRecommendedGlobalProxy(admin, proxyInfo)
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+}
+
+/***
+ * 清除代理
+ */
+fun clearGlobalProxy(context: Context, admin: ComponentName) {
+    try {
+        val dpm =
+            (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
+        dpm.setGlobalProxy(admin, Proxy.NO_PROXY, listOf())
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+}
+
+/**
+ * 触发系统日志收集
+ */
+@SuppressLint("NewApi")
+fun bugreport(context: Context, admin: ComponentName) {
+    try {
+        val dpm =
+            (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
+        dpm.requestBugreport(admin)
+//        IDevicePolicyManager.Stub.asInterface(ServiceManager.getService("device_policy"))
+//            .requestBugreport(admin)
     } catch (e: Exception) {
         e.printStackTrace()
     }
