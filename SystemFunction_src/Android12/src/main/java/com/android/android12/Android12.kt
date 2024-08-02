@@ -1,5 +1,6 @@
 package com.android.android12
 
+import android.content.Context
 import android.debug.IAdbManager
 import android.hardware.ISensorPrivacyManager
 import android.hardware.SensorPrivacyManager
@@ -9,6 +10,9 @@ import android.os.Build
 import android.os.ServiceManager
 import android.service.SensorPrivacyIndividualEnabledSensorProto
 import android.service.SensorPrivacyToggleSourceProto
+import com.android.internal.widget.ILockSettings
+import com.android.internal.widget.LockPatternUtils
+import com.android.internal.widget.LockscreenCredential
 
 /**
  * frameworks/base/services/core/java/com/android/server/SensorPrivacyService.java
@@ -83,4 +87,40 @@ fun getAdbWirelessPort12(): Int {
         e.printStackTrace()
     }
     return port
+}
+
+fun allowWirelessDebugging(alwaysAllow: Boolean, ssid: String) {
+    try {
+        if (Build.VERSION.SDK_INT >= 31) {
+            val adb = IAdbManager.Stub.asInterface(ServiceManager.getService("adb"))
+            adb.allowWirelessDebugging(alwaysAllow, ssid)
+        }
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+}
+
+fun isDisableLockScreen12(context: Context, isDisable: Boolean) {
+    val utils = LockPatternUtils(context)
+    utils.setLockCredential(
+        LockscreenCredential.createNone(),
+        LockscreenCredential.createPin("123456"),
+        0
+    )
+    utils.setLockScreenDisabled(isDisable, 0)
+}
+
+/**
+ * 注意:这个接口是Android11(sdk-30)才有的接口
+ * 无 -1
+ * 滑动 -1
+ * 图案 1
+ * PIN码 3
+ * 密码 4
+ */
+fun getCredentialType12(): Int {
+    if (Build.VERSION.SDK_INT >= 30) {
+        val lock = ILockSettings.Stub.asInterface(ServiceManager.getService("lock_settings"))
+        return lock.getCredentialType(0)
+    } else return -1
 }

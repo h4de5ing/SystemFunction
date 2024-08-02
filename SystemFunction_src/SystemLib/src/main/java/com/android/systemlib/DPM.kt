@@ -13,6 +13,8 @@ import android.os.Build
 import android.os.ServiceManager
 import android.os.UserManager
 import androidx.annotation.RequiresApi
+import com.android.android12.getCredentialType12
+import com.android.android12.isDisableLockScreen12
 import com.android.android13.setLock
 import com.android.android14.setLock14
 import com.android.android14.setProfileOwner14
@@ -411,7 +413,10 @@ fun lock(callerPackageName: String): Boolean {
     else setLock()
 }
 
-fun getPasswordQuality(context: Context): List<Pair<String, Int>> {
+/**
+ * 获取密码强度常量类
+ */
+fun getPasswordQualityList(context: Context): List<Pair<String, Int>> {
     try {
         val dpm =
             (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
@@ -427,6 +432,18 @@ fun getPasswordQuality(context: Context): List<Pair<String, Int>> {
     }
 }
 
+fun getPasswordQuality(context: Context, admin: ComponentName): Int {
+    var quality = -1
+    try {
+        val dpm =
+            (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
+        quality = dpm.getPasswordQuality(admin)
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+    return quality
+}
+
 /**
  * 设置密码强度
  */
@@ -438,6 +455,11 @@ fun setPasswordQuality(context: Context, admin: ComponentName, quality: Int) {
     } catch (e: Exception) {
         e.printStackTrace()
     }
+}
+
+
+fun setDisableLockScreen(context: Context, isDisable: Boolean) {
+    isDisableLockScreen12(context, isDisable)
 }
 
 /**
@@ -478,6 +500,8 @@ fun setMaximumTimeToLock(context: Context, admin: ComponentName, timeMs: Long) {
         e.printStackTrace()
     }
 }
+
+fun getCredentialType(): Int = if (Build.VERSION.SDK_INT >= 30) getCredentialType12() else -1
 
 /**
  * 重置锁屏密码
@@ -522,7 +546,9 @@ fun setGlobalProxy(
     }
 }
 
-
+/**
+ * 设置独立于全局的代理
+ */
 fun setRecommendedGlobalProxy(
     context: Context,
     admin: ComponentName,
