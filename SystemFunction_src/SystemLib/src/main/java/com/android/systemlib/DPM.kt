@@ -579,8 +579,8 @@ fun setGlobalProxy(
             (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
         val address = InetSocketAddress(host.split(":")[0], host.split(":")[1].toInt())
         val type1 = when (type) {
-            "http" -> Proxy.Type.HTTP
-            "socks" -> Proxy.Type.SOCKS
+            "1" -> Proxy.Type.HTTP
+            "2" -> Proxy.Type.SOCKS
             else -> Proxy.Type.DIRECT
         }
         dpm.setGlobalProxy(admin, Proxy(type1, address), exclusionList)
