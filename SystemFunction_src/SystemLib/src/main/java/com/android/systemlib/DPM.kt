@@ -18,6 +18,7 @@ import com.android.android12.isDisableLockScreen12
 import com.android.android13.setLock
 import com.android.android14.setLock14
 import com.android.android14.setProfileOwner14
+import java.io.File
 import java.net.InetSocketAddress
 import java.net.Proxy
 
@@ -631,5 +632,27 @@ fun bugreport(context: Context, admin: ComponentName) {
 //            .requestBugreport(admin)
     } catch (e: Exception) {
         e.printStackTrace()
+    }
+}
+
+/**
+ * cert格式的证书安装
+ */
+fun installCer(
+    context: Context,
+    admin: ComponentName,
+    file: String,
+    error: (String) -> Unit = {},
+    success: (String) -> Unit = {}
+) {
+    try {
+        val cert = File(file).readBytes()
+        val dpm =
+            (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
+        val result = dpm.installCaCert(admin, cert)
+        if (result) success("success")
+        else error("failed")
+    } catch (e: Exception) {
+        error("installCer failed: ${e.message}")
     }
 }
