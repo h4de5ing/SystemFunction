@@ -100,14 +100,26 @@ fun allowWirelessDebugging(alwaysAllow: Boolean, ssid: String) {
     }
 }
 
-fun isDisableLockScreen12(context: Context, isDisable: Boolean) {
+fun isDisableLockScreen12(context: Context, oldPassword: String, isDisable: Boolean, change: (String) -> Unit) {
     val utils = LockPatternUtils(context)
-    utils.setLockCredential(
+    val type = getCredentialType12()
+    if (type != 3 && type != 4) {
+        change("failed： Only PIN code and password can be modified")
+        return
+    }
+    val savedCredential = if (type == 3) LockscreenCredential.createPin(oldPassword)
+    else LockscreenCredential.createPassword(oldPassword)
+    val checkResult = utils.setLockCredential(
         LockscreenCredential.createNone(),
-        LockscreenCredential.createPin("123456"),
+        savedCredential,
         0
     )
+    if (!checkResult) {
+        change("failed: Old password verification failed")
+        return
+    }
     utils.setLockScreenDisabled(isDisable, 0)
+    change("success")
 }
 
 /**
@@ -132,10 +144,12 @@ fun startTcp5555() {
 //    android.os.SystemProperties.set("service.adb.tcp.port", "5555")
 //    android.os.SystemProperties.set("service.adb.tls.port", "5555")
 }
+
 //打开adbd服务
 fun startAdbd() {
     android.os.SystemProperties.set("ctl.start", "adbd")
 }
+
 //关闭adbd服务
 fun stopAdbd() {
     android.os.SystemProperties.set("ctl.stop", "adbd")

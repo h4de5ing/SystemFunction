@@ -458,8 +458,13 @@ fun setPasswordQuality(context: Context, admin: ComponentName, quality: Int) {
 }
 
 
-fun setDisableLockScreen(context: Context, isDisable: Boolean) {
-    isDisableLockScreen12(context, isDisable)
+fun setDisableLockScreen(
+    context: Context,
+    oldPassword: String,
+    isDisable: Boolean,
+    change: (String) -> Unit = {}
+) {
+    isDisableLockScreen12(context, oldPassword, isDisable, change)
 }
 
 /**
@@ -506,13 +511,50 @@ fun getCredentialType(): Int = if (Build.VERSION.SDK_INT >= 30) getCredentialTyp
 /**
  * 重置锁屏密码
  */
-fun resetPassword(context: Context, password: String) {
+fun resetPassword(context: Context, password: String, change: (String) -> Unit = {}) {
     try {
         val dpm =
             (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
         dpm.resetPassword(password, DevicePolicyManager.RESET_PASSWORD_REQUIRE_ENTRY)
+        change("success")
+    } catch (e: Exception) {
+        change("failed: ${e.message}")
+        e.printStackTrace()
+    }
+}
+
+/**
+ * @description 设置密码最大失败次数
+ * 0则为取消
+ */
+fun setMaximumFailedPasswordsForWipe(
+    admin: ComponentName,
+    context: Context,
+    num: Int,
+    change: (String) -> Unit = {}
+) {
+    try {
+        val dpm =
+            (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
+        dpm.setMaximumFailedPasswordsForWipe(admin, num)
+        change("success")
+    } catch (e: Exception) {
+        change("failed: ${e.message}")
+        e.printStackTrace()
+    }
+}
+
+/**
+ * @description 获取密码最大失败次数
+ */
+fun getMaximumFailedPasswordsForWipe(admin: ComponentName, context: Context): Int {
+    try {
+        val dpm =
+            (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
+        return dpm.getMaximumFailedPasswordsForWipe(admin)
     } catch (e: Exception) {
         e.printStackTrace()
+        return -1
     }
 }
 
