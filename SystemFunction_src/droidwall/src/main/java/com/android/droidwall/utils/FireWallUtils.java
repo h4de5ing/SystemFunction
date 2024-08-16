@@ -36,7 +36,6 @@ public class FireWallUtils {
             int uid = FireWallUtils.getUidFromPackageName(pm, pkgName);
             if (uid > 0) {
 //                FireWallUtils.setFirewallUidChainRule(networkService, uid, 0, false); //(networkType == 1) ? WIFI : MOBILE; , 禁止此uid连mobile
-
             }
         }
     }
@@ -64,9 +63,7 @@ public class FireWallUtils {
     public static int getUidFromPackageName(PackageManager pm, String pkgName) {
         try {
             ApplicationInfo appInfo = pm.getApplicationInfo(pkgName, PackageManager.MATCH_ALL);
-            if (appInfo != null) {
-                return appInfo.uid;
-            }
+            return appInfo.uid;
         } catch (PackageManager.NameNotFoundException e) {
             //e.printStackTrace();
         }

@@ -21,6 +21,7 @@ import com.android.droidwall.services.ForegroundService
 import com.android.droidwall.utils.SPUtils
 import com.android.droidwall.utils.configs
 import com.android.droidwall.utils.insert2DB
+import com.android.droidwall.utils.updateKT
 
 class MainActivity : AppCompatActivity() {
     private val adapter = HomeGridAppAdapter()
@@ -34,7 +35,7 @@ class MainActivity : AppCompatActivity() {
             val service =
                 INetworkManagementService.Stub.asInterface(ServiceManager.getService("network_management"))
             val toggle = findViewById<AppCompatToggleButton>(R.id.toggle)
-//            toggle.isChecked = service.isFirewallEnabled
+            toggle.isChecked = service.isFirewallEnabled
             val toggleValue = SPUtils.getSp(this, "toggle", false)
             toggle.isChecked = toggleValue == true
             toggle.setOnCheckedChangeListener { _, isChecked ->
@@ -68,15 +69,22 @@ class MainActivity : AppCompatActivity() {
             list.setHasFixedSize(true)
             list.layoutManager = LinearLayoutManager(this)
             list.adapter = adapter
+            adapter.setOnClickListener(object : HomeGridAppAdapter.OnCheckedChangeListener {
+                override fun onCheckedChanged(uid: Int, isChecked: Boolean) {
+                    updateKT(uid, isChecked)
+                    iNetD?.setFirewallUidRule(1, uid, if (isChecked) 1 else 2)
+                    print("uid: $uid isChecked: $isChecked")
+                }
+            })
             val chain = findViewById<EditText>(R.id.chain)
             val value = findViewById<EditText>(R.id.value)
             findViewById<Button>(R.id.setting).setOnClickListener {
                 try {
-//                    service.setFirewallUidRule(
-//                        chain.text.toString().toInt(),
-//                        10105,
-//                        value.text.toString().toInt()
-//                    )
+                    service.setFirewallUidRule(
+                        chain.text.toString().toInt(),
+                        10105,
+                        value.text.toString().toInt()
+                    )
                     Toast.makeText(this, "设置成功", Toast.LENGTH_SHORT).show()
                 } catch (e: Exception) {
                     Toast.makeText(this, "设置失败", Toast.LENGTH_SHORT).show()
@@ -84,7 +92,7 @@ class MainActivity : AppCompatActivity() {
                 }
             }
             loadData()
-            Handler(Looper.myLooper()!!).postDelayed({
+            Handler(Looper.getMainLooper()).postDelayed({
                 runOnUiThread {
                     val newList = mutableListOf<FirewallData>()
                     configs.forEach { fw ->

@@ -1360,7 +1360,36 @@ fun bugreport() {
 /**
  * 设置Http代理
  * @host 格式：host:port   127.0.0.1:8080
+ * /data/system/users/0/
  */
 fun setHttpProxy(context: Context, host: String) {
     setSystemGlobal(context, "http_proxy", host)
+}
+
+const val GLOBAL_HTTP_PROXY_HOST = "global_http_proxy_host"
+const val GLOBAL_HTTP_PROXY_PORT = "global_http_proxy_port"
+const val GLOBAL_HTTP_PROXY_EXCLUSION_LIST = "global_http_proxy_exclusion_list"
+const val GLOBAL_HTTP_PROXY_PAC = "global_proxy_pac_url"
+fun setGlobalProxy(context: Context, proxyInfo: ProxyInfo) {
+    val host = proxyInfo.host
+    val port = proxyInfo.port
+    val exclusionList = ""
+    val pacFileUrl = proxyInfo.pacFileUrl.toString()
+    val cr = context.contentResolver
+    if (TextUtils.isEmpty(pacFileUrl)) {
+        Settings.Global.putString(cr, GLOBAL_HTTP_PROXY_HOST, host)
+        Settings.Global.putInt(cr, GLOBAL_HTTP_PROXY_PORT, port)
+        Settings.Global.putString(cr, GLOBAL_HTTP_PROXY_EXCLUSION_LIST, exclusionList)
+        Settings.Global.putString(cr, GLOBAL_HTTP_PROXY_PAC, "")
+    } else {
+        Settings.Global.putString(cr, GLOBAL_HTTP_PROXY_PAC, pacFileUrl)
+        Settings.Global.putString(cr, GLOBAL_HTTP_PROXY_HOST, "")
+        Settings.Global.putInt(cr, GLOBAL_HTTP_PROXY_PORT, 0)
+        Settings.Global.putString(cr, GLOBAL_HTTP_PROXY_EXCLUSION_LIST, "")
+    }
+}
+
+fun setGlobalProxy(proxyInfo: ProxyInfo) {
+   val icm= IConnectivityManager.Stub.asInterface(ServiceManager.getService("connectivity")) as IConnectivityManager
+    println("${icm.globalProxy}")
 }

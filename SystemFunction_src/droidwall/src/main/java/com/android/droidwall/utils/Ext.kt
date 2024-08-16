@@ -16,7 +16,7 @@ fun updateKT(uid: Int, isWhite: Boolean) {
 fun insert2DB(uid: Int, isWhite: Boolean) {
     try {
         fwDao.insert(FirewallData(0, uid, isWhite))
-    } catch (e: Exception) {
+    } catch (_: Exception) {
     }
 }
 

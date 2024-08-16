@@ -9,19 +9,15 @@ import android.net.INetworkPolicyManager
 import android.os.IBinder
 import android.os.INetworkManagementService
 import android.os.ServiceManager
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.LifecycleRegistry
 import com.android.droidwall.App.Companion.fwDao
 import com.android.droidwall.utils.SPUtils
 
-class ForegroundService : Service(), LifecycleOwner {
+class ForegroundService : Service() {
     private var service: INetworkManagementService? = null
     override fun onCreate() {
         super.onCreate()
         try {
             println("监控服务开始运行")
-            lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
             service =
                 INetworkManagementService.Stub.asInterface(ServiceManager.getService("network_management"))
             val iConnectivityManager: IConnectivityManager =
@@ -48,22 +44,6 @@ class ForegroundService : Service(), LifecycleOwner {
     }
 
     override fun onBind(p0: Intent?): IBinder? {
-        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
         return null
-    }
-
-    override fun onUnbind(intent: Intent?): Boolean {
-        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_STOP)
-        return super.onUnbind(intent)
-    }
-
-    override fun onDestroy() {
-        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
-        super.onDestroy()
-    }
-
-    private val lifecycleRegistry = LifecycleRegistry(this)
-    override fun getLifecycle(): Lifecycle {
-        return lifecycleRegistry
     }
 }

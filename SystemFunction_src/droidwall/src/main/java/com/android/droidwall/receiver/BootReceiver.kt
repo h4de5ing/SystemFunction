@@ -1,11 +1,8 @@
 package com.android.droidwall.receiver
 
-import android.annotation.SuppressLint
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.os.Build
-import androidx.annotation.RequiresApi
 import com.android.droidwall.services.ForegroundService
 
 class BootReceiver : BroadcastReceiver() {
