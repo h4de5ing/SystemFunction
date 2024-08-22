@@ -2,6 +2,7 @@ package com.android.systemlib
 
 import android.annotation.SuppressLint
 import android.app.ActivityManager
+import android.app.AlarmManager
 import android.app.IActivityManager
 import android.bluetooth.BluetoothManager
 import android.content.ComponentName
@@ -24,13 +25,21 @@ import android.text.TextUtils
 import android.util.Log
 import android.view.View
 import androidx.annotation.RequiresApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
+import org.apache.commons.net.ntp.NTPUDPClient
 import java.io.BufferedReader
 import java.io.File
 import java.io.IOException
 import java.io.InputStream
 import java.io.InputStreamReader
 import java.net.Inet4Address
+import java.net.InetAddress
 import java.net.NetworkInterface
+import java.util.Calendar
+import java.util.Date
+import java.util.TimeZone
 
 
 val HOME_INTENT = Intent("android.intent.action.MAIN")
@@ -530,4 +539,57 @@ fun getBatteryCapacity(context: Context): Int {
         e.printStackTrace()
     }
     return batteryCapacity
+}
+
+/**
+ * @description 获取ntp时间  需要权限<uses-permission android:name="android.permission.INTERNET" />
+ * @param url ntp服务器地址
+ * @param port ntp服务器端口，可以为空，此时端口为ntp标准默认端口123
+ * @param timeout 超时时间
+ * @param time 结果回调
+ * @return null
+ */
+//获取ntp时间
+//需要权限<uses-permission android:name="android.permission.INTERNET" />
+@SuppressLint("SimpleDateFormat")
+fun getNtpTime(url: String, port: Int?, timeout: Int, time: (Date?) -> Unit) {
+    MainScope().launch(Dispatchers.IO) {
+        var ntpUdpClient: NTPUDPClient? = null
+        try {
+            ntpUdpClient = NTPUDPClient()
+            val inetAddress = InetAddress.getByName(url)
+            ntpUdpClient.defaultTimeout = timeout
+            val timeInfo =
+                if (port == null) ntpUdpClient.getTime(inetAddress)
+                else ntpUdpClient.getTime(inetAddress, port)
+            val data = timeInfo.message.transmitTimeStamp.date
+            ntpUdpClient.close()
+            time(data)
+        } catch (e: Exception) {
+            ntpUdpClient?.close()
+            e.printStackTrace()
+            time(null)
+        }
+    }
+}
+
+//设置时间
+//需要权限<uses-permission android:name="android.permission.SET_TIME"/>
+@SuppressLint("MissingPermission")
+fun setTime(context: Context, time: Long) {
+    val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager?
+    alarmManager?.setTime(time)
+}
+
+//设置时区
+//需要权限<uses-permission android:name="android.permission.SET_TIME"/>
+@SuppressLint("MissingPermission")
+fun setTimeZone(context: Context, zone: String) {
+    val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager?
+    alarmManager?.setTimeZone(zone)
+}
+
+//获取系统支持的所有时区
+fun getAllSystemZone(): Array<String>? {
+    return TimeZone.getAvailableIDs()
 }

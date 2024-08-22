@@ -30,6 +30,7 @@ dependencies {
     implementation project(path: ':Android12')
     implementation project(path: ':Android13')
     implementation project(path: ':Android14')
+    implementation "commons-net:commons-net:3.9.0"
     compileOnly files('libs/classes.jar')
 }
 afterEvaluate {
