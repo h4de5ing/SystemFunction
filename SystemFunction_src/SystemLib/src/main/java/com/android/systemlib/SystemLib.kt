@@ -28,17 +28,14 @@ import androidx.annotation.RequiresApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
-import org.apache.commons.net.ntp.NTPUDPClient
+import kotlinx.coroutines.withContext
 import java.io.BufferedReader
 import java.io.File
 import java.io.IOException
 import java.io.InputStream
 import java.io.InputStreamReader
 import java.net.Inet4Address
-import java.net.InetAddress
 import java.net.NetworkInterface
-import java.util.Calendar
-import java.util.Date
 import java.util.TimeZone
 
 
@@ -542,54 +539,54 @@ fun getBatteryCapacity(context: Context): Int {
 }
 
 /**
- * @description 获取ntp时间  需要权限<uses-permission android:name="android.permission.INTERNET" />
+ * @description 获取ntp时间
  * @param url ntp服务器地址
- * @param port ntp服务器端口，可以为空，此时端口为ntp标准默认端口123
- * @param timeout 超时时间
+ * 中国计量科学研究院NIM授时服务
+ * ntp1.nim.ac.cn
+ * 教育网
+ * edu.ntp.org.cn
+ * 阿里云
+ * ntp.aliyun.com
+ * @param timeout 超时时间,默认3秒
  * @param time 结果回调
- * @return null
  */
-//获取ntp时间
-//需要权限<uses-permission android:name="android.permission.INTERNET" />
 @SuppressLint("SimpleDateFormat")
-fun getNtpTime(url: String, port: Int?, timeout: Int, time: (Date?) -> Unit) {
+fun getNtpTime(
+    url: String = "ntp.aliyun.com",
+    timeout: Int = NtpClient.NTP_TIME_OUT_MILLISECOND,
+    time: (Long) -> Unit
+) {
     MainScope().launch(Dispatchers.IO) {
-        var ntpUdpClient: NTPUDPClient? = null
-        try {
-            ntpUdpClient = NTPUDPClient()
-            val inetAddress = InetAddress.getByName(url)
-            ntpUdpClient.defaultTimeout = timeout
-            val timeInfo =
-                if (port == null) ntpUdpClient.getTime(inetAddress)
-                else ntpUdpClient.getTime(inetAddress, port)
-            val data = timeInfo.message.transmitTimeStamp.date
-            ntpUdpClient.close()
-            time(data)
-        } catch (e: Exception) {
-            ntpUdpClient?.close()
-            e.printStackTrace()
-            time(null)
-        }
+        val newTime = NtpClient().requestTime(url, timeout)
+        withContext(Dispatchers.Main) { time(newTime) }
     }
 }
 
-//设置时间
-//需要权限<uses-permission android:name="android.permission.SET_TIME"/>
+/**
+ * 设置日期时间
+ * 需要设置权限
+ * <uses-permission android:name="android.permission.SET_TIME"/>
+ */
 @SuppressLint("MissingPermission")
 fun setTime(context: Context, time: Long) {
     val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager?
     alarmManager?.setTime(time)
 }
 
-//设置时区
-//需要权限<uses-permission android:name="android.permission.SET_TIME"/>
+/**
+ * @param context 上下文
+ * @param zone 时区id 例如：Asia/Shanghai
+ * 需要权限<uses-permission android:name="android.permission.SET_TIME"/>
+ */
 @SuppressLint("MissingPermission")
 fun setTimeZone(context: Context, zone: String) {
     val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager?
     alarmManager?.setTimeZone(zone)
 }
 
-//获取系统支持的所有时区
+/**
+ * 获取系统支持的所有时区
+ */
 fun getAllSystemZone(): Array<String>? {
     return TimeZone.getAvailableIDs()
 }
