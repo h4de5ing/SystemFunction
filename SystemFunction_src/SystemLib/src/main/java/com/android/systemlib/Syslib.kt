@@ -1055,9 +1055,11 @@ fun disableEthernet(disable: Boolean) {
     else if (Build.VERSION.SDK_INT == 33 || Build.VERSION.SDK_INT == 34) disableEthernet13(disable)
 }
 
-fun addEthernetListener(change: () -> Unit) {
+fun addEthernetListener(change: ((String, Boolean) -> Unit) = { _, _ -> }) {
     if (Build.VERSION.SDK_INT < 33) addEthernetListener12(change)
-    else if (Build.VERSION.SDK_INT == 33 || Build.VERSION.SDK_INT == 34) addEthernetListener13()
+    else if (Build.VERSION.SDK_INT == 33 || Build.VERSION.SDK_INT == 34) addEthernetListener13(
+        change
+    )
 }
 
 fun removeEthernetListener() {
@@ -1390,6 +1392,7 @@ fun setGlobalProxy(context: Context, proxyInfo: ProxyInfo) {
 }
 
 fun setGlobalProxy(proxyInfo: ProxyInfo) {
-   val icm= IConnectivityManager.Stub.asInterface(ServiceManager.getService("connectivity")) as IConnectivityManager
+    val icm =
+        IConnectivityManager.Stub.asInterface(ServiceManager.getService("connectivity")) as IConnectivityManager
     println("${icm.globalProxy}")
 }

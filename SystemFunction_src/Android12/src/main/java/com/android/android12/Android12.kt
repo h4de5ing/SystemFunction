@@ -59,7 +59,7 @@ fun disableEthernet12(disable: Boolean) {
     }
 }
 
-fun addEthernetListener12(change: () -> Unit) {
+fun addEthernetListener12(change: ((String, Boolean) -> Unit)) {
     try {
         ethernetListener = IEthernetServiceListener1(change)
         iEthernetManager?.addListener(ethernetListener)
@@ -72,9 +72,10 @@ fun removeEthernetListener12() {
     iEthernetManager?.removeListener(ethernetListener)
 }
 
-class IEthernetServiceListener1(val change: () -> Unit) : IEthernetServiceListener.Stub() {
-    override fun onAvailabilityChanged(iface: String?, isAvailable: Boolean) {
-        change()
+class IEthernetServiceListener1(val change: ((String, Boolean) -> Unit)) :
+    IEthernetServiceListener.Stub() {
+    override fun onAvailabilityChanged(iface: String, isAvailable: Boolean) {
+        change(iface, isAvailable)
     }
 }
 
@@ -100,7 +101,12 @@ fun allowWirelessDebugging(alwaysAllow: Boolean, ssid: String) {
     }
 }
 
-fun isDisableLockScreen12(context: Context, oldPassword: String, isDisable: Boolean, change: (String) -> Unit) {
+fun isDisableLockScreen12(
+    context: Context,
+    oldPassword: String,
+    isDisable: Boolean,
+    change: (String) -> Unit
+) {
     val utils = LockPatternUtils(context)
     val type = getCredentialType12()
     if (type != 3 && type != 4) {

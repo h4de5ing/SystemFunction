@@ -115,11 +115,11 @@ fun disableEthernet13(disable: Boolean) {
     isDisable = disable
 }
 
-fun addEthernetListener13() {
+fun addEthernetListener13(change: ((String, Boolean) -> Unit)) {
     try {
         iEthernetManager =
             IEthernetManager.Stub.asInterface(ServiceManager.getService("ethernet"))
-        ethernetListener = IEthernetServiceListener1()
+        ethernetListener = IEthernetServiceListener1(change)
         iEthernetManager?.addListener(ethernetListener)
     } catch (e: Exception) {
         e.printStackTrace()
@@ -136,12 +136,14 @@ fun removeEthernetListener13() {
 
 private var isDisable = false
 
-class IEthernetServiceListener1 : IEthernetServiceListener.Stub() {
+class IEthernetServiceListener1(val change: ((String, Boolean) -> Unit)) :
+    IEthernetServiceListener.Stub() {
     override fun onEthernetStateChanged(state: Int) {
     }
 
+
     override fun onInterfaceStateChanged(
-        iface: String?,
+        iface: String,
         state: Int,
         role: Int,
         configuration: IpConfiguration?
@@ -149,8 +151,9 @@ class IEthernetServiceListener1 : IEthernetServiceListener.Stub() {
         //state == 1代表网线拔出，此时启用以太网，防止再次插入时无法识别
         //state == 2代表网线插入，此时根据情况决定是否再次禁用以太网
         //当以太网被禁用时，插拔网线不会触发此回调
-        if (state == 1)  iEthernetManager?.setEthernetEnabled(true)
+        if (state == 1) iEthernetManager?.setEthernetEnabled(true)
         else iEthernetManager?.setEthernetEnabled(!isDisable)
+        change(iface, state == 2)
     }
 }
 
