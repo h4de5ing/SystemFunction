@@ -8,6 +8,7 @@ import android.app.usage.UsageStatsManager
 import android.content.*
 import android.content.pm.*
 import android.net.*
+import android.net.wifi.IWifiManager
 import android.net.wifi.WifiConfiguration
 import android.net.wifi.WifiManager
 import android.net.wifi.WifiNetworkSpecifier
@@ -1395,4 +1396,19 @@ fun setGlobalProxy(proxyInfo: ProxyInfo) {
     val icm =
         IConnectivityManager.Stub.asInterface(ServiceManager.getService("connectivity")) as IConnectivityManager
     println("${icm.globalProxy}")
+}
+//02:00:00:00:00:00 如果获取到的是这个地址，表示是默认地址
+fun getFactoryMacAddresses(): String {
+    var mac = "02:00:00:00:00:00"
+    try {
+        val iWifi = IWifiManager.Stub.asInterface(ServiceManager.getService("wifi"))
+        val list = iWifi.factoryMacAddresses
+        list.forEach {
+            println(it)
+        }
+        mac = list[0]
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+    return mac
 }
