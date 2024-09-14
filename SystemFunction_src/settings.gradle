@@ -13,9 +13,7 @@ dependencyResolutionManagement {
         jcenter()
         maven { url "https://jitpack.io" }
         maven { url 'https://github.com/h4de5ing/SystemFunction/raw/master/SystemLib_repository' }
-        maven { url 'D:\\code\\SystemFunction\\SystemLib_repository' }
         maven { url 'https://gitee.com/lex1992/repository/raw/master/repository' }
-        maven { url 'D:\\repository\\repository\\repository' }
     }
 }
 rootProject.name = "SystemFunction"
@@ -24,4 +22,4 @@ include ':Android12'
 include ':Android13'
 include ':Android14'
 include ':droidwall'
-include ':t'
+//include ':t'
