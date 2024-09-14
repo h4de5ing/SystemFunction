@@ -12,6 +12,7 @@ import android.net.wifi.IWifiManager
 import android.net.wifi.WifiConfiguration
 import android.net.wifi.WifiManager
 import android.net.wifi.WifiNetworkSpecifier
+import android.nfc.INfcAdapter
 import android.os.*
 import android.os.storage.DiskInfo
 import android.os.storage.IStorageEventListener
@@ -256,21 +257,21 @@ fun reboot() = IPowerManager.Stub.asInterface(ServiceManager.getService(Context.
  * Can't perform master clear/factory reset
  */
 fun reset(context: Context) {
-//    val intent = Intent("android.intent.action.FACTORY_RESET")
-//    intent.setPackage("android")
-//    intent.addFlags(Intent.FLAG_RECEIVER_FOREGROUND)
-//    intent.putExtra("android.intent.extra.REASON", "MasterClearConfirm")
-//    intent.putExtra("android.intent.extra.WIPE_EXTERNAL_STORAGE", false /*mEraseSdCard*/)
-//    intent.putExtra("com.android.internal.intent.extra.WIPE_ESIMS", false /*mEraseEsims*/)
-//    context.sendBroadcast(intent)
-
-    val intent = Intent(Intent.ACTION_FACTORY_RESET)
+    val intent = Intent("android.intent.action.FACTORY_RESET")
     intent.setPackage("android")
     intent.addFlags(Intent.FLAG_RECEIVER_FOREGROUND)
-    intent.putExtra(Intent.EXTRA_REASON, "MasterClearConfirm")
-    intent.putExtra(Intent.EXTRA_WIPE_EXTERNAL_STORAGE, false/*mEraseSdCard*/)
-    intent.putExtra(Intent.EXTRA_WIPE_ESIMS, true/*mEraseEsims*/)
+    intent.putExtra("android.intent.extra.REASON", "MasterClearConfirm")
+    intent.putExtra("android.intent.extra.WIPE_EXTERNAL_STORAGE", false /*mEraseSdCard*/)
+    intent.putExtra("com.android.internal.intent.extra.WIPE_ESIMS", false /*mEraseEsims*/)
     context.sendBroadcast(intent)
+
+//    val intent = Intent(Intent.ACTION_FACTORY_RESET)
+//    intent.setPackage("android")
+//    intent.addFlags(Intent.FLAG_RECEIVER_FOREGROUND)
+//    intent.putExtra(Intent.EXTRA_REASON, "MasterClearConfirm")
+//    intent.putExtra(Intent.EXTRA_WIPE_EXTERNAL_STORAGE, false/*mEraseSdCard*/)
+//    intent.putExtra(Intent.EXTRA_WIPE_ESIMS, true/*mEraseEsims*/)
+//    context.sendBroadcast(intent)
 }
 
 
@@ -1397,18 +1398,42 @@ fun setGlobalProxy(proxyInfo: ProxyInfo) {
         IConnectivityManager.Stub.asInterface(ServiceManager.getService("connectivity")) as IConnectivityManager
     println("${icm.globalProxy}")
 }
-//02:00:00:00:00:00 如果获取到的是这个地址，表示是默认地址
+
+/**
+ * 获取出厂的Mac地址
+ * 02:00:00:00:00:00 如果获取到的是这个地址，表示是默认地址
+ */
 fun getFactoryMacAddresses(): String {
     var mac = "02:00:00:00:00:00"
     try {
         val iWifi = IWifiManager.Stub.asInterface(ServiceManager.getService("wifi"))
-        val list = iWifi.factoryMacAddresses
-        list.forEach {
-            println(it)
-        }
-        mac = list[0]
+        mac = iWifi.factoryMacAddresses[0]
     } catch (e: Exception) {
         e.printStackTrace()
     }
     return mac
+}
+
+/**
+ * 开启NFC
+ */
+fun enableNFC() {
+    try {
+        val iNfc = INfcAdapter.Stub.asInterface(ServiceManager.getService("nfc"))
+        iNfc.enable()
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+}
+
+/**
+ * 禁用NFC
+ */
+fun disableNFC() {
+    try {
+        val iNfc = INfcAdapter.Stub.asInterface(ServiceManager.getService("nfc"))
+        iNfc.disable(true)
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
 }

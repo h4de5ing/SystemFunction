@@ -14,6 +14,7 @@ import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import android.net.wifi.IWifiManager
 import android.net.wifi.WifiManager
 import android.os.Build
 import android.os.ServiceManager
@@ -24,7 +25,6 @@ import android.telephony.TelephonyManager
 import android.text.TextUtils
 import android.util.Log
 import android.view.View
-import androidx.annotation.RequiresApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
@@ -315,15 +315,9 @@ fun getSystemVersion(): String {
     return version
 }
 
-@SuppressLint("MissingPermission")
-fun getImei(context: Context): String? {
-    return (context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager).deviceId
-}
 
-@RequiresApi(Build.VERSION_CODES.M)
-@SuppressLint("MissingPermission")
+@SuppressLint("MissingPermission", "NewApi", "HardwareIds")
 fun getImeis(context: Context): Pair<String, String> {
-    var pair = Pair("", "")
     var imei1 = ""
     var imei2 = ""
     val telephonyManager = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
@@ -338,18 +332,35 @@ fun getImeis(context: Context): Pair<String, String> {
     return Pair(imei1, imei2)
 }
 
+@SuppressLint("MissingPermission", "HardwareIds")
+fun getSubscriberId(context: Context): String {
+    var subscriberId = ""
+    val telephonyManager = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+    try {
+        subscriberId = telephonyManager.subscriberId ?: ""
+    } catch (_: Exception) {
+    }
+    return subscriberId
+}
+
+@SuppressLint("HardwareIds")
 fun getWifiMac(context: Context): String {
     var mac = ""
     try {
         val wifiManager =
             context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
         mac = wifiManager.connectionInfo.macAddress
+        if ("02:00:00:00:00:00" == mac) {
+            (IWifiManager.Stub.asInterface(ServiceManager.getService(Context.WIFI_SERVICE)) as IWifiManager)
+                .factoryMacAddresses[0]
+        }
     } catch (e: Exception) {
         e.printStackTrace()
     }
     return mac
 }
 
+@SuppressLint("HardwareIds")
 fun getBTMac(context: Context): String {
     var mac = ""
     try {
