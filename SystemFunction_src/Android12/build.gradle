@@ -42,7 +42,7 @@ afterEvaluate {
         repositories {
             mavenLocal()
             maven {
-                url uri('D:\\code\\SystemFunction\\SystemLib_repository')
+                url uri('../SystemLib_repository')
             }
         }
     }
