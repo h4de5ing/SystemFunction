@@ -9,7 +9,6 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.net.ProxyInfo
-import android.net.Uri
 import android.os.Build
 import android.os.ServiceManager
 import android.os.UserManager
