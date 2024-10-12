@@ -322,11 +322,11 @@ fun getImeis(context: Context): Pair<String, String> {
     var imei2 = ""
     val telephonyManager = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
     try {
-        imei1 = telephonyManager.getDeviceId(0)
+        imei1 = telephonyManager.getDeviceId(0)?:""
     } catch (_: Exception) {
     }
     try {
-        imei2 = telephonyManager.getDeviceId(1)
+        imei2 = telephonyManager.getDeviceId(1)?:""
     } catch (_: Exception) {
     }
     return Pair(imei1, imei2)
@@ -355,7 +355,7 @@ fun getWifiMac(context: Context): String {
                 .factoryMacAddresses[0]
         }
     } catch (e: Exception) {
-        e.printStackTrace()
+        //e.printStackTrace()
     }
     return mac
 }
@@ -366,7 +366,7 @@ fun getBTMac(context: Context): String {
     try {
         val bluetoothManager =
             context.applicationContext.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
-        mac = bluetoothManager.adapter.address
+        mac = bluetoothManager.adapter.address ?: ""
     } catch (e: Exception) {
         e.printStackTrace()
     }
