@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace 'com.android.android14'
-    compileSdk 34
+    compileSdk 35
 
     defaultConfig {
         minSdk 21
