@@ -38,6 +38,7 @@ import com.android.android13.addEthernetListener13
 import com.android.android13.disableEthernet13
 import com.android.android13.disableSensor13
 import com.android.android13.removeEthernetListener13
+import com.android.internal.app.IAppOpsService
 import com.android.systemlib.ota.PayloadSpecs
 import java.io.*
 import java.net.Inet4Address
@@ -823,6 +824,10 @@ fun setMode(context: Context, code: Int, packageName: String, mode: Int) {
 //        }
 //    }
 //    iAppOpsManager.resetAllModes(0, packageName)
+}
+fun getOps(uid:Int,packageName:String){
+//  val iops=  IAppOpsService.Stub.asInterface(ServiceManager.getService(Context.APP_OPS_SERVICE))
+//    iops.getOpsForPackage(uid,packageName)
 }
 
 /**
