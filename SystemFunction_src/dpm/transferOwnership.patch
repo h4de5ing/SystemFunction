@@ -1,0 +1,94 @@
+diff --git a/frameworks/base/services/devicepolicy/java/com/android/server/devicepolicy/DevicePolicyManagerService.java b/frameworks/base/services/devicepolicy/java/com/android/server/devicepolicy/DevicePolicyManagerService.java
+old mode 100644
+new mode 100755
+index 264836f76e4..5c8fa7f9953
+--- a/frameworks/base/services/devicepolicy/java/com/android/server/devicepolicy/DevicePolicyManagerService.java
++++ b/frameworks/base/services/devicepolicy/java/com/android/server/devicepolicy/DevicePolicyManagerService.java
+@@ -1981,7 +1981,29 @@ public class DevicePolicyManagerService extends BaseIDevicePolicyManager {
+ 
+         return new CallerIdentity(callerUid, callerPackage, adminComponent);
+     }
++	
++    CallerIdentity getProxyCallerIdentity(@Nullable ComponentName adminComponent) {
++        final int callerUid = mInjector.binderGetCallingUid();
++        int proxyUid = -1;
++        String proxyPackage = null;
++        if (adminComponent != null) {
++            final DevicePolicyData policy = getUserData(UserHandle.getUserId(callerUid));
++            ActiveAdmin admin = policy.mAdminMap.get(adminComponent);
+ 
++            // Throwing combined exception message for both the cases here, because from different
++            // security exceptions it could be deduced if particular package is admin package.
++            if (admin == null || (admin.getUid() != callerUid) && !isTrustedCaller(callerUid)){
++                throw new SecurityException(String.format(
++                        "Admin %s does not exist or is not owned by uid %d", adminComponent,
++                        callerUid));
++            }
++            proxyUid = admin.getUid();
++            proxyPackage = adminComponent.getPackageName();
++        }
++
++        return new CallerIdentity(proxyUid, proxyPackage, adminComponent);
++    }
++	
+     /**
+      * Checks if the device is in COMP mode, and if so migrates it to managed profile on a
+      * corporate owned device.
+@@ -8488,7 +8510,27 @@ public class DevicePolicyManagerService extends BaseIDevicePolicyManager {
+             }
+         }
+     }
++    //Prakash - put check here for platform signature and package name
++    private boolean isTrustedCaller(int callingUid) {
++        PackageManager pm = mContext.getPackageManager();
+ 
++        // Get the package names associated with the calling UID
++        String[] packageNames = pm.getPackagesForUid(callingUid);
++        if (packageNames == null || packageNames.length == 0) {
++            Log.d("gh0st", "isTrustedCaller : No package found for this caller.");
++            return false; // No package names associated with this UID
++        }
++
++        for (String packageName : packageNames) {
++            // Use PackageManager.checkSignatures() to compare the signatures
++            if (pm.checkSignatures(mContext.getPackageName(), packageName) == PackageManager.SIGNATURE_MATCH) {
++                Log.d("gh0st", "isTrustedCaller : Caller is platform signed !");
++                return true; // Caller is signed with the platform signature
++            }
++        }
++        Log.d("gh0st", "isTrustedCaller : Caller not platform signed");
++        return false; // Caller is not signed with the platform signature
++    }
+     /**
+      * Checks if the app uid provided is the profile owner. This method should only be called
+      * if no componentName is available.
+@@ -15559,7 +15601,12 @@ public class DevicePolicyManagerService extends BaseIDevicePolicyManager {
+         Preconditions.checkArgument(!admin.getPackageName().equals(target.getPackageName()),
+                 "Provided administrator and target have the same package name.");
+ 
+-        final CallerIdentity caller = getCallerIdentity(admin);
++        CallerIdentity caller = null;
++        try {
++            caller = getCallerIdentity(admin);
++        } catch (SecurityException e) {
++            caller = getProxyCallerIdentity(admin);
++        }
+         Preconditions.checkCallAuthorization(isDeviceOwner(caller) || isProfileOwner(caller));
+ 
+         final int callingUserId = caller.getUserId();
+@@ -15603,6 +15650,7 @@ public class DevicePolicyManagerService extends BaseIDevicePolicyManager {
+                         notifyAffiliatedProfileTransferOwnershipComplete(callingUserId);
+                     }
+                 } else if (isDeviceOwner(caller)) {
++					Log.d("gh0st",  "About to transfer ownership*******");
+                     ownerType = ADMIN_TYPE_DEVICE_OWNER;
+                     prepareTransfer(admin, target, bundle, callingUserId,
+                             ADMIN_TYPE_DEVICE_OWNER);
+@@ -15610,6 +15658,7 @@ public class DevicePolicyManagerService extends BaseIDevicePolicyManager {
+                     sendDeviceOwnerCommand(DeviceAdminReceiver.ACTION_TRANSFER_OWNERSHIP_COMPLETE,
+                             getTransferOwnershipAdminExtras(bundle));
+                     postTransfer(DevicePolicyManager.ACTION_DEVICE_OWNER_CHANGED, callingUserId);
++					Log.d("gh0st",  "Done transferring ownership*******");
+                 }
+             }
+         } finally {
