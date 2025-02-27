@@ -322,11 +322,11 @@ fun getImeis(context: Context): Pair<String, String> {
     var imei2 = ""
     val telephonyManager = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
     try {
-        imei1 = telephonyManager.getDeviceId(0)?:""
+        imei1 = telephonyManager.getDeviceId(0) ?: ""
     } catch (_: Exception) {
     }
     try {
-        imei2 = telephonyManager.getDeviceId(1)?:""
+        imei2 = telephonyManager.getDeviceId(1) ?: ""
     } catch (_: Exception) {
     }
     return Pair(imei1, imei2)
@@ -396,7 +396,7 @@ fun getSDCard(context: Context): Triple<Long, Long, Long> {
     var pair: Triple<Long, Long, Long> = Triple(0, 0, 1)
     try {
         val sm = context.getSystemService(Context.STORAGE_SERVICE) as StorageManager
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+        if (Build.VERSION.SDK_INT >= 30) {//不在维护低于Android11的版本
             sm.storageVolumes.forEach {
                 try {
                     val file = File("${it.getInternalPath()}")
