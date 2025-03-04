@@ -31,9 +31,7 @@ public class NtpClient {
      */
     public long requestTime(String host, int timeout) {
         long currentTime = System.currentTimeMillis();
-        DatagramSocket socket = null;
-        try {
-            socket = new DatagramSocket();
+        try (DatagramSocket socket = new DatagramSocket()) {
             socket.setSoTimeout(timeout);
             InetAddress address = InetAddress.getByName(host);
             byte[] buffer = new byte[NTP_PACKET_SIZE];
@@ -57,10 +55,9 @@ public class NtpClient {
             long clockOffset = ((receiveTime - originateTime) + (transmitTime - responseTime)) / 2;
             currentTime = responseTime + clockOffset;
         } catch (Exception e) {
+            System.out.println(host + " 校时错误 " + e.getMessage());
             e.printStackTrace();
             return currentTime;
-        } finally {
-            if (socket != null) socket.close();
         }
         return currentTime;
     }
