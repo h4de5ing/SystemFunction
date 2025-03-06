@@ -307,7 +307,11 @@ fun mobile_data(context: Context, isDisable: Boolean) {
 /**
  * 静默安装apk
  */
-fun installAPK(context: Context, apkFilePath: String, change: ((Int) -> Unit) = {}) {
+fun installAPK(
+    context: Context,
+    apkFilePath: String,
+    change: ((Int, String) -> Unit) = { _, _ -> }
+) {
     try {
         val apkFile = File(apkFilePath)
         val packageInstaller = context.packageManager.packageInstaller
@@ -320,13 +324,16 @@ fun installAPK(context: Context, apkFilePath: String, change: ((Int) -> Unit) = 
             if (copySuccess) execInstallCommand(context, packageInstaller, sessionId, change)
         }
     } catch (e: Exception) {
-        change(-1)
+        change(-1, "${e.message}")
         e.printStackTrace()
     }
 }
 
 private fun copyInstallFile(
-    packageInstaller: PackageInstaller, sessionId: Int, apkFilePath: String, change: ((Int) -> Unit)
+    packageInstaller: PackageInstaller,
+    sessionId: Int,
+    apkFilePath: String,
+    change: ((Int, String) -> Unit)
 ): Boolean {
     var `in`: InputStream? = null
     var out: OutputStream? = null
@@ -346,8 +353,8 @@ private fun copyInstallFile(
         }
         session.fsync(out)
         success = true
-    } catch (e: IOException) {
-        change(-2)
+    } catch (e: Exception) {
+        change(-2, "${e.message}")
         e.printStackTrace()
     } finally {
         closeQuietly(out)
@@ -359,19 +366,22 @@ private fun copyInstallFile(
 
 @SuppressLint("UnspecifiedImmutableFlag")
 private fun execInstallCommand(
-    context: Context, packageInstaller: PackageInstaller, sessionId: Int, change: ((Int) -> Unit)
+    context: Context,
+    packageInstaller: PackageInstaller,
+    sessionId: Int,
+    change: ((Int, String) -> Unit)
 ) {
     var session: PackageInstaller.Session? = null
     try {
         session = packageInstaller.openSession(sessionId)
         session.commit(
             PendingIntent.getBroadcast(
-                context, 1, Intent(), PendingIntent.FLAG_IMMUTABLE
+                context, 1, Intent(), FLAG_IMMUTABLE
             ).intentSender
         )
-        change(0)
-    } catch (e: IOException) {
-        change(-3)
+        change(0, "")
+    } catch (e: Exception) {
+        change(-3, "${e.message}")
         e.printStackTrace()
     } finally {
         closeQuietly(session)
@@ -825,7 +835,8 @@ fun setMode(context: Context, code: Int, packageName: String, mode: Int) {
 //    }
 //    iAppOpsManager.resetAllModes(0, packageName)
 }
-fun getOps(uid:Int,packageName:String){
+
+fun getOps(uid: Int, packageName: String) {
 //  val iops=  IAppOpsService.Stub.asInterface(ServiceManager.getService(Context.APP_OPS_SERVICE))
 //    iops.getOpsForPackage(uid,packageName)
 }
