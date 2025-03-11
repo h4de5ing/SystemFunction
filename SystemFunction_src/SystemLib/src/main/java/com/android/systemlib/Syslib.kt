@@ -38,7 +38,6 @@ import com.android.android13.addEthernetListener13
 import com.android.android13.disableEthernet13
 import com.android.android13.disableSensor13
 import com.android.android13.removeEthernetListener13
-import com.android.internal.app.IAppOpsService
 import com.android.systemlib.ota.PayloadSpecs
 import java.io.*
 import java.net.Inet4Address
@@ -374,12 +373,27 @@ private fun execInstallCommand(
     var session: PackageInstaller.Session? = null
     try {
         session = packageInstaller.openSession(sessionId)
-        session.commit(
-            PendingIntent.getBroadcast(
-                context, 1, Intent(), FLAG_IMMUTABLE
-            ).intentSender
-        )
-        change(0, "")
+        val pendingIntent = PendingIntent.getBroadcast(context, 1, Intent(), FLAG_IMMUTABLE)
+        val intentSender = pendingIntent.intentSender
+        packageInstaller.registerSessionCallback(object : PackageInstaller.SessionCallback() {
+            override fun onCreated(sessionId: Int) {
+            }
+
+            override fun onBadgingChanged(sessionId: Int) {
+            }
+
+            override fun onActiveChanged(sessionId: Int, active: Boolean) {
+            }
+
+            override fun onProgressChanged(sessionId: Int, progress: Float) {
+            }
+
+            override fun onFinished(sessionId: Int, success: Boolean) {
+                change(if (success) 0 else -4, "")
+            }
+        }, Handler(Looper.getMainLooper()))
+        session.commit(intentSender)
+        session.close()
     } catch (e: Exception) {
         change(-3, "${e.message}")
         e.printStackTrace()
