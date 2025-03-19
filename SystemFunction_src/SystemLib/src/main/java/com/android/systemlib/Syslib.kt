@@ -220,9 +220,8 @@ private const val USB_SWITCH_PATH = "ro.vendor.usb.switch.property"
 /**
  * 查询是否禁用USB数据传输
  */
-fun isUSBDataDisabled(context: Context): Boolean {
-    return Settings.Global.getInt(context.contentResolver, Settings.Global.ADB_ENABLED, 0) == 1
-}
+fun isUSBDataDisabled(context: Context): Boolean =
+    Settings.Global.getInt(context.contentResolver, Settings.Global.ADB_ENABLED, 0) == 1
 
 /**
  * 关机
@@ -317,6 +316,8 @@ fun installAPK(
         val sessionParams =
             PackageInstaller.SessionParams(PackageInstaller.SessionParams.MODE_FULL_INSTALL)
         sessionParams.setSize(apkFile.length())
+        //TODO Android 14+ 不允许杀死应用，否则安装失败
+//        if (Build.VERSION.SDK_INT >= 34) sessionParams.setDontKillApp(true)
         val sessionId = packageInstaller.createSession(sessionParams)
         if (sessionId != -1) {
             val copySuccess = copyInstallFile(packageInstaller, sessionId, apkFilePath, change)
@@ -452,10 +453,10 @@ fun isSystemAPP(context: Context, packageName: String): Boolean {
     return try {
         val pm = context.packageManager
         val packageInfo = pm.getPackageInfo(packageName, 0)
-        val flags: Int = packageInfo.applicationInfo.flags
+        val flags: Int = packageInfo.applicationInfo?.flags ?: 0
 //    flags and ApplicationInfo.FLAG_UPDATED_SYSTEM_APP
         (flags and ApplicationInfo.FLAG_SYSTEM) == ApplicationInfo.FLAG_SYSTEM
-    } catch (e: Exception) {
+    } catch (_: Exception) {
         false
     }
 }
@@ -468,9 +469,9 @@ fun isSuspended(context: Context, packageName: String): Boolean {
     return try {
         val pm = context.packageManager
         val packageInfo = pm.getPackageInfo(packageName, 0)
-        val flags: Int = packageInfo.applicationInfo.flags
+        val flags: Int = packageInfo.applicationInfo?.flags ?: 0
         (flags and ApplicationInfo.FLAG_SUSPENDED) == ApplicationInfo.FLAG_SUSPENDED
-    } catch (e: Exception) {
+    } catch (_: Exception) {
         false
     }
 }
@@ -482,9 +483,9 @@ fun canUninstall(context: Context, packageName: String): Boolean {
     return try {
         val pm = context.packageManager
         val packageInfo = pm.getPackageInfo(packageName, 0)
-        val flags: Int = packageInfo.applicationInfo.flags
+        val flags: Int = packageInfo.applicationInfo?.flags ?: 0
         (flags and ApplicationInfo.FLAG_INSTALLED) == ApplicationInfo.FLAG_INSTALLED
-    } catch (e: Exception) {
+    } catch (_: Exception) {
         false
     }
 }
@@ -548,10 +549,9 @@ fun hiddenAPP(packageName: String, isHidden: Boolean) {
 /**
  * 是否是隐藏app
  */
-fun isHiddenAPP(packageName: String): Boolean {
-    return IPackageManager.Stub.asInterface(ServiceManager.getService("package"))
+fun isHiddenAPP(packageName: String): Boolean =
+    IPackageManager.Stub.asInterface(ServiceManager.getService("package"))
         .getApplicationHiddenSettingAsUser(packageName, 0)
-}
 
 
 /**
@@ -567,10 +567,9 @@ fun suspendedAPP(packageName: String, isHidden: Boolean) {
 /**
  * 应用是否被暂停
  */
-fun isSuspendedAPP(packageName: String): Boolean {
-    return IPackageManager.Stub.asInterface(ServiceManager.getService("package"))
+fun isSuspendedAPP(packageName: String): Boolean =
+    IPackageManager.Stub.asInterface(ServiceManager.getService("package"))
         .isPackageSuspendedForUser(packageName, 0)
-}
 
 /**
  * PackageManager.COMPONENT_ENABLED_STATE_DEFAULT=0
@@ -588,10 +587,8 @@ fun setDisableAPP(context: Context, packageName: ComponentName, isDisable: Boole
     )
 }
 
-fun isDisableAPP(context: Context, packageName: ComponentName): Boolean {
-    val pm = context.applicationContext.packageManager
-    return pm.getComponentEnabledSetting(packageName) == PackageManager.COMPONENT_ENABLED_STATE_DISABLED
-}
+fun isDisableAPP(context: Context, packageName: ComponentName): Boolean =
+    context.applicationContext.packageManager.getComponentEnabledSetting(packageName) == PackageManager.COMPONENT_ENABLED_STATE_DISABLED
 
 
 //fun getStatusBarHeight(context: Context): Int {
@@ -690,7 +687,7 @@ fun isPowerSaveWhitelistApp(context: Context, packageName: String): Boolean {
         val mService = mServiceField.get(deviceIdleManager)
         val iDeviceIdleController = mService as IDeviceIdleController
         iDeviceIdleController.isPowerSaveWhitelistApp(packageName)
-    } catch (e: Exception) {
+    } catch (_: Exception) {
         false
     }
 }
@@ -714,7 +711,7 @@ fun getPowerSaveWhitelistApp(context: Context): List<String> {
         val mService = mServiceField.get(deviceIdleManager)
         val iDeviceIdleController = mService as IDeviceIdleController
         iDeviceIdleController.userPowerWhitelist.toList()
-    } catch (e: Exception) {
+    } catch (_: Exception) {
         emptyList()
     }
 }
@@ -750,10 +747,8 @@ fun getPackageDataDir(packageName: String): String {
 /**
  * 当第一次刷机或者恢复出厂设置以后这个返回值为true
  */
-fun isFirstRun(): Boolean {
-    val mIPackageManager = IPackageManager.Stub.asInterface(ServiceManager.getService("package"))
-    return mIPackageManager.isFirstBoot
-}
+fun isFirstBoot(): Boolean =
+    IPackageManager.Stub.asInterface(ServiceManager.getService("package")).isFirstBoot
 
 /**
  * 结束任务
@@ -788,7 +783,7 @@ fun grantAllPermission(packageName: String) {
         val ipm = IPackageManager.Stub.asInterface(ServiceManager.getService("package"))
         ipm.getPackageInfo(
             packageName, PackageManager.GET_PERMISSIONS, 0
-        ).requestedPermissions.forEach {
+        ).requestedPermissions?.forEach {
             try {
                 ipm.grantRuntimePermission(packageName, it, 0)
             } catch (_: Exception) {
@@ -910,27 +905,13 @@ fun getStorage(context: Context, tv: TextView) {
     }
 }
 
-@SuppressLint("WrongConstant", "MissingPermission")
-fun ota(context: Context, fileName: String) {
-    try {
-        val sp = getSystemPropertyString("ro.boot.slot_suffix")
-        if (TextUtils.isEmpty(sp)) {//整包升级
-            RecoverySystem.installPackage(context, File(fileName))
-        } else { //A/B系统升级
-
-        }
-    } catch (e: Exception) {
-        e.printStackTrace()
-    }
-}
-
 /**
  * 获取设置配置项
  */
 fun getSystemGlobal(context: Context, key: String): String {
     return try {
         Settings.Global.getString(context.contentResolver, key)
-    } catch (e: Exception) {
+    } catch (_: Exception) {
         ""
     }
 }
@@ -956,20 +937,6 @@ fun getFileType(context: Context) {
     val bugreportManager = context.getSystemService(Context.BUGREPORT_SERVICE) as BugreportManager
 //    bugreportManager.startConnectivityBugreport()
 }
-
-fun shell(command: String) {
-    SELinux.getContext()
-//    SystemClock.setCurrentTimeMillis()//设置当前时间
-//    SystemProperties.get("persist.sys.timezone")
-//    SystemProperties.set("persist.sys.timezone", "GMT")
-}
-
-//@RequiresApi(Build.VERSION_CODES.Q)
-//@SuppressLint("WrongConstant")
-//fun setDisabledForSetup(context: Context, iconId: Int) {
-//    val status = context.getSystemService("statusbar") as StatusBarManager
-////    status.setIcon("clock", iconId, 0, null)
-//}
 
 fun get_recent(context: Context) {
     try {
@@ -1026,7 +993,7 @@ fun getAs() {
 fun ethernetListener(onChange: (String, Boolean) -> Unit) {
     val iEthernetManager =
         IEthernetManager.Stub.asInterface(ServiceManager.getService("ethernet")) as IEthernetManager
-    iEthernetManager.addListener(object : android.net.IEthernetServiceListener.Stub() {
+    iEthernetManager.addListener(object : IEthernetServiceListener.Stub() {
         override fun onAvailabilityChanged(iface: String, isAvailable: Boolean) {
             onChange(iface, isAvailable)
         }
@@ -1270,6 +1237,22 @@ fun enableAccessibilityService(
 }
 
 /**
+ * 开启本应用的辅助权限
+ */
+fun enabledAccessibilityServices(context: Context, enable: Boolean) {
+    Settings.Secure.putString(
+        context.contentResolver,
+        Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES,
+        context.packageName
+    )
+    Settings.Secure.putInt(
+        context.contentResolver,
+        Settings.Secure.ACCESSIBILITY_ENABLED,
+        if (enable) 1 else 0
+    )
+}
+
+/**
  * 关闭本app的辅助服务
  */
 fun disableAccessibilityService(
@@ -1304,7 +1287,7 @@ fun grant(context: Context, packageName: String, permName: String) {
     val packageManager = context.packageManager
     val info = packageManager.getPackageInfo(packageName, PackageManager.GET_PERMISSIONS)
     if (info?.requestedPermissions != null) {
-        info.requestedPermissions.forEach {
+        info.requestedPermissions?.forEach {
             println("${packageName}->${it}")
         }
         val ipm = IPackageManager.Stub.asInterface(ServiceManager.getService("package"))
@@ -1350,9 +1333,9 @@ fun formatIpAddresses(prop: LinkProperties?): String {
         val iterator: Iterator<LinkAddress>? = prop?.getAllLinkAddresses()?.iterator()
         if (iterator != null) {
             while (iterator.hasNext()) {
-                val addr = iterator.next().address
-                if (addr is Inet4Address) {
-                    addresses.append(addr.getHostAddress())
+                val address = iterator.next().address
+                if (address is Inet4Address) {
+                    addresses.append(address.hostAddress)
                     break
                 }
             }

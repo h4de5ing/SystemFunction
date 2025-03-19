@@ -34,13 +34,10 @@ import java.io.File
 import java.io.IOException
 import java.io.InputStream
 import java.io.InputStreamReader
-import java.net.Inet4Address
-import java.net.NetworkInterface
 import java.util.TimeZone
 
 
-val HOME_INTENT = Intent("android.intent.action.MAIN")
-    .addCategory("android.intent.category.HOME")
+val HOME_INTENT = Intent("android.intent.action.MAIN").addCategory("android.intent.category.HOME")
     .addCategory("android.intent.category.DEFAULT")
 
 /**
@@ -48,8 +45,7 @@ val HOME_INTENT = Intent("android.intent.action.MAIN")
  */
 fun getDefaultLauncher(context: Context): String? {
     return context.packageManager.resolveActivity(
-        HOME_INTENT,
-        PackageManager.MATCH_DEFAULT_ONLY
+        HOME_INTENT, PackageManager.MATCH_DEFAULT_ONLY
     )?.activityInfo?.packageName
 }
 
@@ -77,10 +73,8 @@ fun getDefaultLauncherName(context: Context): String? {
  */
 fun getSystemDefaultLauncher(context: Context): String? {
     return context.packageManager.queryIntentActivities(
-        HOME_INTENT,
-        PackageManager.MATCH_DEFAULT_ONLY
-    )
-        .firstOrNull { it != null && isSystemResolveInfo(it) }?.activityInfo?.packageName
+        HOME_INTENT, PackageManager.MATCH_DEFAULT_ONLY
+    ).firstOrNull { it != null && isSystemResolveInfo(it) }?.activityInfo?.packageName
 }
 
 /**
@@ -218,8 +212,7 @@ const val DISABLE2_NOTIFICATION_SHADE = 1 shl 2
 const val DISABLE2_GLOBAL_ACTIONS = 1 shl 3
 const val DISABLE2_ROTATE_SUGGESTIONS = 1 shl 4
 const val DISABLE2_MASK: Int =
-    (DISABLE2_QUICK_SETTINGS or DISABLE2_SYSTEM_ICONS
-            or DISABLE2_NOTIFICATION_SHADE or DISABLE2_GLOBAL_ACTIONS or DISABLE2_ROTATE_SUGGESTIONS)
+    (DISABLE2_QUICK_SETTINGS or DISABLE2_SYSTEM_ICONS or DISABLE2_NOTIFICATION_SHADE or DISABLE2_GLOBAL_ACTIONS or DISABLE2_ROTATE_SUGGESTIONS)
 
 @SuppressLint("WrongConstant")
 fun setStatusBar2(context: Context, status: Int) {
@@ -253,29 +246,10 @@ fun set(context: Context, enable: Boolean) {
 //    context.startActivity(Intent(Settings.Panel.ACTION_WIFI))
 }
 
-
-/**
- * 开启本应用的辅助权限
- */
-fun enabledAccessibilityServices(context: Context, enable: Boolean) {
-    Settings.Secure.putString(
-        context.contentResolver,
-        Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES,
-        context.packageName
-    )
-    Settings.Secure.putInt(
-        context.contentResolver,
-        Settings.Secure.ACCESSIBILITY_ENABLED,
-        if (enable) 1 else 0
-    )
-}
-
 /**
  * 获取getprop里面字段值
  */
-fun getSystemPropertyString(key: String): String? {
-    return SystemProperties.get(key, "")
-}
+fun getSystemPropertyString(key: String): String? = SystemProperties.get(key, "")
 
 /**
  * 设置prop里面的值，需要有权限才可以调用成果
@@ -285,7 +259,7 @@ fun setSystemPropertyString(key: String, value: String) {
 }
 
 /**
- * 查看系统SN号
+ * 获取系统SN号
  */
 @SuppressLint("MissingPermission")
 fun getSN(): String {
@@ -351,11 +325,9 @@ fun getWifiMac(context: Context): String {
             context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
         mac = wifiManager.connectionInfo.macAddress
         if ("02:00:00:00:00:00" == mac) {
-            (IWifiManager.Stub.asInterface(ServiceManager.getService(Context.WIFI_SERVICE)) as IWifiManager)
-                .factoryMacAddresses[0]
+            (IWifiManager.Stub.asInterface(ServiceManager.getService(Context.WIFI_SERVICE)) as IWifiManager).factoryMacAddresses[0]
         }
-    } catch (e: Exception) {
-        //e.printStackTrace()
+    } catch (_: Exception) {
     }
     return mac
 }
@@ -373,25 +345,9 @@ fun getBTMac(context: Context): String {
     return mac
 }
 
-fun getIp(): String {
-    var ip = ""
-    try {
-        for (networkInterface in NetworkInterface.getNetworkInterfaces()) {
-            if (networkInterface.isUp) {
-                networkInterface.interfaceAddresses.forEach {
-                    when (it.address) {
-                        is Inet4Address -> {
-                            it.address.hostAddress?.apply { ip = this }
-                        }
-                    }
-                }
-            }
-        }
-    } catch (_: Exception) {
-    }
-    return ip
-}
-
+/**
+ * 获取SD卡已使用，剩余，总共的容量
+ */
 fun getSDCard(context: Context): Triple<Long, Long, Long> {
     var pair: Triple<Long, Long, Long> = Triple(0, 0, 1)
     try {
@@ -403,8 +359,7 @@ fun getSDCard(context: Context): Triple<Long, Long, Long> {
                     if (file.absolutePath.contains("emulated")) {// -> /storage/emulated/0
                         val totalSize = file.totalSpace
                         val availableSize = file.usableSpace
-                        val usedSize =
-                            file.totalSpace - file.usableSpace
+                        val usedSize = file.totalSpace - file.usableSpace
                         pair = Triple(usedSize, availableSize, totalSize)
                     }
                 } catch (e: Exception) {
@@ -429,35 +384,6 @@ fun getRomMemorySize(context: Context): Triple<Long, Long, Long> {
     val avail = outInfo.availMem
     val used = outInfo.totalMem - outInfo.availMem
     return Triple(used, avail, total)
-}
-
-fun getProperty(key: String, defaultValue: String): String {
-    return try {
-        try {
-            val c = Class.forName("android.os.SystemProperties")
-            val get = c.getMethod(
-                "get",
-                String::class.java,
-                String::class.java
-            )
-            get.invoke(c, key, defaultValue) as String
-        } catch (e: Exception) {
-            e.printStackTrace()
-            defaultValue
-        }
-    } catch (th: Throwable) {
-        defaultValue
-    }
-}
-
-fun setProperty(key: String, value: String?) {
-    try {
-        val c = Class.forName("android.os.SystemProperties")
-        val set = c.getMethod("set", String::class.java, String::class.java)
-        set.invoke(c, key, value)
-    } catch (e: Exception) {
-        e.printStackTrace()
-    }
 }
 
 /**
@@ -491,14 +417,14 @@ fun isNetAvailable(context: Context): Boolean {
             ?.also { networkCapabilities = it } == null
     ) {
         false
-    } else networkCapabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) ?: false
+    } else networkCapabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) == true
 }
 
 fun ping(): Int {
     var result: Int
     var sb: StringBuilder
     try {
-        val p: java.lang.Process = Runtime.getRuntime().exec("ping -c 3 -w 100 www.baidu.com")
+        val p: Process = Runtime.getRuntime().exec("ping -c 3 -w 100 www.baidu.com")
         val input: InputStream = p.inputStream
         val br = BufferedReader(InputStreamReader(input))
         val strBuffer = StringBuffer()
@@ -510,7 +436,7 @@ fun ping(): Int {
         val status: Int = p.waitFor()
         result = if (status == 0) 200 else 404
         sb = StringBuilder()
-    } catch (e: Exception) {
+    } catch (_: Exception) {
         result = 404
         sb = StringBuilder()
     } catch (th: Throwable) {
@@ -529,7 +455,7 @@ fun setHomeActivity(className: ComponentName) {
 fun isRoot(): Boolean {
     return try {
         Runtime.getRuntime().exec("su") != null
-    } catch (e: IOException) {
+    } catch (_: IOException) {
         false
     }
 }
@@ -580,8 +506,8 @@ fun getNtpTime(
  */
 @SuppressLint("MissingPermission")
 fun setTime(context: Context, time: Long) {
-    val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager?
-    alarmManager?.setTime(time)
+    val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+    alarmManager.setTime(time)
 }
 
 /**
@@ -591,13 +517,11 @@ fun setTime(context: Context, time: Long) {
  */
 @SuppressLint("MissingPermission")
 fun setTimeZone(context: Context, zone: String) {
-    val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager?
-    alarmManager?.setTimeZone(zone)
+    val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+    alarmManager.setTimeZone(zone)
 }
 
 /**
  * 获取系统支持的所有时区
  */
-fun getAllSystemZone(): Array<String>? {
-    return TimeZone.getAvailableIDs()
-}
+fun getAllSystemZone(): Array<String>? = TimeZone.getAvailableIDs()
