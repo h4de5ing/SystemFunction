@@ -1,0 +1,104 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "com.android.systemlib",
+    "module": "systemlib",
+    "version": "1.0-20250327",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "8.11.1"
+    }
+  },
+  "variants": [
+    {
+      "name": "releaseVariantReleaseApiPublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-api"
+      },
+      "dependencies": [
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib",
+          "version": {
+            "requires": "2.1.20"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "systemlib-1.0-20250327.aar",
+          "url": "systemlib-1.0-20250327.aar",
+          "size": 72161,
+          "sha512": "c20d93f02260126f965d0b77dee7fc6309cb7bf66ef155fe187ccfb10f6fa9240b6054e1343b618dd85e0958842089d1e118e1745a27f99299475be4decbf2fc",
+          "sha256": "40b8259296591827ca4a8df3fe89ac7429ae4a0b2a489bfd01a86c968e77993a",
+          "sha1": "849fea172d34702122c26dbfd721e57d74166f5c",
+          "md5": "e2b9a3582e894239047615adc37c27e0"
+        }
+      ]
+    },
+    {
+      "name": "releaseVariantReleaseRuntimePublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "androidx.core",
+          "module": "core-ktx",
+          "version": {
+            "requires": "1.15.0"
+          }
+        },
+        {
+          "group": "com.android.android12",
+          "module": "android12",
+          "version": {
+            "requires": "1.0-20250327"
+          }
+        },
+        {
+          "group": "com.android.android13",
+          "module": "android13",
+          "version": {
+            "requires": "1.0-20250327"
+          }
+        },
+        {
+          "group": "com.android.android14",
+          "module": "android14",
+          "version": {
+            "requires": "1.0-20250327"
+          }
+        },
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib",
+          "version": {
+            "requires": "2.1.20"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "systemlib-1.0-20250327.aar",
+          "url": "systemlib-1.0-20250327.aar",
+          "size": 72161,
+          "sha512": "c20d93f02260126f965d0b77dee7fc6309cb7bf66ef155fe187ccfb10f6fa9240b6054e1343b618dd85e0958842089d1e118e1745a27f99299475be4decbf2fc",
+          "sha256": "40b8259296591827ca4a8df3fe89ac7429ae4a0b2a489bfd01a86c968e77993a",
+          "sha1": "849fea172d34702122c26dbfd721e57d74166f5c",
+          "md5": "e2b9a3582e894239047615adc37c27e0"
+        }
+      ]
+    }
+  ]
+}

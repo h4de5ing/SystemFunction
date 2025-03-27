@@ -1,0 +1,83 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "com.android.android13",
+    "module": "android13",
+    "version": "1.0-20250327",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "8.11.1"
+    }
+  },
+  "variants": [
+    {
+      "name": "releaseVariantReleaseApiPublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-api"
+      },
+      "dependencies": [
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib",
+          "version": {
+            "requires": "2.1.20"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "android13-1.0-20250327.aar",
+          "url": "android13-1.0-20250327.aar",
+          "size": 7855,
+          "sha512": "e4ed5e1ae58ef4b78fcb68a5242ade56160126ca6d44556e3c3c405ff416887a75257932ced1d3937d7112e45fa57e5bc69a0f591b8c849a3082aa09d193e02b",
+          "sha256": "54f5b55d2b11cddff2478f04afe8c01a4fdbb2e300bcc1669a29e4d998c686de",
+          "sha1": "d7f4a2b2b16e39e68959bbe28ec8aa120bbb11f1",
+          "md5": "981262832548142bda842da9404c13c8"
+        }
+      ]
+    },
+    {
+      "name": "releaseVariantReleaseRuntimePublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "androidx.core",
+          "module": "core-ktx",
+          "version": {
+            "requires": "1.15.0"
+          }
+        },
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib",
+          "version": {
+            "requires": "2.1.20"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "android13-1.0-20250327.aar",
+          "url": "android13-1.0-20250327.aar",
+          "size": 7855,
+          "sha512": "e4ed5e1ae58ef4b78fcb68a5242ade56160126ca6d44556e3c3c405ff416887a75257932ced1d3937d7112e45fa57e5bc69a0f591b8c849a3082aa09d193e02b",
+          "sha256": "54f5b55d2b11cddff2478f04afe8c01a4fdbb2e300bcc1669a29e4d998c686de",
+          "sha1": "d7f4a2b2b16e39e68959bbe28ec8aa120bbb11f1",
+          "md5": "981262832548142bda842da9404c13c8"
+        }
+      ]
+    }
+  ]
+}
