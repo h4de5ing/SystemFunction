@@ -1,22 +1,51 @@
 package com.android.systemlib
 
 import android.annotation.SuppressLint
-import android.app.*
+import android.app.IActivityManager
+import android.app.IActivityTaskManager
+import android.app.PendingIntent
 import android.app.PendingIntent.FLAG_IMMUTABLE
 import android.app.backup.IBackupManager
 import android.app.usage.UsageStatsManager
-import android.content.*
-import android.content.pm.*
-import android.net.*
+import android.content.ComponentName
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import android.content.pm.ApplicationInfo
+import android.content.pm.IPackageManager
+import android.content.pm.PackageInstaller
+import android.content.pm.PackageManager
+import android.net.ConnectivityManager
+import android.net.IConnectivityManager
+import android.net.IEthernetManager
+import android.net.IEthernetServiceListener
+import android.net.LinkAddress
+import android.net.LinkProperties
+import android.net.NetworkCapabilities
+import android.net.NetworkRequest
+import android.net.NetworkSpecifier
+import android.net.ProxyInfo
+import android.net.Uri
 import android.net.wifi.IWifiManager
 import android.net.wifi.WifiConfiguration
 import android.net.wifi.WifiManager
 import android.net.wifi.WifiNetworkSpecifier
 import android.nfc.INfcAdapter
-import android.os.*
+import android.os.BugreportManager
+import android.os.Build
+import android.os.DeviceIdleManager
+import android.os.Handler
+import android.os.IDeviceIdleController
+import android.os.IPowerManager
+import android.os.Looper
+import android.os.PatternMatcher
+import android.os.ServiceManager
+import android.os.UpdateEngine
+import android.os.UpdateEngineCallback
 import android.os.storage.DiskInfo
 import android.os.storage.IStorageEventListener
 import android.os.storage.IStorageManager
+import android.os.storage.StorageVolume
 import android.os.storage.VolumeInfo
 import android.os.storage.VolumeRecord
 import android.provider.Settings
@@ -38,8 +67,18 @@ import com.android.android13.addEthernetListener13
 import com.android.android13.disableEthernet13
 import com.android.android13.disableSensor13
 import com.android.android13.removeEthernetListener13
+import com.android.internal.app.IAppOpsService
 import com.android.systemlib.ota.PayloadSpecs
-import java.io.*
+import java.io.BufferedReader
+import java.io.Closeable
+import java.io.DataOutputStream
+import java.io.File
+import java.io.FileInputStream
+import java.io.IOException
+import java.io.InputStream
+import java.io.InputStreamReader
+import java.io.OutputStream
+import java.lang.reflect.Field
 import java.net.Inet4Address
 import java.net.NetworkInterface
 
@@ -94,18 +133,15 @@ fun addWifi(context: Context, ssid: String, pass: String) {
             .addCapability(NetworkCapabilities.NET_CAPABILITY_NOT_RESTRICTED)
             .addCapability(NetworkCapabilities.NET_CAPABILITY_TRUSTED)
             .setNetworkSpecifier(specifier).build()
-    connectivityManager.requestNetwork(request, object : ConnectivityManager.NetworkCallback() {
-    })
+    connectivityManager.requestNetwork(request, object : ConnectivityManager.NetworkCallback() {})
 }
 
 /**
  * 获取所有已连接的wifi信息
  */
-fun getPrivilegedConfiguredNetworks(context: Context): List<WifiConfiguration> {
-    val wifiManager =
-        context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
-    return wifiManager.getPrivilegedConfiguredNetworks()
-}
+fun getPrivilegedConfiguredNetworks(context: Context): List<WifiConfiguration> =
+    IWifiManager.Stub.asInterface(ServiceManager.getService(Context.WIFI_SERVICE))
+        .getPrivilegedConfiguredNetworks(context.packageName).list as List<WifiConfiguration>
 
 /**
  * 静默设置默认桌面
@@ -231,19 +267,10 @@ fun isUSBDataDisabled(context: Context): Boolean =
  */
 fun shutdown() = IPowerManager.Stub.asInterface(ServiceManager.getService(Context.POWER_SERVICE))
     .shutdown(false, "shutdown", false)
-
-/**
- * 关机
- */
-fun shutdown(context: Context) {
-    (context.applicationContext.getSystemService(Context.POWER_SERVICE) as PowerManager).shutdown(
-        false, "shutdown", false
-    )
 //    val intent = Intent("com.android.internal.intent.action.REQUEST_SHUTDOWN")
 //    intent.putExtra("com.android.internal.intent.action.REQUEST_SHUTDOWN", false)
 //    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
 //    context.startActivity(intent)
-}
 
 /**
  * 重启
@@ -277,22 +304,15 @@ fun reset(context: Context) {
 /**
  * 禁用设备个人热点
  */
-fun setHotSpotDisabled(context: Context, isDisable: Boolean) {
-    if (isDisable) {
-        val wifiManager =
-            context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
-        wifiManager.stopSoftAp()
-    }
-}
+fun setHotSpotDisabled(isDisable: Boolean): Boolean = if (isDisable) IWifiManager.Stub.asInterface(ServiceManager.getService(Context.WIFI_SERVICE))
+    .stopSoftAp()
+else false
 
 /**
  * 是否禁用设备个人热点
  */
-fun isHotSpotDisabled(context: Context): Boolean {
-    val wifiManager =
-        context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
-    return wifiManager.isWifiApEnabled
-}
+fun isHotSpotDisabled(): Boolean =
+    IWifiManager.Stub.asInterface(ServiceManager.getService(Context.WIFI_SERVICE)).wifiApEnabledState == 13
 
 //启用 禁用数据流量  //TODO 没有测试通过
 @SuppressLint("MissingPermission")
@@ -306,9 +326,7 @@ fun mobile_data(context: Context, isDisable: Boolean) {
  * 静默安装apk
  */
 fun installAPK(
-    context: Context,
-    apkFilePath: String,
-    change: ((Int, String) -> Unit) = { _, _ -> }
+    context: Context, apkFilePath: String, change: ((Int, String) -> Unit) = { _, _ -> }
 ) {
     try {
         val apkFile = File(apkFilePath)
@@ -823,15 +841,14 @@ fun setMode(context: Context, code: Int, packageName: String, mode: Int) {
     val packageManager = context.packageManager
     val applicationInfo = packageManager.getApplicationInfo(packageName, 0)
     val uid = applicationInfo.uid
-    val opsManager = context.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
-    opsManager.setUidMode(code, uid, mode)
 //    opsManager.setMode("android:manage_external_storage",uid,packageName,AppOpsManager.MODE_ALLOWED)
 //    opsManager.unsafeCheckOp(op,uid,packageName)//检测是否就有操作权限
 //    opsManager.unsafeCheckOpNoThrow(op, uid, packageName)//不抛出异常
 //    opsManager.noteOp(op,uid,packageName,"","")//检测权限，会做记录
 //    opsManager.noteOpNoThrow()
-//    val iAppOpsManager =
-//        IAppOpsService.Stub.asInterface(ServiceManager.getService(Context.APP_OPS_SERVICE))
+    val iAppOpsManager =
+        IAppOpsService.Stub.asInterface(ServiceManager.getService(Context.APP_OPS_SERVICE))
+    iAppOpsManager.setUidMode(code, uid, mode)
 //    iAppOpsManager.checkPackage()//检测权限有没有被绕过
 //    iAppOpsManager.setMode(code, uid, packageName, mode)
 //    val list = iAppOpsManager.getOpsForPackage(uid, packageName, null)
@@ -870,12 +887,23 @@ fun disableSensor(isDisable: Boolean, sensor: Int) {
 /**
  * 取消挂载扩展存储设备
  */
+@SuppressLint("DiscouragedPrivateApi")
 @RequiresApi(Build.VERSION_CODES.N)
 fun unmount(context: Context) {
     try {
         val iStorageManager = IStorageManager.Stub.asInterface(ServiceManager.getService("mount"))
-        iStorageManager.getVolumeList(0, context.packageName, 0)
-            .forEach { if (it.isRemovable) iStorageManager.unmount(it.id) }
+        iStorageManager.getVolumeList(0, context.packageName, 0).forEach {
+            if (it.isRemovable) {
+                try {
+                    val idField: Field = StorageVolume::class.java.getDeclaredField("mId")
+                    idField.isAccessible = true
+                    val mId = idField.get(it) as String
+                    iStorageManager.unmount(mId)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+        }
     } catch (_: Exception) {
     }
 }
@@ -1212,18 +1240,14 @@ fun getUpdateError(errorCode: Int): String {
  * 开启本app的辅助服务
  */
 fun enableAccessibilityService(
-    context: Context,
-    packageName: String,
-    accessibilityService: String
+    context: Context, packageName: String, accessibilityService: String
 ) {
     val addComponent = "${packageName}/${accessibilityService}"
     val enabledAccessibilityServices =
         Settings.Secure.getString(context.contentResolver, "enabled_accessibility_services")
     if (TextUtils.isEmpty(enabledAccessibilityServices)) {
         Settings.Secure.putString(
-            context.contentResolver,
-            "enabled_accessibility_services",
-            addComponent
+            context.contentResolver, "enabled_accessibility_services", addComponent
         )
     } else {
         if (!enabledAccessibilityServices.split(":").toList().contains(addComponent)) {
@@ -1241,14 +1265,10 @@ fun enableAccessibilityService(
  */
 fun enabledAccessibilityServices(context: Context, enable: Boolean) {
     Settings.Secure.putString(
-        context.contentResolver,
-        Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES,
-        context.packageName
+        context.contentResolver, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES, context.packageName
     )
     Settings.Secure.putInt(
-        context.contentResolver,
-        Settings.Secure.ACCESSIBILITY_ENABLED,
-        if (enable) 1 else 0
+        context.contentResolver, Settings.Secure.ACCESSIBILITY_ENABLED, if (enable) 1 else 0
     )
 }
 
@@ -1256,9 +1276,7 @@ fun enabledAccessibilityServices(context: Context, enable: Boolean) {
  * 关闭本app的辅助服务
  */
 fun disableAccessibilityService(
-    context: Context,
-    packageName: String,
-    accessibilityService: String
+    context: Context, packageName: String, accessibilityService: String
 ) {
     val addComponent = "${packageName}/${accessibilityService}"
     val enabledAccessibilityServices =
@@ -1271,9 +1289,7 @@ fun disableAccessibilityService(
                 enabledAccessibilityServices.replace(":$addComponent", "")
             }
             Settings.Secure.putString(
-                context.contentResolver,
-                "enabled_accessibility_services",
-                newStr
+                context.contentResolver, "enabled_accessibility_services", newStr
             )
         }
     }
@@ -1330,7 +1346,7 @@ fun getDefaultIpAddresses(context: Context): String {
 fun formatIpAddresses(prop: LinkProperties?): String {
     val addresses = StringBuilder()
     try {
-        val iterator: Iterator<LinkAddress>? = prop?.getAllLinkAddresses()?.iterator()
+        val iterator: Iterator<LinkAddress>? = prop?.linkAddresses?.iterator()
         if (iterator != null) {
             while (iterator.hasNext()) {
                 val address = iterator.next().address

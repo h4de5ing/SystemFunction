@@ -26,6 +26,7 @@ import com.android.droidwall.utils.updateKT
 class MainActivity : AppCompatActivity() {
     private val adapter = HomeGridAppAdapter()
     private val allAppList = mutableListOf<ApplicationInfo>()
+
     @SuppressLint("NotifyDataSetChanged")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -66,7 +67,6 @@ class MainActivity : AppCompatActivity() {
 //                service.setFirewallUidRule(1, 10105, 1)//添加到白名单
             }
             val list = findViewById<RecyclerView>(R.id.list)
-            list.setHasFixedSize(true)
             list.layoutManager = LinearLayoutManager(this)
             list.adapter = adapter
             adapter.setOnClickListener(object : HomeGridAppAdapter.OnCheckedChangeListener {
@@ -81,9 +81,7 @@ class MainActivity : AppCompatActivity() {
             findViewById<Button>(R.id.setting).setOnClickListener {
                 try {
                     service.setFirewallUidRule(
-                        chain.text.toString().toInt(),
-                        10105,
-                        value.text.toString().toInt()
+                        chain.text.toString().toInt(), 10105, value.text.toString().toInt()
                     )
                     Toast.makeText(this, "设置成功", Toast.LENGTH_SHORT).show()
                 } catch (e: Exception) {
@@ -132,7 +130,7 @@ class MainActivity : AppCompatActivity() {
                         val permissions = packageManager.getPackageInfo(
                             packageInfo.packageName, PackageManager.GET_PERMISSIONS
                         ).requestedPermissions
-                        if (permissions.contains("android.permission.INTERNET")) {
+                        if (permissions?.contains("android.permission.INTERNET") == true) {
                             allAppList.add(applicationInfo)
                             insert2DB(applicationInfo.uid, false)
                         }

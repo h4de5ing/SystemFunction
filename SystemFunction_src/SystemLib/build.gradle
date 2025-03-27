@@ -9,7 +9,7 @@ android {
     namespace 'com.android.systemlib'
     defaultConfig {
         minSdk 21
-        targetSdk 34
+        targetSdk 35
     }
 
     buildTypes {
@@ -23,6 +23,7 @@ android {
     }
     kotlinOptions { jvmTarget = '19' }
     buildFeatures { buildConfig true }
+    publishing { singleVariant("release") }
 }
 
 dependencies {
@@ -45,9 +46,7 @@ afterEvaluate {
         }
         repositories {
             mavenLocal()
-            maven {
-                url uri('../SystemLib_repository')
-            }
+            maven { url uri('../../SystemLib_repository') }
         }
     }
 }

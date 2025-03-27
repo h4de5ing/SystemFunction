@@ -163,7 +163,7 @@ fun setLock(): Boolean {
         IDevicePolicyManager.Stub.asInterface(ServiceManager.getService("device_policy"))
             .lockNow(0, false)
         true
-    } catch (e: Exception) {
+    } catch (_: Exception) {
         false
     }
 }

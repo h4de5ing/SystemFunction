@@ -12,6 +12,7 @@ import android.net.ProxyInfo
 import android.os.Build
 import android.os.ServiceManager
 import android.os.UserManager
+import android.text.TextUtils
 import androidx.annotation.RequiresApi
 import com.android.android12.getCredentialType12
 import com.android.android12.isDisableLockScreen12
@@ -19,8 +20,6 @@ import com.android.android13.setLock
 import com.android.android14.setLock14
 import com.android.android14.setProfileOwner14
 import java.io.File
-import java.net.InetSocketAddress
-import java.net.Proxy
 
 /**
  * 需要DevicePolicyManage权限才能调用的接口
@@ -65,11 +64,12 @@ fun setActiveProfileOwner(componentName: ComponentName) {
 /**
  * 这个方法等于 先设置 setActiveAdmin 在设置 setProfileOwner
  */
-@Deprecated("不要调用这个方法，同时调用上面2个方法，效果等同")
-fun setActiveProfileOwner(context: Context, componentName: ComponentName): Boolean {
-    val dm = context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    return dm.setActiveProfileOwner(componentName, componentName.packageName)
-}
+//@Deprecated("不要调用这个方法，同时调用上面2个方法，效果等同")
+//fun setActiveProfileOwner(context: Context, componentName: ComponentName): Boolean {
+//    val iDpm = IDevicePolicyManager.Stub.asInterface(ServiceManager.getService("device_policy"))
+//    iDpm.setActiveAdmin(componentName, false, 0)
+//    return iDpm.setProfileOwner(componentName, componentName.packageName, 0)
+//}
 
 /**
  * 获取当前设置的MDM
@@ -140,7 +140,7 @@ fun getProfileOwnerComponent(context: Context): String {
         val field = c.getField("config_defaultSupervisionProfileOwnerComponent")
         val id = field.getInt(obj)
         context.getString(id)
-    } catch (e: Exception) {
+    } catch (_: Exception) {
         ""
     }
 }
@@ -151,8 +151,7 @@ fun getProfileOwnerComponent(context: Context): String {
 fun setCameraDisabled(context: Context, componentName: ComponentName, isDisable: Boolean) {
     try {
         (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager).setCameraDisabled(
-            componentName,
-            isDisable
+            componentName, isDisable
         )
     } catch (e: Exception) {
         e.printStackTrace()
@@ -167,7 +166,7 @@ fun getCameraDisabled(context: Context, componentName: ComponentName): Boolean {
         (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager).getCameraDisabled(
             componentName
         )
-    } catch (e: Exception) {
+    } catch (_: Exception) {
         false
     }
 }
@@ -279,7 +278,7 @@ fun isHiddenAPP(
         (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager).isApplicationHidden(
             componentName, packageName
         )
-    } catch (e: Exception) {
+    } catch (_: Exception) {
         false
     }
 }
@@ -315,7 +314,7 @@ fun isSuspendedAPP(
         (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager).isPackageSuspended(
             componentName, packageName
         )
-    } catch (e: Exception) {
+    } catch (_: Exception) {
         false
     }
 }
@@ -349,7 +348,7 @@ fun isDisUninstallAPP(
         (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager).isUninstallBlocked(
             componentName, packageName
         )
-    } catch (e: Exception) {
+    } catch (_: Exception) {
         false
     }
 }
@@ -397,11 +396,10 @@ fun setStatusBarDisabled(context: Context, componentName: ComponentName, isDisab
 fun kiosk(context: Context, admin: ComponentName, packages: Array<String>): Boolean {
     return try {
         (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager).setLockTaskPackages(
-            admin,
-            packages
+            admin, packages
         )
         true
-    } catch (e: Exception) {
+    } catch (_: Exception) {
         false
     }
 }
@@ -425,10 +423,8 @@ fun getPasswordQualityList(context: Context): List<Pair<String, Int>> {
             it.name.startsWith(
                 "PASSWORD_QUALITY_"
             )
-        }.map {
-            Pair(it.name, it.getInt(dpm))
-        }
-    } catch (e: Exception) {
+        }.map { Pair(it.name, it.getInt(dpm)) }
+    } catch (_: Exception) {
         return listOf()
     }
 }
@@ -460,10 +456,7 @@ fun setPasswordQuality(context: Context, admin: ComponentName, quality: Int) {
 
 
 fun setDisableLockScreen(
-    context: Context,
-    oldPassword: String,
-    isDisable: Boolean,
-    change: (String) -> Unit = {}
+    context: Context, oldPassword: String, isDisable: Boolean, change: (String) -> Unit = {}
 ) {
     isDisableLockScreen12(context, oldPassword, isDisable, change)
 }
@@ -529,10 +522,7 @@ fun resetPassword(context: Context, password: String, change: (String) -> Unit =
  * 0则为取消
  */
 fun setMaximumFailedPasswordsForWipe(
-    admin: ComponentName,
-    context: Context,
-    num: Int,
-    change: (String) -> Unit = {}
+    admin: ComponentName, context: Context, num: Int, change: (String) -> Unit = {}
 ) {
     try {
         val dpm =
@@ -568,22 +558,11 @@ fun getMaximumFailedPasswordsForWipe(admin: ComponentName, context: Context): In
  *
  */
 fun setGlobalProxy(
-    context: Context,
-    admin: ComponentName,
-    type: String,
-    host: String,
-    exclusionList: List<String>
+    admin: ComponentName, host: String, exclusionList: List<String>
 ) {
     try {
-        val dpm =
-            (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
-        val address = InetSocketAddress(host.split(":")[0], host.split(":")[1].toInt())
-        val type1 = when (type) {
-            "1" -> Proxy.Type.HTTP
-            "2" -> Proxy.Type.SOCKS
-            else -> Proxy.Type.DIRECT
-        }
-        dpm.setGlobalProxy(admin, Proxy(type1, address), exclusionList)
+        val iDpm = IDevicePolicyManager.Stub.asInterface(ServiceManager.getService("device_policy"))
+        iDpm.setGlobalProxy(admin, host, TextUtils.join(",", exclusionList))
     } catch (e: Exception) {
         e.printStackTrace()
     }
@@ -593,9 +572,7 @@ fun setGlobalProxy(
  * 设置独立于全局的代理
  */
 fun setRecommendedGlobalProxy(
-    context: Context,
-    admin: ComponentName,
-    proxyInfo: ProxyInfo
+    context: Context, admin: ComponentName, proxyInfo: ProxyInfo
 ) {
     try {
         val dpm =
@@ -609,11 +586,10 @@ fun setRecommendedGlobalProxy(
 /***
  * 清除代理
  */
-fun clearGlobalProxy(context: Context, admin: ComponentName) {
+fun clearGlobalProxy(admin: ComponentName) {
     try {
-        val dpm =
-            (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
-        dpm.setGlobalProxy(admin, Proxy.NO_PROXY, listOf())
+        val iDpm = IDevicePolicyManager.Stub.asInterface(ServiceManager.getService("device_policy"))
+        iDpm.setGlobalProxy(admin, "", "")
     } catch (e: Exception) {
         e.printStackTrace()
     }

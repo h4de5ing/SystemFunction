@@ -10,7 +10,7 @@ android {
 
     defaultConfig {
         minSdk 21
-        targetSdk 34
+        targetSdk 35
     }
 
     buildTypes {
@@ -23,14 +23,13 @@ android {
         sourceCompatibility JavaVersion.VERSION_19
         targetCompatibility JavaVersion.VERSION_19
     }
-    kotlinOptions {
-        jvmTarget = '19'
-    }
+    kotlinOptions { jvmTarget = '19' }
+    publishing { singleVariant("release") }
 }
 
 dependencies {
     compileOnly files('libs/classes-header.jar')
-    implementation 'androidx.core:core-ktx:1.13.1'
+    implementation 'androidx.core:core-ktx:1.15.0'
 }
 afterEvaluate {
     publishing {
@@ -46,7 +45,7 @@ afterEvaluate {
         repositories {
             mavenLocal()
             maven {
-                url uri('../SystemLib_repository')
+                url uri('../../SystemLib_repository')
             }
         }
     }

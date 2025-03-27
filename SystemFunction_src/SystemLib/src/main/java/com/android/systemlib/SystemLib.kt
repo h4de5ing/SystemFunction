@@ -17,20 +17,20 @@ import android.net.NetworkCapabilities
 import android.net.wifi.IWifiManager
 import android.net.wifi.WifiManager
 import android.os.Build
+import android.os.Environment
 import android.os.ServiceManager
 import android.os.SystemProperties
-import android.os.storage.StorageManager
 import android.provider.Settings
 import android.telephony.TelephonyManager
 import android.text.TextUtils
 import android.util.Log
 import android.view.View
+import com.android.internal.util.MemInfoReader
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.BufferedReader
-import java.io.File
 import java.io.IOException
 import java.io.InputStream
 import java.io.InputStreamReader
@@ -348,25 +348,14 @@ fun getBTMac(context: Context): String {
 /**
  * 获取SD卡已使用，剩余，总共的容量
  */
-fun getSDCard(context: Context): Triple<Long, Long, Long> {
+fun getSDCard(): Triple<Long, Long, Long> {
     var pair: Triple<Long, Long, Long> = Triple(0, 0, 1)
     try {
-        val sm = context.getSystemService(Context.STORAGE_SERVICE) as StorageManager
-        if (Build.VERSION.SDK_INT >= 30) {//不在维护低于Android11的版本
-            sm.storageVolumes.forEach {
-                try {
-                    val file = File("${it.getInternalPath()}")
-                    if (file.absolutePath.contains("emulated")) {// -> /storage/emulated/0
-                        val totalSize = file.totalSpace
-                        val availableSize = file.usableSpace
-                        val usedSize = file.totalSpace - file.usableSpace
-                        pair = Triple(usedSize, availableSize, totalSize)
-                    }
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
-            }
-        }
+        val file = Environment.getExternalStorageDirectory()
+        val totalSize = file.totalSpace
+        val availableSize = file.usableSpace
+        val usedSize = file.totalSpace - file.usableSpace
+        pair = Triple(usedSize, availableSize, totalSize)
     } catch (e: Exception) {
         e.printStackTrace()
     }
@@ -389,9 +378,9 @@ fun getRomMemorySize(context: Context): Triple<Long, Long, Long> {
 /**
  * 获取总内存
  */
-fun getTotalRam(context: Context): Long {
-    val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-    return activityManager.getTotalRam() / 1024L / 1024L / 1024L
+fun getTotalRam(): Long = MemInfoReader().let {
+    it.readMemInfo()
+    it.totalSize / 1024L / 1024L / 1024L
 }
 
 /**

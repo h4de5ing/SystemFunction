@@ -179,7 +179,7 @@ fun putAllSettings(context: Context, uri: Uri, list: List<Pair<String, String>>)
     try {
         val ops = arrayListOf<ContentProviderOperation>()
         for (i in list.indices) {
-            val item = list.get(i)
+            val item = list[i]
             ops.add(
                 ContentProviderOperation
                     .newUpdate(uri)

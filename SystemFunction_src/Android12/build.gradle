@@ -9,7 +9,7 @@ android {
     namespace 'com.android.android12'
     defaultConfig {
         minSdk 21
-        targetSdk 34
+        targetSdk 35
     }
 
     buildTypes {
@@ -22,11 +22,12 @@ android {
         targetCompatibility JavaVersion.VERSION_19
     }
     kotlinOptions { jvmTarget = '19' }
+    publishing { singleVariant("release") }
 }
 
 dependencies {
     compileOnly files('libs/framework.jar')
-    implementation 'androidx.core:core-ktx:1.13.1'
+    implementation 'androidx.core:core-ktx:1.15.0'
 }
 afterEvaluate {
     publishing {
@@ -42,7 +43,7 @@ afterEvaluate {
         repositories {
             mavenLocal()
             maven {
-                url uri('../SystemLib_repository')
+                url uri('../../SystemLib_repository')
             }
         }
     }

@@ -18,7 +18,7 @@ fun setLock14(callerPackageName: String): Boolean {
         IDevicePolicyManager.Stub.asInterface(ServiceManager.getService("device_policy"))
             .lockNow(0, callerPackageName, false)
         true
-    } catch (e: Exception) {
+    } catch (_: Exception) {
         false
     }
 }

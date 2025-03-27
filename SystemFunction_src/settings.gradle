@@ -10,7 +10,7 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        jcenter()
+//        jcenter()
         maven { url "https://jitpack.io" }
         maven { url 'https://github.com/h4de5ing/SystemFunction/raw/master/SystemLib_repository' }
         maven { url 'https://gitee.com/lex1992/repository/raw/master/repository' }
@@ -21,5 +21,5 @@ include ':SystemLib'
 include ':Android12'
 include ':Android13'
 include ':Android14'
-include ':droidwall'
+//include ':droidwall'
 //include ':t'
