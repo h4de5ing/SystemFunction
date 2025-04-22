@@ -35,7 +35,6 @@ import android.net.wifi.WifiNetworkSpecifier
 import android.nfc.INfcAdapter
 import android.os.BugreportManager
 import android.os.Build
-import android.os.DeviceIdleManager
 import android.os.Handler
 import android.os.IDeviceIdleController
 import android.os.IPowerManager
@@ -188,6 +187,7 @@ fun setDefaultLauncher(context: Context, packageName: String) {
 /**
  * 获取系统里面的所有Launcher
  */
+@SuppressLint("QueryPermissionsNeeded")
 fun getAllLaunchers2(context: Context): MutableList<Pair<String, String>> {
     val list = mutableListOf<Pair<String, String>>()
     val pm = context.packageManager
@@ -209,6 +209,7 @@ fun getAllLaunchers2(context: Context): MutableList<Pair<String, String>> {
     return list
 }
 
+@SuppressLint("QueryPermissionsNeeded")
 fun getSystemDefaultLauncher2(context: Context): ComponentName? {
     var componentName: ComponentName? = null
     val pm = context.packageManager
@@ -732,13 +733,13 @@ fun setBatteryOptimization(context: Context, packageName: String, mode: Int) {
 
             MODE_UNRESTRICTED -> {
 //                iAppOpsManager.setMode(OP_RUN_ANY_IN_BACKGROUND, 0, packageName, MODE_ALLOWED)
-                iAppOpsManager.setUidMode(OP_RUN_ANY_IN_BACKGROUND, 0, MODE_ALLOWED)
+                iAppOpsManager.setUidMode(OP_RUN_ANY_IN_BACKGROUND, uid, MODE_ALLOWED)
                 iDeviceIdleController.addPowerSaveWhitelistApp(packageName)
             }
 
             MODE_OPTIMIZED -> {
 //                iAppOpsManager.setMode(OP_RUN_ANY_IN_BACKGROUND, 0, packageName, MODE_ALLOWED)
-                iAppOpsManager.setUidMode(OP_RUN_ANY_IN_BACKGROUND, 0, MODE_ALLOWED)
+                iAppOpsManager.setUidMode(OP_RUN_ANY_IN_BACKGROUND, uid, MODE_ALLOWED)
                 iDeviceIdleController.removePowerSaveWhitelistApp(packageName)
             }
         }
@@ -768,16 +769,11 @@ fun removePowerSaveWhitelistApp(packageName: String) {
  */
 @RequiresApi(Build.VERSION_CODES.M)
 @SuppressLint("WrongConstant", "SoonBlockedPrivateApi")
-fun isPowerSaveWhitelistApp(context: Context, packageName: String): Boolean {
+fun isPowerSaveWhitelistApp(packageName: String): Boolean {
     return try {
-        val deviceIdleManager =
-            context.applicationContext.getSystemService(DeviceIdleManager::class.java)
-        val manager = Class.forName("android.os.DeviceIdleManager")
-        val mServiceField = manager.getDeclaredField("mService")
-        mServiceField.isAccessible = true
-        val mService = mServiceField.get(deviceIdleManager)
-        val iDeviceIdleController = mService as IDeviceIdleController
-        iDeviceIdleController.isPowerSaveWhitelistApp(packageName)
+        (IDeviceIdleController.Stub.asInterface(ServiceManager.getService("deviceidle")) as IDeviceIdleController).isPowerSaveWhitelistApp(
+            packageName
+        )
     } catch (_: Exception) {
         false
     }
@@ -792,16 +788,9 @@ fun isPowerSaveWhitelistApp(context: Context, packageName: String): Boolean {
  */
 @RequiresApi(Build.VERSION_CODES.M)
 @SuppressLint("WrongConstant", "SoonBlockedPrivateApi")
-fun getPowerSaveWhitelistApp(context: Context): List<String> {
+fun getPowerSaveWhitelistApp(): List<String> {
     return try {
-        val deviceIdleManager =
-            context.applicationContext.getSystemService(DeviceIdleManager::class.java)
-        val manager = Class.forName("android.os.DeviceIdleManager")
-        val mServiceField = manager.getDeclaredField("mService")
-        mServiceField.isAccessible = true
-        val mService = mServiceField.get(deviceIdleManager)
-        val iDeviceIdleController = mService as IDeviceIdleController
-        iDeviceIdleController.userPowerWhitelist.toList()
+        (IDeviceIdleController.Stub.asInterface(ServiceManager.getService("deviceidle")) as IDeviceIdleController).userPowerWhitelist.toList()
     } catch (_: Exception) {
         emptyList()
     }
