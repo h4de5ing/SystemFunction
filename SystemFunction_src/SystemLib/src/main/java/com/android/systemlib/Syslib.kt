@@ -711,10 +711,6 @@ fun getBatteryOptimization(context: Context, packageName: String): Int {
 @RequiresApi(Build.VERSION_CODES.M)
 fun setBatteryOptimization(context: Context, packageName: String, mode: Int) {
     try {
-//        val intent = Intent()
-//        intent.action = Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
-//        intent.data = Uri.parse("package:$packageName")
-//        context.startActivity(intent)
         val iDeviceIdleController =
             (IDeviceIdleController.Stub.asInterface(ServiceManager.getService("deviceidle")) as IDeviceIdleController)
         val iAppOpsManager =
@@ -728,7 +724,6 @@ fun setBatteryOptimization(context: Context, packageName: String, mode: Int) {
 //                iAppOpsManager.setMode(OP_RUN_ANY_IN_BACKGROUND, 0, packageName, MODE_IGNORED)
                 iAppOpsManager.setUidMode(OP_RUN_ANY_IN_BACKGROUND, uid, MODE_IGNORED)
                 iDeviceIdleController.removePowerSaveWhitelistApp(packageName)
-
             }
 
             MODE_UNRESTRICTED -> {
