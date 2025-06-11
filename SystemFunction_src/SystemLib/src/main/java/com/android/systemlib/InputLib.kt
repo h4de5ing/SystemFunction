@@ -1,6 +1,7 @@
 package com.android.systemlib
 
 import android.content.Context.INPUT_SERVICE
+import android.hardware.display.IDisplayManager
 import android.hardware.input.IInputManager
 import android.os.RemoteException
 import android.os.ServiceManager
@@ -34,7 +35,7 @@ fun injectMotionEvent(action: Int, x: Float, y: Float) {
             MotionEvent.ACTION_MOVE -> "移动"
             else -> "未知动作"
         }
-        "注入事件成功,$actionStr,$x,$y".logI()
+        "注入鼠标点击事件成功,$actionStr,$x,$y".logI()
     } catch (e: RemoteException) {
         e.printStackTrace()
     } finally {
@@ -73,7 +74,7 @@ fun injectScrollEvent(x: Float, y: Float, deltaY: Float) {
 
     try {
         iInput?.injectInputEvent(event, 0)
-        "注入滚动事件成功,$x,$y".logI()
+//        "注入滚动事件成功,$x,$y".logI()
     } catch (e: RemoteException) {
         e.printStackTrace()
     } finally {
@@ -81,27 +82,37 @@ fun injectScrollEvent(x: Float, y: Float, deltaY: Float) {
     }
 }
 
-fun injectKeyEvent(action: Int,key: String, code: Int, ) {
+fun injectKeyEvent(action: Int, key: String, code: Int) {
     try {
-        val keyCharacterMap = KeyCharacterMap.load(KeyCharacterMap.VIRTUAL_KEYBOARD)
-        val events = keyCharacterMap.getEvents(charArrayOf(key[0]))
-        val keyCode = events[0].keyCode
-        val downTime = SystemClock.uptimeMillis()
-        val event = KeyEvent(
-            downTime,
-            SystemClock.uptimeMillis(),
-            action,
-            keyCode,
-            0,
-            0,
-            KeyCharacterMap.VIRTUAL_KEYBOARD,
-            0,
-            KeyEvent.FLAG_SOFT_KEYBOARD or KeyEvent.FLAG_KEEP_TOUCH_MODE,
-            InputDevice.SOURCE_KEYBOARD
-        )
-        "注入键盘事件成功,$key,$code->${keyCode}".logI()
-        iInput?.injectInputEvent(event, 0)
+        if (code > 0) {
+            val keyCharacterMap = KeyCharacterMap.load(KeyCharacterMap.VIRTUAL_KEYBOARD)
+            val events = keyCharacterMap.getEvents(charArrayOf(key[0]))
+            val keyCode = events[0].keyCode
+            val downTime = SystemClock.uptimeMillis()
+            val event = KeyEvent(
+                downTime,
+                SystemClock.uptimeMillis(),
+                action,
+                keyCode,
+                0,
+                0,
+                KeyCharacterMap.VIRTUAL_KEYBOARD,
+                0,
+                KeyEvent.FLAG_SOFT_KEYBOARD or KeyEvent.FLAG_KEEP_TOUCH_MODE,
+                InputDevice.SOURCE_KEYBOARD
+            )
+            "注入键盘事件成功,key=$key,code=$code->${keyCode}".logI()
+            iInput?.injectInputEvent(event, 0)
+        }
     } catch (e: Exception) {
         e.printStackTrace()
     }
+}
+
+fun test() {
+    val iDisplay = IDisplayManager.Stub.asInterface(ServiceManager.getService("display"))
+    val disPlayInfo = iDisplay.getDisplayInfo(0)
+    disPlayInfo.rotation
+
+
 }
