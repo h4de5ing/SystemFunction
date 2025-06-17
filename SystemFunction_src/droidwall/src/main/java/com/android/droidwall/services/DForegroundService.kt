@@ -12,7 +12,7 @@ import android.os.ServiceManager
 import com.android.droidwall.App.Companion.fwDao
 import com.android.droidwall.utils.SPUtils
 
-class ForegroundService : Service() {
+class DForegroundService : Service() {
     private var service: INetworkManagementService? = null
     override fun onCreate() {
         super.onCreate()

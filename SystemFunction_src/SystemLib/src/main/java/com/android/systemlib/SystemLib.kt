@@ -18,6 +18,7 @@ import android.net.wifi.IWifiManager
 import android.net.wifi.WifiManager
 import android.os.Build
 import android.os.Environment
+import android.os.IPowerManager
 import android.os.ServiceManager
 import android.os.SystemProperties
 import android.provider.Settings
@@ -514,3 +515,8 @@ fun setTimeZone(context: Context, zone: String) {
  * 获取系统支持的所有时区
  */
 fun getAllSystemZone(): Array<String>? = TimeZone.getAvailableIDs()
+
+/**
+ * 是否锁屏
+ */
+fun isScreenOn(): Boolean = IPowerManager.Stub.asInterface(ServiceManager.getService("power")).isInteractive

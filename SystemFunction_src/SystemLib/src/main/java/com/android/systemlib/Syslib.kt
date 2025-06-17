@@ -17,6 +17,8 @@ import android.content.pm.PackageInstaller
 import android.content.pm.PackageManager
 import android.hardware.usb.IUsbManager
 import android.hardware.usb.UsbDevice
+import android.media.AudioRecordingConfiguration
+import android.media.IAudioService
 import android.net.ConnectivityManager
 import android.net.IConnectivityManager
 import android.net.IEthernetManager
@@ -27,7 +29,6 @@ import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import android.net.NetworkSpecifier
 import android.net.ProxyInfo
-import android.net.Uri
 import android.net.wifi.IWifiManager
 import android.net.wifi.WifiConfiguration
 import android.net.wifi.WifiManager
@@ -57,6 +58,7 @@ import android.view.accessibility.IAccessibilityManager
 import android.webkit.MimeTypeMap
 import android.widget.TextView
 import androidx.annotation.RequiresApi
+import androidx.core.net.toUri
 import androidx.core.view.accessibility.AccessibilityEventCompat
 import com.android.android12.addEthernetListener12
 import com.android.android12.disableEthernet12
@@ -1005,17 +1007,18 @@ val MODE_ERRORED = 2
 val MODE_DEFAULT = 3
 val MODE_FOREGROUND = 4
 fun setMode(context: Context, code: Int, packageName: String, mode: Int) {
-    val packageManager = context.packageManager
-    val applicationInfo = packageManager.getApplicationInfo(packageName, 0)
-    val uid = applicationInfo.uid
+    try {
+        val packageManager = context.packageManager
+        val applicationInfo = packageManager.getApplicationInfo(packageName, 0)
+        val uid = applicationInfo.uid
 //    opsManager.setMode("android:manage_external_storage",uid,packageName,AppOpsManager.MODE_ALLOWED)
 //    opsManager.unsafeCheckOp(op,uid,packageName)//检测是否就有操作权限
 //    opsManager.unsafeCheckOpNoThrow(op, uid, packageName)//不抛出异常
 //    opsManager.noteOp(op,uid,packageName,"","")//检测权限，会做记录
 //    opsManager.noteOpNoThrow()
-    val iAppOpsManager =
-        IAppOpsService.Stub.asInterface(ServiceManager.getService(Context.APP_OPS_SERVICE))
-    iAppOpsManager.setUidMode(code, uid, mode)
+        val iAppOpsManager =
+            IAppOpsService.Stub.asInterface(ServiceManager.getService(Context.APP_OPS_SERVICE))
+        iAppOpsManager.setUidMode(code, uid, mode)
 //    iAppOpsManager.checkPackage()//检测权限有没有被绕过
 //    iAppOpsManager.setMode(code, uid, packageName, mode)
 //    val list = iAppOpsManager.getOpsForPackage(uid, packageName, null)
@@ -1027,6 +1030,9 @@ fun setMode(context: Context, code: Int, packageName: String, mode: Int) {
 //        }
 //    }
 //    iAppOpsManager.resetAllModes(0, packageName)
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
 }
 
 fun getOps(uid: Int, packageName: String) {
@@ -1121,7 +1127,7 @@ fun setSystemGlobal(context: Context, key: String, value: String): Boolean =
 fun getFileType(context: Context) {
     Intent.ACTION_SEND
     val cr = context.contentResolver
-    val fileMimeType = cr.getType(Uri.parse(""))//根据文件uri路径获取类型
+    val fileMimeType = cr.getType("".toUri())//根据文件uri路径获取类型
     val fileType = MimeTypeMap.getSingleton().getExtensionFromMimeType(fileMimeType)
     //跟踪应用程序使用状态
     val usageStatsManager =
@@ -1195,10 +1201,10 @@ fun ethernetListener(onChange: (String, Boolean) -> Unit) {
     })
 }
 
-fun isAvailable(iface: String): Boolean {
+fun isAvailable(face: String): Boolean {
     val iEthernetManager =
         IEthernetManager.Stub.asInterface(ServiceManager.getService("ethernet")) as IEthernetManager
-    return iEthernetManager.isAvailable(iface)
+    return iEthernetManager.isAvailable(face)
 }
 
 fun ethernetStart() {
@@ -1654,6 +1660,19 @@ fun disableUsbPermissionDialogs(
         iUsb.setDevicePackage(device, packageName, 0)
     } catch (e: Exception) {
         error(e.message ?: "error")
+        e.printStackTrace()
+    }
+}
+
+fun registerRecordingCallback(onCallback: (List<AudioRecordingConfiguration?>?) -> Unit) {
+    try {
+        IAudioService.Stub.asInterface(ServiceManager.getService(Context.AUDIO_SERVICE))
+            .registerRecordingCallback(object : android.media.IRecordingConfigDispatcher.Stub() {
+                override fun dispatchRecordingConfigChange(configs: List<AudioRecordingConfiguration?>?) {
+                    onCallback(configs)
+                }
+            })
+    } catch (e: Exception) {
         e.printStackTrace()
     }
 }

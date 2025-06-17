@@ -17,7 +17,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.android.droidwall.App.Companion.fwDao
 import com.android.droidwall.App.Companion.iNetD
 import com.android.droidwall.db.FirewallData
-import com.android.droidwall.services.ForegroundService
+import com.android.droidwall.services.DForegroundService
 import com.android.droidwall.utils.SPUtils
 import com.android.droidwall.utils.configs
 import com.android.droidwall.utils.insert2DB
@@ -32,7 +32,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         try {
-            startService(Intent(this, ForegroundService::class.java))
+            startService(Intent(this, DForegroundService::class.java))
             val service =
                 INetworkManagementService.Stub.asInterface(ServiceManager.getService("network_management"))
             val toggle = findViewById<AppCompatToggleButton>(R.id.toggle)
