@@ -1007,17 +1007,18 @@ val MODE_ERRORED = 2
 val MODE_DEFAULT = 3
 val MODE_FOREGROUND = 4
 fun setMode(context: Context, code: Int, packageName: String, mode: Int) {
-    val packageManager = context.packageManager
-    val applicationInfo = packageManager.getApplicationInfo(packageName, 0)
-    val uid = applicationInfo.uid
+    try {
+        val packageManager = context.packageManager
+        val applicationInfo = packageManager.getApplicationInfo(packageName, 0)
+        val uid = applicationInfo.uid
 //    opsManager.setMode("android:manage_external_storage",uid,packageName,AppOpsManager.MODE_ALLOWED)
 //    opsManager.unsafeCheckOp(op,uid,packageName)//检测是否就有操作权限
 //    opsManager.unsafeCheckOpNoThrow(op, uid, packageName)//不抛出异常
 //    opsManager.noteOp(op,uid,packageName,"","")//检测权限，会做记录
 //    opsManager.noteOpNoThrow()
-    val iAppOpsManager =
-        IAppOpsService.Stub.asInterface(ServiceManager.getService(Context.APP_OPS_SERVICE))
-    iAppOpsManager.setUidMode(code, uid, mode)
+        val iAppOpsManager =
+            IAppOpsService.Stub.asInterface(ServiceManager.getService(Context.APP_OPS_SERVICE))
+        iAppOpsManager.setUidMode(code, uid, mode)
 //    iAppOpsManager.checkPackage()//检测权限有没有被绕过
 //    iAppOpsManager.setMode(code, uid, packageName, mode)
 //    val list = iAppOpsManager.getOpsForPackage(uid, packageName, null)
@@ -1029,6 +1030,9 @@ fun setMode(context: Context, code: Int, packageName: String, mode: Int) {
 //        }
 //    }
 //    iAppOpsManager.resetAllModes(0, packageName)
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
 }
 
 fun getOps(uid: Int, packageName: String) {
