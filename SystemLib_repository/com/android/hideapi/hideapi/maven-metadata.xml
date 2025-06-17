@@ -3,12 +3,13 @@
   <groupId>com.android.hideapi</groupId>
   <artifactId>hideapi</artifactId>
   <versioning>
-    <latest>1.0-20250414</latest>
-    <release>1.0-20250414</release>
+    <latest>1.0-20250617</latest>
+    <release>1.0-20250617</release>
     <versions>
       <version>1.0-20250328</version>
       <version>1.0-20250414</version>
+      <version>1.0-20250617</version>
     </versions>
-    <lastUpdated>20250414010438</lastUpdated>
+    <lastUpdated>20250617003927</lastUpdated>
   </versioning>
 </metadata>
