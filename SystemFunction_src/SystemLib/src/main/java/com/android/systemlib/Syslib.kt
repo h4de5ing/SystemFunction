@@ -42,6 +42,7 @@ import android.os.IPowerManager
 import android.os.Looper
 import android.os.PatternMatcher
 import android.os.ServiceManager
+import android.os.SystemClock
 import android.os.UpdateEngine
 import android.os.UpdateEngineCallback
 import android.os.storage.DiskInfo
@@ -304,6 +305,32 @@ fun reset(context: Context) {
 //    context.sendBroadcast(intent)
 }
 
+/**
+ * 关闭屏幕
+ */
+fun goToSleep() {
+    val iPower =
+        IPowerManager.Stub.asInterface(ServiceManager.getService(Context.POWER_SERVICE))
+    if (iPower.isInteractive) {
+        iPower.goToSleep(SystemClock.uptimeMillis() + 1000, 1/*GO_TO_SLEEP_REASON_DEVICE_ADMIN*/, 0)
+    }
+}
+
+/**
+ * 唤醒屏幕
+ */
+fun wakeUp(context: Context) {
+    val iPower =
+        IPowerManager.Stub.asInterface(ServiceManager.getService(Context.POWER_SERVICE))
+    if (!iPower.isInteractive) {
+        iPower.wakeUp(
+            SystemClock.uptimeMillis(),
+            1/*WAKE_REASON_APPLICATION*/,
+            "wakeUp",
+            context.packageName
+        )
+    }
+}
 
 /**
  * 禁用设备个人热点
