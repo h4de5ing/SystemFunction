@@ -44,15 +44,16 @@ fun disableSensor12(isDisable: Boolean, sensor: Int) {
 
 var iEthernetManager: IEthernetManager? = null
 var ethernetListener: IEthernetServiceListener1? = null
-fun disableEthernet12(disable: Boolean) {
+fun disableEthernet12(disable: Boolean, isSupported: (Boolean) -> Unit = {}) {
     try {
         iEthernetManager = IEthernetManager.Stub.asInterface(ServiceManager.getService("ethernet"))
         val methods = iEthernetManager?.javaClass?.methods?.map { it.name }
         methods?.apply {
             if (contains("Trackstop") && contains("Trackstart")) {
+                isSupported(true)
                 if (disable) iEthernetManager?.Trackstop()
                 else iEthernetManager?.Trackstart()
-            }
+            } else isSupported(false)
         }
     } catch (e: Exception) {
         e.printStackTrace()

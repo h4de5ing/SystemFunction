@@ -1276,22 +1276,21 @@ fun hasEthernetControlInterface(): Boolean {
 /**
  * @description 是否禁用以太网功能
  * @param disable true：禁用， false 启用
+ * @param isSupported 回调是否支持禁用以太网功能，true 支持，false 不支持
  */
-fun disableEthernet(disable: Boolean) {
-    if (Build.VERSION.SDK_INT < 33) disableEthernet12(disable)
-    else if (Build.VERSION.SDK_INT == 33 || Build.VERSION.SDK_INT == 34) disableEthernet13(disable)
+fun disableEthernet(disable: Boolean, isSupported: (Boolean) -> Unit = {}) {
+    if (Build.VERSION.SDK_INT < 33) disableEthernet12(disable, isSupported)
+    else disableEthernet13(disable)
 }
 
 fun addEthernetListener(change: ((String, Boolean) -> Unit) = { _, _ -> }) {
     if (Build.VERSION.SDK_INT < 33) addEthernetListener12(change)
-    else if (Build.VERSION.SDK_INT == 33 || Build.VERSION.SDK_INT == 34) addEthernetListener13(
-        change
-    )
+    else addEthernetListener13(change)
 }
 
 fun removeEthernetListener() {
     if (Build.VERSION.SDK_INT < 33) removeEthernetListener12()
-    else if (Build.VERSION.SDK_INT == 33 || Build.VERSION.SDK_INT == 34) removeEthernetListener13()
+    else removeEthernetListener13()
 }
 
 private var iStorageManager: IStorageManager? = null
