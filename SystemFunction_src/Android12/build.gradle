@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    compileSdk 35
+    compileSdk 36
     namespace 'com.android.android12'
     defaultConfig {
         minSdk 21
-        targetSdk 35
+        targetSdk 36
     }
 
     buildTypes {
@@ -18,10 +18,9 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_19
-        targetCompatibility JavaVersion.VERSION_19
+        sourceCompatibility JavaVersion.VERSION_22
+        targetCompatibility JavaVersion.VERSION_22
     }
-    kotlinOptions { jvmTarget = '19' }
     publishing { singleVariant("release") }
 }
 
