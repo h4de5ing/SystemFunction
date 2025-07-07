@@ -1031,6 +1031,7 @@ fun setMode(context: Context, code: Int, packageName: String, mode: Int) {
         val iAppOpsManager =
             IAppOpsService.Stub.asInterface(ServiceManager.getService(Context.APP_OPS_SERVICE))
         iAppOpsManager.setMode(code, uid, packageName, mode)
+        iAppOpsManager.setUidMode(code, uid, mode)
 //    iAppOpsManager.checkPackage()//检测权限有没有被绕过
 //    iAppOpsManager.setMode(code, uid, packageName, mode)
 //    val list = iAppOpsManager.getOpsForPackage(uid, packageName, null)
