@@ -535,13 +535,19 @@ fun isScreenOn(): Boolean =
  * 屏幕宽高
  * 屏幕dpi
  */
-fun setConfiguration(language: String) {
-    val ams = IActivityManager.Stub.asInterface(ServiceManager.getService(Context.ACTIVITY_SERVICE))
-    val config = Configuration()
-    if (language.contains("-")) {
-        val splits = language.split("-")
-        if (splits.size == 2) config.locale = Locale(splits[0], splits[1])
-        else if (splits.size >= 3) config.locale = Locale(splits[0], splits[splits.size - 1])
-    } else config.locale = Locale(language)
-    ams.updateConfiguration(config)
+fun setConfiguration(language: String): Boolean {
+    try {
+        val ams =
+            IActivityManager.Stub.asInterface(ServiceManager.getService(Context.ACTIVITY_SERVICE))
+        val config = Configuration()
+        if (language.contains("-")) {
+            val splits = language.split("-")
+            if (splits.size == 2) config.locale = Locale(splits[0], splits[1])
+            else if (splits.size >= 3) config.locale = Locale(splits[0], splits[splits.size - 1])
+        } else config.locale = Locale(language)
+        return ams.updateConfiguration(config)
+    } catch (e: Exception) {
+        e.printStackTrace()
+        return false
+    }
 }
