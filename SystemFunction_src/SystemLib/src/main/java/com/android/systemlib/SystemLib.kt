@@ -568,9 +568,9 @@ fun enterSplitScreen(context: Context, component1: ComponentName, component2: Co
         val options1 = ActivityOptions.makeBasic()
         context.startActivity(intent1, options1.toBundle())
 
-        val intent3 = Intent()
-        intent3.component = component2
-        intent3.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        context.startActivity(intent3)
+        val intent2 = Intent()
+        intent2.component = component2
+        intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        context.startActivity(intent2)
     }
 }
