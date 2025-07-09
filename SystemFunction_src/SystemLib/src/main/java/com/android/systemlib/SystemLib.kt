@@ -12,6 +12,7 @@ import android.content.pm.IPackageDataObserver
 import android.content.pm.IPackageManager
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
+import android.content.res.Configuration
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.net.wifi.IWifiManager
@@ -35,6 +36,7 @@ import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStream
 import java.io.InputStreamReader
+import java.util.Locale
 import java.util.TimeZone
 
 
@@ -333,7 +335,7 @@ fun getWifiMac(context: Context): String {
     return mac
 }
 
-@SuppressLint("HardwareIds")
+@SuppressLint("HardwareIds", "MissingPermission")
 fun getBTMac(context: Context): String {
     var mac = ""
     try {
@@ -519,4 +521,29 @@ fun getAllSystemZone(): Array<String>? = TimeZone.getAvailableIDs()
 /**
  * 是否锁屏
  */
-fun isScreenOn(): Boolean = IPowerManager.Stub.asInterface(ServiceManager.getService("power")).isInteractive
+fun isScreenOn(): Boolean =
+    IPowerManager.Stub.asInterface(ServiceManager.getService("power")).isInteractive
+
+
+
+/**
+ * 主要设置系统配置
+ * 语言
+ * mnc
+ * mnc
+ * 导航
+ * 屏幕角度
+ * 屏幕宽高
+ * 屏幕dpi
+ */
+fun setConfiguration(language: String) {
+    val ams =
+        IActivityManager.Stub.asInterface(ServiceManager.getService(Context.ACTIVITY_SERVICE))
+    val config = Configuration()
+    if (language.contains("-")) {
+        val splits = language.split("-")
+        if (splits.size == 2) config.locale = Locale(splits[0], splits[1])
+        else if (splits.size == 3) config.locale = Locale(splits[0], splits[2])
+    } else config.locale = Locale(language)
+    ams.updateConfiguration(config)
+}
