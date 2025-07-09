@@ -2,6 +2,7 @@ package com.android.systemlib
 
 import android.annotation.SuppressLint
 import android.app.ActivityManager
+import android.app.ActivityOptions
 import android.app.AlarmManager
 import android.app.IActivityManager
 import android.bluetooth.BluetoothManager
@@ -549,5 +550,27 @@ fun setConfiguration(language: String): Boolean {
     } catch (e: Exception) {
         e.printStackTrace()
         return false
+    }
+}
+
+/**
+ * 分屏显示，第一个显示在上方
+ * component1
+ * component2
+ * 如果是竖屏 1在上面 2在下面
+ * 如果是横屏 1在左边 2在右边
+ */
+fun enterSplitScreen(context: Context, component1: ComponentName, component2: ComponentName) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        val intent1 = Intent()
+        intent1.component = component1
+        intent1.addFlags(Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT or Intent.FLAG_ACTIVITY_MULTIPLE_TASK)
+        val options1 = ActivityOptions.makeBasic()
+        context.startActivity(intent1, options1.toBundle())
+
+        val intent3 = Intent()
+        intent3.component = component2
+        intent3.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        context.startActivity(intent3)
     }
 }
