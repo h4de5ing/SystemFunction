@@ -525,7 +525,6 @@ fun isScreenOn(): Boolean =
     IPowerManager.Stub.asInterface(ServiceManager.getService("power")).isInteractive
 
 
-
 /**
  * 主要设置系统配置
  * 语言
@@ -537,13 +536,12 @@ fun isScreenOn(): Boolean =
  * 屏幕dpi
  */
 fun setConfiguration(language: String) {
-    val ams =
-        IActivityManager.Stub.asInterface(ServiceManager.getService(Context.ACTIVITY_SERVICE))
+    val ams = IActivityManager.Stub.asInterface(ServiceManager.getService(Context.ACTIVITY_SERVICE))
     val config = Configuration()
     if (language.contains("-")) {
         val splits = language.split("-")
         if (splits.size == 2) config.locale = Locale(splits[0], splits[1])
-        else if (splits.size == 3) config.locale = Locale(splits[0], splits[2])
+        else if (splits.size >= 3) config.locale = Locale(splits[0], splits[splits.size - 1])
     } else config.locale = Locale(language)
     ams.updateConfiguration(config)
 }
