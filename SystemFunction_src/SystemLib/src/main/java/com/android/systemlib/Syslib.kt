@@ -309,8 +309,7 @@ fun reset(context: Context) {
  * 关闭屏幕
  */
 fun goToSleep() {
-    val iPower =
-        IPowerManager.Stub.asInterface(ServiceManager.getService(Context.POWER_SERVICE))
+    val iPower = IPowerManager.Stub.asInterface(ServiceManager.getService(Context.POWER_SERVICE))
     if (iPower.isInteractive) {
         iPower.goToSleep(SystemClock.uptimeMillis() + 1000, 1/*GO_TO_SLEEP_REASON_DEVICE_ADMIN*/, 0)
     }
@@ -320,14 +319,10 @@ fun goToSleep() {
  * 唤醒屏幕
  */
 fun wakeUp(context: Context) {
-    val iPower =
-        IPowerManager.Stub.asInterface(ServiceManager.getService(Context.POWER_SERVICE))
+    val iPower = IPowerManager.Stub.asInterface(ServiceManager.getService(Context.POWER_SERVICE))
     if (!iPower.isInteractive) {
         iPower.wakeUp(
-            SystemClock.uptimeMillis(),
-            1/*WAKE_REASON_APPLICATION*/,
-            "wakeUp",
-            context.packageName
+            SystemClock.uptimeMillis(), 1/*WAKE_REASON_APPLICATION*/, "wakeUp", context.packageName
         )
     }
 }
@@ -713,16 +708,15 @@ private val OP_RUN_ANY_IN_BACKGROUND = 70 //string to int RUN_ANY_IN_BACKGROUND
 fun getBatteryOptimization(context: Context, packageName: String): Int {
     var mode: Int = MODE_UNKNOWN
     try {
-        var uid = 0
         val packageManager = context.packageManager
         val applicationInfo = packageManager.getApplicationInfo(packageName, 0)
-        uid = applicationInfo.uid
+        val uid = applicationInfo.uid
         val iDeviceIdleController =
             (IDeviceIdleController.Stub.asInterface(ServiceManager.getService("deviceidle")) as IDeviceIdleController)
         val iAppOpsManager =
             IAppOpsService.Stub.asInterface(ServiceManager.getService(Context.APP_OPS_SERVICE))
         val allowListed = iDeviceIdleController.isPowerSaveWhitelistApp(packageName)
-        var aomMode = iAppOpsManager.checkOperation(OP_RUN_ANY_IN_BACKGROUND, uid, packageName)
+        val aomMode = iAppOpsManager.checkOperation(OP_RUN_ANY_IN_BACKGROUND, uid, packageName)
         mode = if (aomMode == MODE_IGNORED && !allowListed) MODE_RESTRICTED
         else if (aomMode == MODE_ALLOWED) if (allowListed) MODE_UNRESTRICTED else MODE_OPTIMIZED
         else MODE_UNKNOWN
@@ -738,38 +732,29 @@ fun getBatteryOptimization(context: Context, packageName: String): Int {
  * 设置应用电池优化状态
  */
 @RequiresApi(Build.VERSION_CODES.M)
-fun setBatteryOptimization(context: Context, packageName: String, mode: Int) {
-    try {
-        val iDeviceIdleController =
-            (IDeviceIdleController.Stub.asInterface(ServiceManager.getService("deviceidle")) as IDeviceIdleController)
-        val iAppOpsManager =
-            IAppOpsService.Stub.asInterface(ServiceManager.getService(Context.APP_OPS_SERVICE))
-        var uid = 0
-        val packageManager = context.packageManager
-        val applicationInfo = packageManager.getApplicationInfo(packageName, 0)
-        uid = applicationInfo.uid
-        when (mode) {
-            MODE_RESTRICTED -> {
-//                iAppOpsManager.setMode(OP_RUN_ANY_IN_BACKGROUND, 0, packageName, MODE_IGNORED)
-                iAppOpsManager.setUidMode(OP_RUN_ANY_IN_BACKGROUND, uid, MODE_IGNORED)
-                iDeviceIdleController.removePowerSaveWhitelistApp(packageName)
-            }
-
-            MODE_UNRESTRICTED -> {
-//                iAppOpsManager.setMode(OP_RUN_ANY_IN_BACKGROUND, 0, packageName, MODE_ALLOWED)
-                iAppOpsManager.setUidMode(OP_RUN_ANY_IN_BACKGROUND, uid, MODE_ALLOWED)
-                iDeviceIdleController.addPowerSaveWhitelistApp(packageName)
-            }
-
-            MODE_OPTIMIZED -> {
-//                iAppOpsManager.setMode(OP_RUN_ANY_IN_BACKGROUND, 0, packageName, MODE_ALLOWED)
-                iAppOpsManager.setUidMode(OP_RUN_ANY_IN_BACKGROUND, uid, MODE_ALLOWED)
-                iDeviceIdleController.removePowerSaveWhitelistApp(packageName)
-            }
+fun setBatteryOptimization(context: Context, packageName: String, mode: Int) = try {
+    val iDeviceIdleController =
+        (IDeviceIdleController.Stub.asInterface(ServiceManager.getService("deviceidle")) as IDeviceIdleController)
+    val iAppOpsManager =
+        IAppOpsService.Stub.asInterface(ServiceManager.getService(Context.APP_OPS_SERVICE))
+    val packageManager = context.packageManager
+    val applicationInfo = packageManager.getApplicationInfo(packageName, 0)
+    val uid = applicationInfo.uid
+    when (mode) {
+        MODE_RESTRICTED -> iDeviceIdleController.removePowerSaveWhitelistApp(packageName)
+        MODE_UNRESTRICTED -> {
+            iAppOpsManager.setMode(OP_RUN_ANY_IN_BACKGROUND, uid, packageName, MODE_ALLOWED)
+            iDeviceIdleController.addPowerSaveWhitelistApp(packageName)
         }
-    } catch (e: Exception) {
-        e.printStackTrace()
+
+        MODE_OPTIMIZED -> {
+            iAppOpsManager.setMode(OP_RUN_ANY_IN_BACKGROUND, uid, packageName, MODE_ALLOWED)
+            iDeviceIdleController.removePowerSaveWhitelistApp(packageName)
+        }
     }
+    println("电池优化packageName=${packageName},mode=${mode}")
+} catch (e: Exception) {
+    e.printStackTrace()
 }
 
 /**
@@ -1045,7 +1030,7 @@ fun setMode(context: Context, code: Int, packageName: String, mode: Int) {
 //    opsManager.noteOpNoThrow()
         val iAppOpsManager =
             IAppOpsService.Stub.asInterface(ServiceManager.getService(Context.APP_OPS_SERVICE))
-        iAppOpsManager.setUidMode(code, uid, mode)
+        iAppOpsManager.setMode(code, uid, packageName, mode)
 //    iAppOpsManager.checkPackage()//检测权限有没有被绕过
 //    iAppOpsManager.setMode(code, uid, packageName, mode)
 //    val list = iAppOpsManager.getOpsForPackage(uid, packageName, null)
@@ -1057,6 +1042,7 @@ fun setMode(context: Context, code: Int, packageName: String, mode: Int) {
 //        }
 //    }
 //    iAppOpsManager.resetAllModes(0, packageName)
+        println("配置权限,uid=${uid},code=${code},packageName=${packageName},mode=${mode}")
     } catch (e: Exception) {
         e.printStackTrace()
     }
