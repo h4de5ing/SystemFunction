@@ -570,7 +570,7 @@ fun enterSplitScreen(context: Context, component1: ComponentName, component2: Co
 
         val intent2 = Intent()
         intent2.component = component2
-        intent2.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        intent2.addFlags(Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT or Intent.FLAG_ACTIVITY_NEW_TASK)
         context.startActivity(intent2)
     }
 }
