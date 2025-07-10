@@ -2,6 +2,7 @@ package com.android.systemlib
 
 import android.annotation.SuppressLint
 import android.app.ActivityManager
+import android.app.ActivityOptions
 import android.app.AlarmManager
 import android.app.IActivityManager
 import android.bluetooth.BluetoothManager
@@ -12,6 +13,7 @@ import android.content.pm.IPackageDataObserver
 import android.content.pm.IPackageManager
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
+import android.content.res.Configuration
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.net.wifi.IWifiManager
@@ -35,6 +37,7 @@ import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStream
 import java.io.InputStreamReader
+import java.util.Locale
 import java.util.TimeZone
 
 
@@ -333,7 +336,7 @@ fun getWifiMac(context: Context): String {
     return mac
 }
 
-@SuppressLint("HardwareIds")
+@SuppressLint("HardwareIds", "MissingPermission")
 fun getBTMac(context: Context): String {
     var mac = ""
     try {
@@ -519,4 +522,55 @@ fun getAllSystemZone(): Array<String>? = TimeZone.getAvailableIDs()
 /**
  * 是否锁屏
  */
-fun isScreenOn(): Boolean = IPowerManager.Stub.asInterface(ServiceManager.getService("power")).isInteractive
+fun isScreenOn(): Boolean =
+    IPowerManager.Stub.asInterface(ServiceManager.getService("power")).isInteractive
+
+
+/**
+ * 主要设置系统配置
+ * 语言
+ * mnc
+ * mnc
+ * 导航
+ * 屏幕角度
+ * 屏幕宽高
+ * 屏幕dpi
+ */
+fun setConfiguration(language: String): Boolean {
+    try {
+        val ams =
+            IActivityManager.Stub.asInterface(ServiceManager.getService(Context.ACTIVITY_SERVICE))
+        val config = Configuration()
+        if (language.contains("-")) {
+            val splits = language.split("-")
+            if (splits.size == 2) config.locale = Locale(splits[0], splits[1])
+            else if (splits.size >= 3) config.locale = Locale(splits[0], splits[splits.size - 1])
+        } else config.locale = Locale(language)
+        return ams.updateConfiguration(config)
+    } catch (e: Exception) {
+        e.printStackTrace()
+        return false
+    }
+}
+
+/**
+ * 分屏显示，第一个显示在上方
+ * component1
+ * component2
+ * 如果是竖屏 1在上面 2在下面
+ * 如果是横屏 1在左边 2在右边
+ */
+fun enterSplitScreen(context: Context, component1: ComponentName, component2: ComponentName) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        val intent1 = Intent()
+        intent1.component = component1
+        intent1.addFlags(Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT or Intent.FLAG_ACTIVITY_MULTIPLE_TASK)
+        val options1 = ActivityOptions.makeBasic()
+        context.startActivity(intent1, options1.toBundle())
+
+        val intent2 = Intent()
+        intent2.component = component2
+        intent2.addFlags(Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT or Intent.FLAG_ACTIVITY_NEW_TASK)
+        context.startActivity(intent2)
+    }
+}
