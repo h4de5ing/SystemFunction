@@ -1,6 +1,6 @@
 package com.android.systemlib
 
-import android.app.*
+import android.app.Activity
 import android.content.ContentProviderOperation
 import android.content.ContentValues
 import android.content.Context
@@ -11,13 +11,14 @@ import android.graphics.Matrix
 import android.graphics.PixelFormat
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
-import android.hardware.*
 import android.net.Uri
 import android.provider.Settings
 import android.text.TextUtils
 import android.widget.Toast
-import java.io.*
-import java.util.*
+import java.io.BufferedWriter
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.FileWriter
 
 
 /**
@@ -284,7 +285,41 @@ fun Bitmap.thumbnail(): Bitmap {
     return Bitmap.createBitmap(this, 0, 0, width, height, matrix, true)
 }
 
+fun File.toBitmap(maxWidth: Int, maxHeight: Int): Bitmap? {
+    return try {
+        val options = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+        BitmapFactory.decodeFile(absolutePath, options)
+        options.inSampleSize = calculateInSampleSize(options, maxWidth, maxHeight)
+        options.inJustDecodeBounds = false
+        options.inPreferredConfig = Bitmap.Config.RGB_565
+        BitmapFactory.decodeFile(absolutePath, options)
+    } catch (e: Exception) {
+        e.printStackTrace()
+        null
+    }
+}
 
+private fun calculateInSampleSize(
+    options: BitmapFactory.Options,
+    reqWidth: Int,
+    reqHeight: Int
+): Int {
+    val height = options.outHeight
+    val width = options.outWidth
+    var inSampleSize = 1
+    if (height > reqHeight || width > reqWidth) {
+        val halfHeight = height / 2
+        val halfWidth = width / 2
+        while ((halfHeight / inSampleSize) >= reqHeight && (halfWidth / inSampleSize) >= reqWidth) {
+            inSampleSize *= 2
+        }
+    }
+    return inSampleSize
+}
+
+/**
+ * 获取系统默认配置/framework/core/base/res/res/values/config.xml
+ */
 fun getDefaultConfig() {
     com.android.internal.R.string.config_defaultSupervisionProfileOwnerComponent
 }
