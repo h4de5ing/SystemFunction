@@ -269,7 +269,7 @@ fun drawable2Bitmap(icon: Drawable): Bitmap {
         Bitmap.createBitmap(
             icon.intrinsicWidth,
             icon.intrinsicHeight,
-            if (icon.opacity == PixelFormat.OPAQUE) Bitmap.Config.RGB_565 else Bitmap.Config.ARGB_8888
+            Bitmap.Config.RGB_565
         )
     val canvas = Canvas(bitmap)
     icon.setBounds(0, 0, icon.intrinsicWidth, icon.intrinsicHeight)

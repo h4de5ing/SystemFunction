@@ -6,7 +6,6 @@ import android.app.IActivityTaskManager
 import android.app.PendingIntent
 import android.app.PendingIntent.FLAG_IMMUTABLE
 import android.app.backup.IBackupManager
-import android.app.usage.UsageStatsManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
@@ -40,6 +39,7 @@ import android.os.Handler
 import android.os.IDeviceIdleController
 import android.os.IPowerManager
 import android.os.Looper
+import android.os.ParcelFileDescriptor
 import android.os.PatternMatcher
 import android.os.ServiceManager
 import android.os.SystemClock
@@ -56,10 +56,9 @@ import android.telephony.TelephonyManager
 import android.text.TextUtils
 import android.text.format.Formatter
 import android.view.accessibility.IAccessibilityManager
-import android.webkit.MimeTypeMap
 import android.widget.TextView
 import androidx.annotation.RequiresApi
-import androidx.core.net.toUri
+import androidx.core.content.ContextCompat
 import androidx.core.view.accessibility.AccessibilityEventCompat
 import com.android.android12.addEthernetListener12
 import com.android.android12.disableEthernet12
@@ -85,6 +84,7 @@ import java.io.OutputStream
 import java.lang.reflect.Field
 import java.net.Inet4Address
 import java.net.NetworkInterface
+import java.util.concurrent.Executors
 
 /**
  * 移除WIFI配置
@@ -1137,22 +1137,6 @@ fun getSystemGlobal(context: Context, key: String): String {
 fun setSystemGlobal(context: Context, key: String, value: String): Boolean =
     Settings.Global.putString(context.contentResolver, key, value)
 
-@SuppressLint("InlinedApi", "WrongConstant")
-fun getFileType(context: Context) {
-    Intent.ACTION_SEND
-    val cr = context.contentResolver
-    val fileMimeType = cr.getType("".toUri())//根据文件uri路径获取类型
-    val fileType = MimeTypeMap.getSingleton().getExtensionFromMimeType(fileMimeType)
-    //跟踪应用程序使用状态
-    val usageStatsManager =
-        context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
-//    usageStatsManager.isAppInactive("")//判断app是否还活跃
-
-    //BugreportManagerService 用于捕获bugreport
-    val bugreportManager = context.getSystemService(Context.BUGREPORT_SERVICE) as BugreportManager
-//    bugreportManager.startConnectivityBugreport()
-}
-
 fun get_recent(context: Context) {
     try {
         val atm = IActivityTaskManager.Stub.asInterface(ServiceManager.getService("activity_task"))
@@ -1560,12 +1544,16 @@ fun getAdbWirelessPort(): Int {
 
 /**
  * 触发系统获取日志报告
- *     public static final int BUGREPORT_MODE_FULL = 0;
- *     public static final int BUGREPORT_MODE_INTERACTIVE = 1;
- *     public static final int BUGREPORT_MODE_REMOTE = 2;
- *     public static final int BUGREPORT_MODE_WEAR = 3;
- *     public static final int BUGREPORT_MODE_TELEPHONY = 4;
- *     public static final int BUGREPORT_MODE_WIFI = 5;
+ * 不需要权限
+ * 输出的文件路径： /data/user_de/0/com.android.shell/files/bugreports
+ * https://android.googlesource.com/platform/frameworks/base/+/02ffba9/packages/Shell/src/com/android/shell/BugreportReceiver.java
+ * 输出完成以后会生成通知，如果点击通知可以分享文件
+ * public static final int BUGREPORT_MODE_FULL = 0;
+ * public static final int BUGREPORT_MODE_INTERACTIVE = 1;
+ * public static final int BUGREPORT_MODE_REMOTE = 2;
+ * public static final int BUGREPORT_MODE_WEAR = 3;
+ * public static final int BUGREPORT_MODE_TELEPHONY = 4;
+ * public static final int BUGREPORT_MODE_WIFI = 5;
  */
 fun bugreport() {
     try {
@@ -1573,6 +1561,35 @@ fun bugreport() {
         iam.requestBugReport(0)
     } catch (e: Exception) {
         e.printStackTrace()
+    }
+}
+
+/**
+ * 用于捕获bugreport以帮助分析系统问题
+ * 需要权限：android.permission.DUMP权限白名单
+ * 可以配置日志输出路径
+ */
+fun bugReportManager(context: Context, onFinished: (String) -> Unit) {
+    if (Build.VERSION.SDK_INT >= 31) {//Android11接口Hide
+        try {
+            val bug = context.getSystemService("bugreport") as BugreportManager
+            val bugFile = File(context.getExternalFilesDir(null), "bugreport.zip")
+            val bugFileFd = ParcelFileDescriptor.open(
+                bugFile,
+                ParcelFileDescriptor.MODE_READ_WRITE or ParcelFileDescriptor.MODE_CREATE
+            )
+            val executorIO = Executors.newSingleThreadExecutor()
+            val executorMain = ContextCompat.getMainExecutor(context)
+            val callback = object : BugreportManager.BugreportCallback() {
+                override fun onFinished() {
+                    super.onFinished()
+                    onFinished(bugFile.absolutePath)
+                }
+            }
+            bug.startConnectivityBugreport(bugFileFd, executorIO, callback)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 }
 
