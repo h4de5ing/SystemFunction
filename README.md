@@ -75,6 +75,23 @@ helper.callHiddenSystemApi();
 -keep class com.android.systemlib.** { *; }
 ```
 
+## Issue Reporting
+
+If you encounter any problems, please follow these guidelines when reporting issues:
+
+1. **Check Existing Issues**: Search existing issues to avoid duplicates
+2. **Provide Details**:
+   - Android version (e.g. Android 12)
+   - Device model (if relevant)
+   - Complete error logs
+   - Steps to reproduce the issue
+3. **Code Samples**: Include minimal code that reproduces the issue
+4. **Screenshots**: If applicable, add screenshots to help explain the problem
+
+Please avoid:
+- Vague descriptions like "it doesn't work"
+- Multiple unrelated issues in one report
+
 ## Contributing
 
 1. Fork the repository
