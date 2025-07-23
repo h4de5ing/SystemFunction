@@ -13,7 +13,6 @@ import android.content.pm.IPackageDataObserver
 import android.content.pm.IPackageManager
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
-import android.content.res.Configuration
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.net.wifi.IWifiManager
@@ -28,6 +27,7 @@ import android.telephony.TelephonyManager
 import android.text.TextUtils
 import android.util.Log
 import android.view.View
+import com.android.internal.app.LocalePicker
 import com.android.internal.util.MemInfoReader
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
@@ -527,26 +527,18 @@ fun isScreenOn(): Boolean =
 
 
 /**
- * 主要设置系统配置
- * 语言
- * mnc
- * mnc
- * 导航
- * 屏幕角度
- * 屏幕宽高
- * 屏幕dpi
+ * 设置系统语言
  */
 fun setConfiguration(language: String): Boolean {
     try {
-        val ams =
-            IActivityManager.Stub.asInterface(ServiceManager.getService(Context.ACTIVITY_SERVICE))
-        val config = Configuration()
+        var locale: Locale? = null
         if (language.contains("-")) {
             val splits = language.split("-")
-            if (splits.size == 2) config.locale = Locale(splits[0], splits[1])
-            else if (splits.size >= 3) config.locale = Locale(splits[0], splits[splits.size - 1])
-        } else config.locale = Locale(language)
-        return ams.updateConfiguration(config)
+            if (splits.size == 2) locale = Locale(splits[0], splits[1])
+            else if (splits.size >= 3) locale = Locale(splits[0], splits[splits.size - 1])
+        } else locale = Locale(language)
+        LocalePicker.updateLocale(locale)
+        return true
     } catch (e: Exception) {
         e.printStackTrace()
         return false

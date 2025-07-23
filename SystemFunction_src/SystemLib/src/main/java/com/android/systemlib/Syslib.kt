@@ -1547,7 +1547,7 @@ fun getAdbWirelessPort(): Int {
  * 不需要权限
  * 输出的文件路径： /data/user_de/0/com.android.shell/files/bugreports
  * https://android.googlesource.com/platform/frameworks/base/+/02ffba9/packages/Shell/src/com/android/shell/BugreportReceiver.java
- * 输出完成以后会生成通知，如果点击通知可以分享文件
+ * 输出完成以后会生成通知，如果点击通知可以分享文件,TODO 新增加一个页面用于收集并上传zip文件
  * public static final int BUGREPORT_MODE_FULL = 0;
  * public static final int BUGREPORT_MODE_INTERACTIVE = 1;
  * public static final int BUGREPORT_MODE_REMOTE = 2;
