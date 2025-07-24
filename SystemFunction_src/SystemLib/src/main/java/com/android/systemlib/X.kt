@@ -269,7 +269,7 @@ fun drawable2Bitmap(icon: Drawable): Bitmap {
         Bitmap.createBitmap(
             icon.intrinsicWidth,
             icon.intrinsicHeight,
-            Bitmap.Config.RGB_565
+            Bitmap.Config.ARGB_8888
         )
     val canvas = Canvas(bitmap)
     icon.setBounds(0, 0, icon.intrinsicWidth, icon.intrinsicHeight)
@@ -291,7 +291,7 @@ fun File.toBitmap(maxWidth: Int, maxHeight: Int): Bitmap? {
         BitmapFactory.decodeFile(absolutePath, options)
         options.inSampleSize = calculateInSampleSize(options, maxWidth, maxHeight)
         options.inJustDecodeBounds = false
-        options.inPreferredConfig = Bitmap.Config.RGB_565
+        options.inPreferredConfig = Bitmap.Config.ARGB_8888
         BitmapFactory.decodeFile(absolutePath, options)
     } catch (e: Exception) {
         e.printStackTrace()
