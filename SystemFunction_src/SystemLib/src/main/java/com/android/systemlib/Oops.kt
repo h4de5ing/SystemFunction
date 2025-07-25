@@ -1,6 +1,5 @@
 package com.android.systemlib
 
-import android.app.AppOpsManager
 import android.content.Context
 import android.content.pm.IPackageManager
 import android.content.pm.PackageInfo
@@ -10,7 +9,7 @@ import android.os.ServiceManager
 import com.android.internal.app.IAppOpsService
 
 /**
- * 授权
+ * Android 权限操作类
  * @param code 代表具体的操作权限 https://android.googlesource.com/platform/frameworks/base/+/727e195ee8be4e9f2ac3f4c47c9c2bfb1e8916e9/core/proto/android/app/enums.proto
  * @param uid user id
  * @param packageName 应用包名
