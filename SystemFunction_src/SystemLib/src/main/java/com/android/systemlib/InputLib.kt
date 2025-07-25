@@ -1,7 +1,6 @@
 package com.android.systemlib
 
 import android.content.Context.INPUT_SERVICE
-import android.hardware.display.IDisplayManager
 import android.hardware.input.IInputManager
 import android.os.RemoteException
 import android.os.ServiceManager
@@ -109,10 +108,29 @@ fun injectKeyEvent(action: Int, key: String, code: Int) {
     }
 }
 
-fun test() {
-    val iDisplay = IDisplayManager.Stub.asInterface(ServiceManager.getService("display"))
-    val disPlayInfo = iDisplay.getDisplayInfo(0)
-    disPlayInfo.rotation
-
-
+/**
+ * 根据Android keycode注入
+ */
+fun injectKeyEvent(action: Int, keyCode: Int) {
+    try {
+        if (keyCode > 0) {
+            val downTime = SystemClock.uptimeMillis()
+            val event = KeyEvent(
+                downTime,
+                SystemClock.uptimeMillis(),
+                action,
+                keyCode,
+                0,
+                0,
+                KeyCharacterMap.VIRTUAL_KEYBOARD,
+                0,
+                KeyEvent.FLAG_SOFT_KEYBOARD or KeyEvent.FLAG_KEEP_TOUCH_MODE,
+                InputDevice.SOURCE_KEYBOARD
+            )
+            "注入KeyCode事件成功,keyCode=$keyCode".logI()
+            iInput?.injectInputEvent(event, 0)
+        }
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
 }
