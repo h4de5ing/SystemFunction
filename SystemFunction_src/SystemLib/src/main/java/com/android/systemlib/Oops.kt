@@ -1,11 +1,13 @@
 package com.android.systemlib
 
+import android.Manifest
 import android.content.Context
 import android.content.pm.IPackageManager
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.content.pm.PermissionInfo
 import android.os.ServiceManager
+import androidx.core.content.ContextCompat
 import com.android.internal.app.IAppOpsService
 
 /**
@@ -224,4 +226,34 @@ fun grantPermission(context: Context, packageName: String) {
             }
         }
     }
+}
+
+/**
+ * 给具体的某个权限授权
+ */
+fun grantPermission(context: Context, packageName: String, permission: String) {
+    val iPackageManager = IPackageManager.Stub.asInterface(ServiceManager.getService("package"))
+    val pm: PackageManager = context.packageManager
+    try {
+        val isGranted = ContextCompat.checkSelfPermission(context, permission)
+        if (isRuntimePermission(pm, permission) && isGranted != 0) {
+            iPackageManager.grantRuntimePermission(packageName, permission, 0)
+        }
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+}
+
+private fun getPermission() {
+    //All files access
+    Manifest.permission.WRITE_EXTERNAL_STORAGE
+    Manifest.permission.MANAGE_EXTERNAL_STORAGE
+    //Display over other apps
+    Manifest.permission.SYSTEM_ALERT_WINDOW
+    //Modify system settings
+    Manifest.permission.WRITE_SETTINGS
+    //Device & app notifications
+    Manifest.permission.BIND_NOTIFICATION_LISTENER_SERVICE
+    //Usage access
+    Manifest.permission.PACKAGE_USAGE_STATS
 }
