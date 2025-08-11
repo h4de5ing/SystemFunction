@@ -24,17 +24,13 @@ fun injectInit() {
 }
 
 fun injectMotionEvent(action: Int, x: Float, y: Float) {
-    val now = SystemClock.uptimeMillis()
-    val event = MotionEvent.obtain(now, now, action, x, y, 0)
+    val downTime = SystemClock.uptimeMillis()
+    val eventTime = SystemClock.uptimeMillis()
+    val event = MotionEvent.obtain(downTime, eventTime, action, x, y, 0)
     try {
+        event.source = InputDevice.SOURCE_TOUCHSCREEN
         iInput?.injectInputEvent(event, 0)
-        val actionStr = when (action) {
-            MotionEvent.ACTION_DOWN -> "按下"
-            MotionEvent.ACTION_UP -> "抬起"
-            MotionEvent.ACTION_MOVE -> "移动"
-            else -> "未知动作"
-        }
-        "注入鼠标点击事件成功,$actionStr,$x,$y".logI()
+        "注入鼠标点击事件成功,$action,$x,$y".logI()
     } catch (e: RemoteException) {
         e.printStackTrace()
     } finally {
