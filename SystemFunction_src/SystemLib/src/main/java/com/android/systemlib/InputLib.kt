@@ -80,14 +80,14 @@ fun injectScrollEvent(x: Float, y: Float, deltaY: Float) {
 fun injectKeyEvent(action: Int, key: String, code: Int) {
     try {
         if (code > 0) {
-            val keyCharacterMap = KeyCharacterMap.load(KeyCharacterMap.VIRTUAL_KEYBOARD)
-            val events = keyCharacterMap.getEvents(key.toCharArray())
-            if (events != null && events.size > 0) {
-                val keyCode = events[0].keyCode
+            val keyMap = JS_KEYCODE_TO_ANDROID[code]
+            if (keyMap != null) {
+                val keyCode = keyMap
                 val downTime = SystemClock.uptimeMillis()
+                val eventTime = SystemClock.uptimeMillis()
                 val event = KeyEvent(
                     downTime,
-                    SystemClock.uptimeMillis(),
+                    eventTime,
                     action,
                     keyCode,
                     0,
@@ -100,7 +100,7 @@ fun injectKeyEvent(action: Int, key: String, code: Int) {
                 "注入键盘事件成功,key=$key,code=$code->${keyCode}".logI()
                 iInput?.injectInputEvent(event, 0)
             } else {
-                "注入键盘事件失败,key=$key,code=${code}".logI()
+                "未映射的按键,key=$key,code=${code}".logI()
             }
         }
     } catch (e: Exception) {
