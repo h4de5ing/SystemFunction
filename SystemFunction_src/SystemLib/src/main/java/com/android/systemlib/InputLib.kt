@@ -81,23 +81,27 @@ fun injectKeyEvent(action: Int, key: String, code: Int) {
     try {
         if (code > 0) {
             val keyCharacterMap = KeyCharacterMap.load(KeyCharacterMap.VIRTUAL_KEYBOARD)
-            val events = keyCharacterMap.getEvents(charArrayOf(key[0]))
-            val keyCode = events[0].keyCode
-            val downTime = SystemClock.uptimeMillis()
-            val event = KeyEvent(
-                downTime,
-                SystemClock.uptimeMillis(),
-                action,
-                keyCode,
-                0,
-                0,
-                KeyCharacterMap.VIRTUAL_KEYBOARD,
-                0,
-                KeyEvent.FLAG_SOFT_KEYBOARD or KeyEvent.FLAG_KEEP_TOUCH_MODE,
-                InputDevice.SOURCE_KEYBOARD
-            )
-            "注入键盘事件成功,key=$key,code=$code->${keyCode}".logI()
-            iInput?.injectInputEvent(event, 0)
+            val events = keyCharacterMap.getEvents(key.toCharArray())
+            if (events != null && events.size > 0) {
+                val keyCode = events[0].keyCode
+                val downTime = SystemClock.uptimeMillis()
+                val event = KeyEvent(
+                    downTime,
+                    SystemClock.uptimeMillis(),
+                    action,
+                    keyCode,
+                    0,
+                    0,
+                    KeyCharacterMap.VIRTUAL_KEYBOARD,
+                    0,
+                    KeyEvent.FLAG_SOFT_KEYBOARD or KeyEvent.FLAG_KEEP_TOUCH_MODE,
+                    InputDevice.SOURCE_KEYBOARD
+                )
+                "注入键盘事件成功,key=$key,code=$code->${keyCode}".logI()
+                iInput?.injectInputEvent(event, 0)
+            } else {
+                "注入键盘事件失败,key=$key,code=${code}".logI()
+            }
         }
     } catch (e: Exception) {
         e.printStackTrace()
@@ -126,6 +130,18 @@ fun injectKeyEvent(action: Int, keyCode: Int) {
             "注入KeyCode事件成功,keyCode=$keyCode".logI()
             iInput?.injectInputEvent(event, 0)
         }
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+}
+
+/**
+ * 根据KeyEvent注入
+ */
+fun injectKeyEvent(event: KeyEvent) {
+    try {
+        "注入自定义事件成功,event=$event".logI()
+        iInput?.injectInputEvent(event, 0)
     } catch (e: Exception) {
         e.printStackTrace()
     }
