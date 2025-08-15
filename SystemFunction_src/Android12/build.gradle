@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    compileSdk 36
+    compileSdk = 36
     namespace 'com.android.android12'
     defaultConfig {
-        minSdk 21
-        targetSdk 36
+        minSdk = 21
+        targetSdk = 36
     }
 
     buildTypes {
@@ -26,7 +26,7 @@ android {
 
 dependencies {
     compileOnly files('libs/framework.jar')
-    implementation 'androidx.core:core-ktx:1.16.0'
+    implementation 'androidx.core:core-ktx:1.17.0'
 }
 afterEvaluate {
     publishing {
