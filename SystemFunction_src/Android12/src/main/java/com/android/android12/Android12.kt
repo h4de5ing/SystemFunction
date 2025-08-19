@@ -103,10 +103,7 @@ fun allowWirelessDebugging(alwaysAllow: Boolean, ssid: String) {
 }
 
 fun isDisableLockScreen12(
-    context: Context,
-    oldPassword: String,
-    isDisable: Boolean,
-    change: (String) -> Unit
+    context: Context, oldPassword: String, isDisable: Boolean, change: (String) -> Unit
 ) {
     val utils = LockPatternUtils(context)
     val type = getCredentialType12()
@@ -117,9 +114,7 @@ fun isDisableLockScreen12(
     val savedCredential = if (type == 3) LockscreenCredential.createPin(oldPassword)
     else LockscreenCredential.createPassword(oldPassword)
     val checkResult = utils.setLockCredential(
-        LockscreenCredential.createNone(),
-        savedCredential,
-        0
+        LockscreenCredential.createNone(), savedCredential, 0
     )
     if (!checkResult) {
         change("failed: Old password verification failed")

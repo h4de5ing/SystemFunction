@@ -752,7 +752,7 @@ fun setBatteryOptimization(context: Context, packageName: String, mode: Int) = t
             iDeviceIdleController.removePowerSaveWhitelistApp(packageName)
         }
     }
-    println("电池优化packageName=${packageName},mode=${mode}")
+    println("电池优化 packageName=${packageName},mode=${mode}")
 } catch (e: Exception) {
     e.printStackTrace()
 }

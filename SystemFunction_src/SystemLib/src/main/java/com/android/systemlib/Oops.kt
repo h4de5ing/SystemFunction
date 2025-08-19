@@ -3,11 +3,9 @@ package com.android.systemlib
 import android.Manifest
 import android.content.Context
 import android.content.pm.IPackageManager
-import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.content.pm.PermissionInfo
 import android.os.ServiceManager
-import androidx.core.content.ContextCompat
 import com.android.internal.app.IAppOpsService
 
 /**
@@ -210,16 +208,13 @@ fun grantPermission(context: Context, packageName: String) {
     val iPackageManager = IPackageManager.Stub.asInterface(ServiceManager.getService("package"))
     val pm: PackageManager = context.packageManager
     val packageInfo = pm.getPackageInfo(packageName, PackageManager.GET_PERMISSIONS)
-    val permissionFlags = packageInfo.requestedPermissionsFlags
     val requestedPermissions = packageInfo.requestedPermissions
     if (requestedPermissions != null) {
         for (i in requestedPermissions.indices) {
             try {
                 val permission = requestedPermissions[i]
-                if ((permissionFlags?.get(i)?.and(PackageInfo.REQUESTED_PERMISSION_GRANTED)) == 0) {
-                    if (isRuntimePermission(pm, permission)) {
-                        iPackageManager.grantRuntimePermission(packageName, permission, 0)
-                    }
+                if (isRuntimePermission(pm, permission)) {
+                    iPackageManager.grantRuntimePermission(packageName, permission, 0)
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -235,8 +230,8 @@ fun grantPermission(context: Context, packageName: String, permission: String) {
     val iPackageManager = IPackageManager.Stub.asInterface(ServiceManager.getService("package"))
     val pm: PackageManager = context.packageManager
     try {
-        val isGranted = ContextCompat.checkSelfPermission(context, permission)
-        if (isRuntimePermission(pm, permission) && isGranted != 0) {
+        if (isRuntimePermission(pm, permission)) {
+            println("grantRuntimePermission ${packageName},${permission}")
             iPackageManager.grantRuntimePermission(packageName, permission, 0)
         }
     } catch (e: Exception) {
@@ -249,7 +244,9 @@ private fun getPermission() {
     Manifest.permission.WRITE_EXTERNAL_STORAGE
     Manifest.permission.MANAGE_EXTERNAL_STORAGE
     //Display over other apps
-    Manifest.permission.SYSTEM_ALERT_WINDOW
+    Manifest.permission.SYSTEM_ALERT_WINDOW//setMode(App.application, 24, packageName, 0)
+
+    //TODO not test success
     //Modify system settings
     Manifest.permission.WRITE_SETTINGS
     //Device & app notifications
