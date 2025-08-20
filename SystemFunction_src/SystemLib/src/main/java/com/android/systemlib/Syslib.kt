@@ -70,7 +70,6 @@ import com.android.android13.addEthernetListener13
 import com.android.android13.disableEthernet13
 import com.android.android13.disableSensor13
 import com.android.android13.removeEthernetListener13
-import com.android.internal.app.IAppOpsService
 import com.android.systemlib.ota.PayloadSpecs
 import java.io.BufferedReader
 import java.io.Closeable
@@ -695,70 +694,8 @@ fun addPowerSaveWhitelistApp(packageName: String) {
     }
 }
 
-private val MODE_UNKNOWN = 0
-val MODE_UNRESTRICTED = 1//无限制
-val MODE_OPTIMIZED = 2//优化
-val MODE_RESTRICTED = 3//受限
-private val OP_RUN_ANY_IN_BACKGROUND = 70 //string to int RUN_ANY_IN_BACKGROUND
-
-
 /**
- * 获取应用电池优化状态
- */
-fun getBatteryOptimization(context: Context, packageName: String): Int {
-    var mode: Int = MODE_UNKNOWN
-    try {
-        val packageManager = context.packageManager
-        val applicationInfo = packageManager.getApplicationInfo(packageName, 0)
-        val uid = applicationInfo.uid
-        val iDeviceIdleController =
-            (IDeviceIdleController.Stub.asInterface(ServiceManager.getService("deviceidle")) as IDeviceIdleController)
-        val iAppOpsManager =
-            IAppOpsService.Stub.asInterface(ServiceManager.getService(Context.APP_OPS_SERVICE))
-        val allowListed = iDeviceIdleController.isPowerSaveWhitelistApp(packageName)
-        val aomMode = iAppOpsManager.checkOperation(OP_RUN_ANY_IN_BACKGROUND, uid, packageName)
-        mode = if (aomMode == MODE_IGNORED && !allowListed) MODE_RESTRICTED
-        else if (aomMode == MODE_ALLOWED) if (allowListed) MODE_UNRESTRICTED else MODE_OPTIMIZED
-        else MODE_UNKNOWN
-    } catch (e: Exception) {
-        e.printStackTrace()
-    }
-    return mode
-}
-//无限制 1 MODE_RESTRICTED = AppOpsManager.MODE_IGNORED + !allowListed
-//优化 2 MODE_UNRESTRICTED = AppOpsManager.MODE_ALLOWED + allowListed
-//受限 3 MODE_OPTIMIZED = AppOpsManager.MODE_ALLOWED + !allowListed
-/**
- * 设置应用电池优化状态
- */
-@RequiresApi(Build.VERSION_CODES.M)
-fun setBatteryOptimization(context: Context, packageName: String, mode: Int) = try {
-    val iDeviceIdleController =
-        (IDeviceIdleController.Stub.asInterface(ServiceManager.getService("deviceidle")) as IDeviceIdleController)
-    val iAppOpsManager =
-        IAppOpsService.Stub.asInterface(ServiceManager.getService(Context.APP_OPS_SERVICE))
-    val packageManager = context.packageManager
-    val applicationInfo = packageManager.getApplicationInfo(packageName, 0)
-    val uid = applicationInfo.uid
-    when (mode) {
-        MODE_RESTRICTED -> iDeviceIdleController.removePowerSaveWhitelistApp(packageName)
-        MODE_UNRESTRICTED -> {
-            iAppOpsManager.setMode(OP_RUN_ANY_IN_BACKGROUND, uid, packageName, MODE_ALLOWED)
-            iDeviceIdleController.addPowerSaveWhitelistApp(packageName)
-        }
-
-        MODE_OPTIMIZED -> {
-            iAppOpsManager.setMode(OP_RUN_ANY_IN_BACKGROUND, uid, packageName, MODE_ALLOWED)
-            iDeviceIdleController.removePowerSaveWhitelistApp(packageName)
-        }
-    }
-    println("电池优化 packageName=${packageName},mode=${mode}")
-} catch (e: Exception) {
-    e.printStackTrace()
-}
-
-/**
- * 把应用从电池优化白名单移除，需要系统权限
+ * 把应用从电池优化白名单移除
  */
 @RequiresApi(Build.VERSION_CODES.M)
 @SuppressLint("WrongConstant", "SoonBlockedPrivateApi")
@@ -873,46 +810,6 @@ fun getwhite(context: Context, packageName: String) {
 //    pm.removeWhitelistedRestrictedPermission()
 }
 
-val MODE_ALLOWED = 0
-val MODE_IGNORED = 1
-val MODE_ERRORED = 2
-val MODE_DEFAULT = 3
-val MODE_FOREGROUND = 4
-fun setMode(context: Context, code: Int, packageName: String, mode: Int) {
-    try {
-        val packageManager = context.packageManager
-        val applicationInfo = packageManager.getApplicationInfo(packageName, 0)
-        val uid = applicationInfo.uid
-//    opsManager.setMode("android:manage_external_storage",uid,packageName,AppOpsManager.MODE_ALLOWED)
-//    opsManager.unsafeCheckOp(op,uid,packageName)//检测是否就有操作权限
-//    opsManager.unsafeCheckOpNoThrow(op, uid, packageName)//不抛出异常
-//    opsManager.noteOp(op,uid,packageName,"","")//检测权限，会做记录
-//    opsManager.noteOpNoThrow()
-        val iAppOpsManager =
-            IAppOpsService.Stub.asInterface(ServiceManager.getService(Context.APP_OPS_SERVICE))
-        iAppOpsManager.setMode(code, uid, packageName, mode)
-        iAppOpsManager.setUidMode(code, uid, mode)
-//    iAppOpsManager.checkPackage()//检测权限有没有被绕过
-//    iAppOpsManager.setMode(code, uid, packageName, mode)
-//    val list = iAppOpsManager.getOpsForPackage(uid, packageName, null)
-//    list?.apply {
-//        this.forEach {
-//            it.ops?.onEach {
-//                println("${it.op} ${it.mode} ${it.opStr}")
-//            }
-//        }
-//    }
-//    iAppOpsManager.resetAllModes(0, packageName)
-        println("配置权限,uid=${uid},code=${code},packageName=${packageName},mode=${mode}")
-    } catch (e: Exception) {
-        e.printStackTrace()
-    }
-}
-
-fun getOps(uid: Int, packageName: String) {
-//    val iops = IAppOpsService.Stub.asInterface(ServiceManager.getService(Context.APP_OPS_SERVICE))
-//    iops.getOpsForPackage(uid, packageName)
-}
 
 /**
  * Android 12新增加的接口
