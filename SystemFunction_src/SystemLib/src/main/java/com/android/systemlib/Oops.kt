@@ -2,14 +2,15 @@ package com.android.systemlib
 
 import android.Manifest
 import android.app.AppOpsManager
+import android.app.INotificationManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.pm.IPackageManager
 import android.content.pm.PackageManager
 import android.content.pm.PermissionInfo
+import android.os.Build
 import android.os.ServiceManager
 import android.util.Log
-import com.android.android12.findNotificationListenerServices12
 import com.android.android12.grantNotificationListenerAccessGranted12
 import com.android.internal.app.IAppOpsService
 import java.lang.reflect.Field
@@ -229,10 +230,57 @@ fun checkUsageStatsViaReflection(
  * 根据包名设置通知监听权限
  */
 fun grantNotificationListenerAccessGranted(context: Context, packageName: String) {
-    findNotificationListenerServices12(context, packageName).forEach {
+    findNotificationListenerServices(context, packageName).forEach {
         val serviceComponent = ComponentName(packageName, it)
-        grantNotificationListenerAccessGranted12(context, serviceComponent)
+        if (Build.VERSION.SDK_INT <= 30) {
+            grantNotificationListenerAccessGranted10(serviceComponent)
+        } else {
+            grantNotificationListenerAccessGranted12(serviceComponent)
+        }
     }
+}
+
+/**
+ * 适配Android10的通知权限
+ */
+fun grantNotificationListenerAccessGranted10(serviceComponent: ComponentName) {
+    val iNotificationManager = INotificationManager.Stub.asInterface(
+        ServiceManager.getService(Context.NOTIFICATION_SERVICE)
+    )
+    iNotificationManager.setNotificationListenerAccessGrantedForUser(
+        serviceComponent,
+        0,
+        true
+    )
+    Log.d(
+        "GrantUtils",
+        "grantNotificationListenerAccessGranted10 ${serviceComponent.className}"
+    )
+}
+
+/**
+ * 搜索通知监听服务的列表
+ */
+fun findNotificationListenerServices(context: Context, packageName: String): List<String> {
+    val servicesWithPermission = mutableListOf<String>()
+    try {
+        val packageInfo = context.packageManager.getPackageInfo(
+            packageName, PackageManager.GET_SERVICES or PackageManager.GET_PERMISSIONS
+        )
+        if (packageInfo.services != null) {
+            for (service in packageInfo.services) {
+                if (service.permission == "android.permission.BIND_NOTIFICATION_LISTENER_SERVICE") {
+                    servicesWithPermission.add(service.name)
+                    Log.d("ServiceFinder", "找到通知监听服务: ${service.name}")
+                }
+            }
+        }
+    } catch (e: PackageManager.NameNotFoundException) {
+        Log.e("ServiceFinder", "找不到包: $packageName", e)
+    } catch (e: Exception) {
+        Log.e("ServiceFinder", "获取服务信息时出错", e)
+    }
+    return servicesWithPermission
 }
 
 /**

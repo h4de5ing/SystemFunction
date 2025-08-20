@@ -30,7 +30,7 @@ dependencies {
     implementation project(path: ':Android12')
     implementation project(path: ':Android13')
     implementation project(path: ':Android14')
-    compileOnly files('libs/classes.jar')
+    compileOnly files('libs/classes.jar')//Android10
 }
 afterEvaluate {
     publishing {

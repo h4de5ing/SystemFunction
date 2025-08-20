@@ -3,7 +3,6 @@ package com.android.android12
 import android.app.INotificationManager
 import android.content.ComponentName
 import android.content.Context
-import android.content.pm.PackageManager
 import android.debug.IAdbManager
 import android.hardware.ISensorPrivacyManager
 import android.hardware.SensorPrivacyManager
@@ -11,7 +10,6 @@ import android.net.IEthernetManager
 import android.net.IEthernetServiceListener
 import android.os.Build
 import android.os.ServiceManager
-import android.provider.Settings
 import android.service.SensorPrivacyIndividualEnabledSensorProto
 import android.service.SensorPrivacyToggleSourceProto
 import android.util.Log
@@ -165,48 +163,14 @@ fun stopAdbd() {
 /**
  * 根据ComponentName设置通知监听权限
  */
-fun grantNotificationListenerAccessGranted12(context: Context, serviceComponent: ComponentName) {
-    if (Build.VERSION.SDK_INT <= 30) {
-        Settings.Secure.putString(
-            context.contentResolver,
-            "enabled_notification_listeners",
-            serviceComponent.flattenToString()
-        )
-    } else {
-        val iNotificationManager = INotificationManager.Stub.asInterface(
-            ServiceManager.getService(Context.NOTIFICATION_SERVICE)
-        )
-        iNotificationManager.setNotificationListenerAccessGrantedForUser(
-            serviceComponent,
-            0,
-            true,
-            true
-        )
-    }
-}
-
-/**
- * 搜索通知监听服务的列表
- */
-fun findNotificationListenerServices12(context: Context, packageName: String): List<String> {
-    val servicesWithPermission = mutableListOf<String>()
-    try {
-        val packageInfo = context.packageManager.getPackageInfo(
-            packageName,
-            PackageManager.GET_SERVICES or PackageManager.GET_PERMISSIONS
-        )
-        if (packageInfo.services != null) {
-            for (service in packageInfo.services) {
-                if (service.permission == "android.permission.BIND_NOTIFICATION_LISTENER_SERVICE") {
-                    servicesWithPermission.add(service.name)
-                    Log.d("ServiceFinder", "找到通知监听服务: ${service.name}")
-                }
-            }
-        }
-    } catch (e: PackageManager.NameNotFoundException) {
-        Log.e("ServiceFinder", "找不到包: $packageName", e)
-    } catch (e: Exception) {
-        Log.e("ServiceFinder", "获取服务信息时出错", e)
-    }
-    return servicesWithPermission
+fun grantNotificationListenerAccessGranted12(serviceComponent: ComponentName) {
+    val iNotificationManager = INotificationManager.Stub.asInterface(
+        ServiceManager.getService(Context.NOTIFICATION_SERVICE)
+    )
+    iNotificationManager.setNotificationListenerAccessGrantedForUser(
+        serviceComponent, 0, true, true
+    )
+    Log.d(
+        "GrantUtils", "grantNotificationListenerAccessGranted12 ${serviceComponent.className}"
+    )
 }
