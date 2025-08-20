@@ -1,14 +1,19 @@
 package com.android.systemlib
 
 import android.Manifest
+import android.app.AppOpsManager
 import android.content.ComponentName
 import android.content.Context
+import android.content.pm.IPackageManager
+import android.content.pm.PackageManager
+import android.content.pm.PermissionInfo
 import android.os.ServiceManager
 import android.util.Log
 import com.android.android12.findNotificationListenerServices12
 import com.android.android12.grantNotificationListenerAccessGranted12
 import com.android.internal.app.IAppOpsService
 import java.lang.reflect.Field
+import java.lang.reflect.Method
 
 /**
  * Android 权限操作类
@@ -191,16 +196,44 @@ fun setMode2(context: Context, code: Int, packageName: String, mode: Int) {
     }
 }
 
+
+
+/**
+ * 检查setMode的授权结果
+ */
+fun checkUsageStatsViaReflection(
+    context: Context,
+    opCode: Int,
+    targetPackageName: String
+): Boolean {
+    val appOps = context.getSystemService("appops") as AppOpsManager
+    return try {
+        val method: Method = appOps.javaClass.getMethod(
+            "checkOp",
+            Int::class.javaPrimitiveType,
+            Int::class.javaPrimitiveType,
+            String::class.java
+        )
+        val packageManager = context.packageManager
+        val applicationInfo = packageManager.getApplicationInfo(targetPackageName, 0)
+        val uid = applicationInfo.uid
+        val result = method.invoke(appOps, opCode, uid, targetPackageName) as Int
+        result == AppOpsManager.MODE_ALLOWED
+    } catch (e: Exception) {
+        Log.e("UsageStatsChecker", "Reflection method failed", e)
+        false
+    }
+}
+
 /**
  * 根据包名设置通知监听权限
  */
 fun grantNotificationListenerAccessGranted(context: Context, packageName: String) {
     findNotificationListenerServices12(context, packageName).forEach {
         val serviceComponent = ComponentName(packageName, it)
-        grantNotificationListenerAccessGranted12(serviceComponent)
+        grantNotificationListenerAccessGranted12(context, serviceComponent)
     }
 }
-
 
 /**
  * 打印本设备支持的op code
@@ -212,10 +245,9 @@ fun getOpCode() {
         val opFields = mutableListOf<Field>()
         // 过滤出公共静态整型字段，并且字段名以 "OP_" 开头
         for (field in fields) {
-            if (field.name.startsWith("OP_") &&
-                java.lang.reflect.Modifier.isStatic(field.modifiers) &&
-                java.lang.reflect.Modifier.isPublic(field.modifiers) &&
-                field.type == Int::class.javaPrimitiveType
+            if (field.name.startsWith("OP_") && java.lang.reflect.Modifier.isStatic(field.modifiers) && java.lang.reflect.Modifier.isPublic(
+                    field.modifiers
+                ) && field.type == Int::class.javaPrimitiveType
             ) {
                 opFields.add(field)
             }
@@ -248,4 +280,29 @@ private fun getPermission() {
     Manifest.permission.BIND_NOTIFICATION_LISTENER_SERVICE
     //Usage access
     Manifest.permission.PACKAGE_USAGE_STATS
+}
+
+private fun isRuntimePermission(pm: PackageManager, permission: String): Boolean {
+    return try {
+        val info = pm.getPermissionInfo(permission, 0)
+        info.protectionLevel and PermissionInfo.PROTECTION_MASK_BASE == PermissionInfo.PROTECTION_DANGEROUS
+    } catch (_: PackageManager.NameNotFoundException) {
+        false
+    }
+}
+
+/**
+ * 给具体的某个权限授权,适用于低版本的Anroid，比如Android12以下
+ * Android 11及以上用MANAGE_EXTERNAL_STORAGE用ops 92
+ */
+fun grantPermission(context: Context, packageName: String, permission: String) {
+    val iPackageManager = IPackageManager.Stub.asInterface(ServiceManager.getService("package"))
+    val pm: PackageManager = context.packageManager
+    try {
+        if (isRuntimePermission(pm, permission)) {
+            iPackageManager.grantRuntimePermission(packageName, permission, 0)
+        }
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
 }

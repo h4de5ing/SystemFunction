@@ -11,6 +11,7 @@ import android.net.IEthernetManager
 import android.net.IEthernetServiceListener
 import android.os.Build
 import android.os.ServiceManager
+import android.provider.Settings
 import android.service.SensorPrivacyIndividualEnabledSensorProto
 import android.service.SensorPrivacyToggleSourceProto
 import android.util.Log
@@ -164,16 +165,24 @@ fun stopAdbd() {
 /**
  * 根据ComponentName设置通知监听权限
  */
-fun grantNotificationListenerAccessGranted12(serviceComponent: ComponentName) {
-    val iNotificationManager = INotificationManager.Stub.asInterface(
-        ServiceManager.getService(Context.NOTIFICATION_SERVICE)
-    )
-    iNotificationManager.setNotificationListenerAccessGrantedForUser(
-        serviceComponent,
-        0,
-        true,
-        true
-    )
+fun grantNotificationListenerAccessGranted12(context: Context, serviceComponent: ComponentName) {
+    if (Build.VERSION.SDK_INT <= 30) {
+        Settings.Secure.putString(
+            context.contentResolver,
+            "enabled_notification_listeners",
+            serviceComponent.flattenToString()
+        )
+    } else {
+        val iNotificationManager = INotificationManager.Stub.asInterface(
+            ServiceManager.getService(Context.NOTIFICATION_SERVICE)
+        )
+        iNotificationManager.setNotificationListenerAccessGrantedForUser(
+            serviceComponent,
+            0,
+            true,
+            true
+        )
+    }
 }
 
 /**
