@@ -1,12 +1,14 @@
 package com.android.systemlib
 
 import android.Manifest
+import android.content.ComponentName
 import android.content.Context
-import android.content.pm.IPackageManager
-import android.content.pm.PackageManager
-import android.content.pm.PermissionInfo
 import android.os.ServiceManager
+import android.util.Log
+import com.android.android12.findNotificationListenerServices12
+import com.android.android12.grantNotificationListenerAccessGranted12
 import com.android.internal.app.IAppOpsService
+import java.lang.reflect.Field
 
 /**
  * Android 权限操作类
@@ -190,50 +192,42 @@ fun setMode2(context: Context, code: Int, packageName: String, mode: Int) {
 }
 
 /**
- * 检查是否是运行时权限
+ * 根据包名设置通知监听权限
  */
-private fun isRuntimePermission(pm: PackageManager, permission: String): Boolean {
-    return try {
-        val info = pm.getPermissionInfo(permission, 0)
-        info.protectionLevel and PermissionInfo.PROTECTION_MASK_BASE == PermissionInfo.PROTECTION_DANGEROUS
-    } catch (_: PackageManager.NameNotFoundException) {
-        false
+fun grantNotificationListenerAccessGranted(context: Context, packageName: String) {
+    findNotificationListenerServices12(context, packageName).forEach {
+        val serviceComponent = ComponentName(packageName, it)
+        grantNotificationListenerAccessGranted12(serviceComponent)
     }
 }
 
+
 /**
- * 默认授权运行时权限
+ * 打印本设备支持的op code
  */
-fun grantPermission(context: Context, packageName: String) {
-    val iPackageManager = IPackageManager.Stub.asInterface(ServiceManager.getService("package"))
-    val pm: PackageManager = context.packageManager
-    val packageInfo = pm.getPackageInfo(packageName, PackageManager.GET_PERMISSIONS)
-    val requestedPermissions = packageInfo.requestedPermissions
-    if (requestedPermissions != null) {
-        for (i in requestedPermissions.indices) {
-            try {
-                val permission = requestedPermissions[i]
-                if (isRuntimePermission(pm, permission)) {
-                    iPackageManager.grantRuntimePermission(packageName, permission, 0)
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
+fun getOpCode() {
+    try {
+        val appOpsClass = Class.forName("android.app.AppOpsManager")
+        val fields: Array<Field> = appOpsClass.declaredFields
+        val opFields = mutableListOf<Field>()
+        // 过滤出公共静态整型字段，并且字段名以 "OP_" 开头
+        for (field in fields) {
+            if (field.name.startsWith("OP_") &&
+                java.lang.reflect.Modifier.isStatic(field.modifiers) &&
+                java.lang.reflect.Modifier.isPublic(field.modifiers) &&
+                field.type == Int::class.javaPrimitiveType
+            ) {
+                opFields.add(field)
             }
         }
-    }
-}
-
-/**
- * 给具体的某个权限授权
- */
-fun grantPermission(context: Context, packageName: String, permission: String) {
-    val iPackageManager = IPackageManager.Stub.asInterface(ServiceManager.getService("package"))
-    val pm: PackageManager = context.packageManager
-    try {
-        if (isRuntimePermission(pm, permission)) {
-            println("grantRuntimePermission ${packageName},${permission}")
-            iPackageManager.grantRuntimePermission(packageName, permission, 0)
+        opFields.sortBy { it.name }
+        Log.d("OpCodeDumper", "===== AppOpsManager OP Codes =====")
+        for (field in opFields) {
+            val opName = field.name
+            val opValue = field.getInt(null) // 获取静态字段的值
+            Log.d("OpCodeDumper", "$opName = $opValue")
         }
+        Log.d("OpCodeDumper", "===== Total: ${opFields.size} OP Codes =====")
     } catch (e: Exception) {
         e.printStackTrace()
     }
@@ -245,8 +239,9 @@ private fun getPermission() {
     Manifest.permission.MANAGE_EXTERNAL_STORAGE
     //Display over other apps
     Manifest.permission.SYSTEM_ALERT_WINDOW//setMode(App.application, 24, packageName, 0)
+    //电池优化白名单
+    Manifest.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
 
-    //TODO not test success
     //Modify system settings
     Manifest.permission.WRITE_SETTINGS
     //Device & app notifications
