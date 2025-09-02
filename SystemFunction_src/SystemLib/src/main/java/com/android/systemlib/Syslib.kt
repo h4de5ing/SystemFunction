@@ -41,6 +41,7 @@ import android.os.IPowerManager
 import android.os.Looper
 import android.os.ParcelFileDescriptor
 import android.os.PatternMatcher
+import android.os.PowerManager
 import android.os.ServiceManager
 import android.os.SystemClock
 import android.os.UpdateEngine
@@ -305,12 +306,34 @@ fun reset(context: Context) {
 }
 
 /**
- * 关闭屏幕
+ * 休眠
  */
 fun goToSleep() {
-    val iPower = IPowerManager.Stub.asInterface(ServiceManager.getService(Context.POWER_SERVICE))
-    if (iPower.isInteractive) {
-        iPower.goToSleep(SystemClock.uptimeMillis() + 1000, 1/*GO_TO_SLEEP_REASON_DEVICE_ADMIN*/, 0)
+    try {
+        val iPower =
+            IPowerManager.Stub.asInterface(ServiceManager.getService(Context.POWER_SERVICE))
+        if (iPower.isInteractive)
+            iPower.goToSleep(SystemClock.uptimeMillis(), 0, 0)
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+}
+
+/**
+ * 休眠
+ */
+fun goToSleep(context: Context) {
+    try {
+        val powerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager
+        val method = powerManager.javaClass.getMethod(
+            "goToSleep",
+            Long::class.javaPrimitiveType,
+            Int::class.javaPrimitiveType,
+            Int::class.javaPrimitiveType
+        )
+        method.invoke(powerManager, SystemClock.uptimeMillis(), 0, 0)
+    } catch (e: Exception) {
+        e.printStackTrace()
     }
 }
 
