@@ -1,5 +1,6 @@
 package com.android.systemlib
 
+import android.app.Instrumentation
 import android.content.Context.INPUT_SERVICE
 import android.hardware.input.IInputManager
 import android.os.RemoteException
@@ -11,6 +12,9 @@ import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.MotionEvent.PointerCoords
 import android.view.MotionEvent.PointerProperties
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
 
 //主要封装一些模拟[键盘,鼠标,触摸,滑动]事件,以上事件均需要System权限,如果没有System权限可以采用辅助功能实现
 fun String.logI() = println(this)
@@ -108,27 +112,16 @@ fun injectKeyEvent(action: Int, key: String, code: Int) {
     }
 }
 
+private val scope = MainScope()
+
 /**
  * 根据Android keycode注入
  */
 fun injectKeyEvent(action: Int, keyCode: Int) {
     try {
-        if (keyCode > 0) {
-            val downTime = SystemClock.uptimeMillis()
-            val event = KeyEvent(
-                downTime,
-                SystemClock.uptimeMillis(),
-                action,
-                keyCode,
-                0,
-                0,
-                KeyCharacterMap.VIRTUAL_KEYBOARD,
-                0,
-                KeyEvent.FLAG_SOFT_KEYBOARD or KeyEvent.FLAG_KEEP_TOUCH_MODE,
-                InputDevice.SOURCE_KEYBOARD
-            )
+        scope.launch(Dispatchers.IO) {
             "注入KeyCode事件成功,keyCode=$keyCode".logI()
-            iInput?.injectInputEvent(event, 0)
+            Instrumentation().sendKeyDownUpSync(keyCode)
         }
     } catch (e: Exception) {
         e.printStackTrace()
