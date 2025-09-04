@@ -514,3 +514,11 @@ fun setBatteryOptimization(context: Context, packageName: String, mode: Int) = t
 } catch (e: Exception) {
     e.printStackTrace()
 }
+
+val roleList = mapOf(
+    "allowed" to 0,
+    "ignored" to 1,
+    "errored" to 2,
+    "default" to 3,
+    "foreground" to 4,
+)
