@@ -45,6 +45,68 @@ fun injectMotionEvent(action: Int, x: Float, y: Float) {
     }
 }
 
+fun injectMotionEvent2(action: Int, x: Float, y: Float) {
+    val downTime = SystemClock.uptimeMillis()
+    val eventTime = SystemClock.uptimeMillis()
+
+    val source: Int = InputDevice.SOURCE_TOUCHSCREEN
+    val pressure = 1.0f
+    val size = 1.0f
+    val pointerProperties = arrayOfNulls<PointerProperties>(1).apply {
+        this[0] = PointerProperties().apply {
+            id = 0
+            toolType = when (source) {
+                InputDevice.SOURCE_TOUCHSCREEN -> MotionEvent.TOOL_TYPE_FINGER
+                InputDevice.SOURCE_MOUSE -> MotionEvent.TOOL_TYPE_MOUSE
+                else -> MotionEvent.TOOL_TYPE_UNKNOWN
+            }
+        }
+    }
+
+    val pointerCoords = arrayOfNulls<PointerCoords>(1).apply {
+        this[0] = PointerCoords().apply {
+            this.x = x
+            this.y = y
+            this.pressure = pressure
+            this.size = size
+        }
+    }
+
+    val event = try {
+        MotionEvent.obtain(
+            downTime,
+            eventTime,
+            action,
+            1,
+            pointerProperties,
+            pointerCoords,
+            0, // metaState
+            0, // buttonState
+            1f, // xPrecision
+            1f, // yPrecision
+            0, // deviceId
+            0, // edgeFlags
+            source,
+            0 // flags
+        )
+    } catch (e: Exception) {
+        "创建MotionEvent失败: ${e.message}".logI()
+        null
+    }
+
+    event?.let {
+        try {
+            iInput?.injectInputEvent(it, 0)
+            "注入MotionEvent成功: action=$action, x=$x, y=$y".logI()
+        } catch (e: RemoteException) {
+            "注入MotionEvent失败: ${e.message}".logI()
+            e.printStackTrace()
+        } finally {
+            it.recycle()
+        }
+    }
+}
+
 fun injectScrollEvent(x: Float, y: Float, deltaY: Float) {
     val now = SystemClock.uptimeMillis()
     val pointerProperties = arrayOfNulls<PointerProperties>(1)
@@ -66,8 +128,8 @@ fun injectScrollEvent(x: Float, y: Float, deltaY: Float) {
         pointerCoords,
         0,
         0,
-        1.0f,
-        1.0f,
+        1f,
+        1f,
         0,
         0,
         InputDevice.SOURCE_MOUSE,
