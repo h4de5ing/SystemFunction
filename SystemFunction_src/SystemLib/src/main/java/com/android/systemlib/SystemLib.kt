@@ -566,3 +566,12 @@ fun enterSplitScreen(context: Context, component1: ComponentName, component2: Co
         context.startActivity(intent2)
     }
 }
+
+/**
+ * 获取了对应app的上下文，就可以获取应用的数据，可以用于数据备份
+ */
+fun getPackageContext(context: Context, packageName: String) {
+    val targetContext = context.createPackageContext(packageName, 0)
+    val path = targetContext.getExternalFilesDir("")
+    println("path=${path?.listFiles()?.map { it.name }?.joinToString(",")}")
+}

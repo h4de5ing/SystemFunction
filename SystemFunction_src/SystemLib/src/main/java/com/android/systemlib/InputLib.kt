@@ -7,6 +7,7 @@ import android.os.RemoteException
 import android.os.ServiceManager
 import android.os.SystemClock
 import android.view.InputDevice
+import android.view.InputEvent
 import android.view.KeyCharacterMap
 import android.view.KeyEvent
 import android.view.MotionEvent
@@ -15,6 +16,8 @@ import android.view.MotionEvent.PointerProperties
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
+
+private val scope = MainScope()
 
 //主要封装一些模拟[键盘,鼠标,触摸,滑动]事件,以上事件均需要System权限,如果没有System权限可以采用辅助功能实现
 fun String.logI() = println(this)
@@ -46,14 +49,14 @@ fun injectScrollEvent(x: Float, y: Float, deltaY: Float) {
     val now = SystemClock.uptimeMillis()
     val pointerProperties = arrayOfNulls<PointerProperties>(1)
     pointerProperties[0] = PointerProperties()
-    pointerProperties[0]!!.id = 0
-    pointerProperties[0]!!.toolType = MotionEvent.TOOL_TYPE_MOUSE
+    pointerProperties[0]?.id = 0
+    pointerProperties[0]?.toolType = MotionEvent.TOOL_TYPE_MOUSE
 
     val pointerCoords = arrayOfNulls<PointerCoords>(1)
     pointerCoords[0] = PointerCoords()
-    pointerCoords[0]!!.x = x
-    pointerCoords[0]!!.y = y
-    pointerCoords[0]!!.setAxisValue(MotionEvent.AXIS_VSCROLL, deltaY)
+    pointerCoords[0]?.x = x
+    pointerCoords[0]?.y = y
+    pointerCoords[0]?.setAxisValue(MotionEvent.AXIS_VSCROLL, deltaY)
     val event = MotionEvent.obtain(
         now,
         now,
@@ -112,12 +115,11 @@ fun injectKeyEvent(action: Int, key: String, code: Int) {
     }
 }
 
-private val scope = MainScope()
 
 /**
  * 根据Android keycode注入
  */
-fun injectKeyEvent(action: Int, keyCode: Int) {
+fun injectKeyEvent(keyCode: Int) {
     try {
         scope.launch(Dispatchers.IO) {
             "注入KeyCode事件成功,keyCode=$keyCode".logI()
@@ -131,10 +133,10 @@ fun injectKeyEvent(action: Int, keyCode: Int) {
 /**
  * 根据KeyEvent注入
  */
-fun injectKeyEvent(event: KeyEvent) {
+fun injectEvent(inputEvent: InputEvent) {
     try {
-        "注入自定义事件成功,event=$event".logI()
-        iInput?.injectInputEvent(event, 0)
+        "注入inputEvent=$inputEvent".logI()
+        iInput?.injectInputEvent(inputEvent, 0)
     } catch (e: Exception) {
         e.printStackTrace()
     }
