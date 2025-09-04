@@ -312,8 +312,7 @@ fun goToSleep() {
     try {
         val iPower =
             IPowerManager.Stub.asInterface(ServiceManager.getService(Context.POWER_SERVICE))
-        if (iPower.isInteractive)
-            iPower.goToSleep(SystemClock.uptimeMillis(), 0, 0)
+        if (iPower.isInteractive) iPower.goToSleep(SystemClock.uptimeMillis(), 0, 0)
     } catch (e: Exception) {
         e.printStackTrace()
     }
