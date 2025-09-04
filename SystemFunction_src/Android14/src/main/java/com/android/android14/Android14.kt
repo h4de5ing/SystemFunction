@@ -24,15 +24,16 @@ fun setLock14(callerPackageName: String): Boolean {
     }
 }
 
-fun lockScreen(mode: Int = 0){
+fun lockScreen(mode: Int = 0) {
     if (Build.VERSION.SDK_INT >= 34) {
         try {
             TurnOffScreen.log("Start")
-            val surfaceComposer = SurfaceComposer.getInstance()
-            val displayIds = surfaceComposer.getPhysicalDisplayIds()
-            for (displayId in displayIds) {
-                TurnOffScreen.log("displayId: $displayId, mode: $mode")
-                surfaceComposer.setPowerMode(displayId, mode)
+            SurfaceComposer.Companion.instance?.apply {
+                val displayIds = physicalDisplayIds
+                for (displayId in displayIds) {
+                    TurnOffScreen.log("displayId: $displayId, mode: $mode")
+                    setPowerMode(displayId, mode)
+                }
             }
         } catch (e: Throwable) {
             e.printStackTrace()
