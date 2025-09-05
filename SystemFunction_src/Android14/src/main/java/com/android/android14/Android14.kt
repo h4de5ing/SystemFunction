@@ -24,6 +24,9 @@ fun setLock14(callerPackageName: String): Boolean {
     }
 }
 
+/**
+ * Android 14才有的接口，只息屏不锁屏
+ */
 fun lockScreen(mode: Int = 0) {
     if (Build.VERSION.SDK_INT >= 34) {
         try {

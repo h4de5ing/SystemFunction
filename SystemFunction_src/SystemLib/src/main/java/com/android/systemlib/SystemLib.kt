@@ -5,13 +5,16 @@ import android.app.ActivityManager
 import android.app.ActivityOptions
 import android.app.AlarmManager
 import android.app.IActivityManager
+import android.app.usage.IStorageStatsManager
 import android.bluetooth.BluetoothManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.pm.IPackageDataObserver
 import android.content.pm.IPackageManager
+import android.content.pm.IPackageStatsObserver
 import android.content.pm.PackageManager
+import android.content.pm.PackageStats
 import android.content.pm.ResolveInfo
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
@@ -34,11 +37,13 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.BufferedReader
+import java.io.File
 import java.io.IOException
 import java.io.InputStream
 import java.io.InputStreamReader
 import java.util.Locale
 import java.util.TimeZone
+import java.util.UUID
 
 
 val HOME_INTENT = Intent("android.intent.action.MAIN").addCategory("android.intent.category.HOME")
@@ -572,6 +577,92 @@ fun enterSplitScreen(context: Context, component1: ComponentName, component2: Co
  */
 fun getPackageContext(context: Context, packageName: String) {
     val targetContext = context.createPackageContext(packageName, 0)
-    val path = targetContext.getExternalFilesDir("")
+    val path = targetContext.getExternalFilesDir("logs")
     println("path=${path?.listFiles()?.map { it.name }?.joinToString(",")}")
+
+    val file = File(path, "log.txt")
+    val result = file.readText()
+    println("result=$result")
+}
+
+private val UUID_PRIVATE_INTERNAL: String? = null
+private const val UUID_PRIMARY_PHYSICAL = "primary_physical"
+private const val UUID_SYSTEM = "system"
+private const val FAT_UUID_PREFIX = "fafafafa-fafa-5afa-8afa-fafa"
+private val UUID_DEFAULT = UUID.fromString("41217664-9172-527a-b3d5-edabb50a7d69")
+private val UUID_PRIMARY_PHYSICAL_ = UUID.fromString("0f95a519-dae7-5abf-9519-fbd6209e05fd")
+private val UUID_SYSTEM_ = UUID.fromString("5d258386-e60d-59e3-826d-0089cdd42cc0")
+fun convert(storageUuid: UUID): String? {
+    if (UUID_DEFAULT == storageUuid) {
+        return UUID_PRIVATE_INTERNAL
+    } else if (UUID_PRIMARY_PHYSICAL_ == storageUuid) {
+        return UUID_PRIMARY_PHYSICAL
+    } else if (UUID_SYSTEM_ == storageUuid) {
+        return UUID_SYSTEM
+    } else {
+        val uuidString = storageUuid.toString()
+        // This prefix match will exclude fsUuids from private volumes because
+        // (a) linux fsUuids are generally Version 4 (random) UUIDs so the prefix
+        // will contain 4xxx instead of 5xxx and (b) we've already matched against
+        // known namespace (Version 5) UUIDs above.
+        if (uuidString.startsWith(FAT_UUID_PREFIX)) {
+            val fatStr = uuidString.substring(FAT_UUID_PREFIX.length)
+                .uppercase()
+            return fatStr.substring(0, 4) + "-" + fatStr.substring(4)
+        }
+        return storageUuid.toString()
+    }
+}
+
+fun getStorageStats(context: Context, storageUuid: UUID, packageName: String): LongArray {
+    val pm = context.packageManager
+    var result = longArrayOf(0L, 0L, 0L)
+    try {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val iStorage =
+                IStorageStatsManager.Stub.asInterface(ServiceManager.getService(Context.STORAGE_STATS_SERVICE))
+            val storageStats =
+                iStorage.queryStatsForPackage(
+                    convert(storageUuid),
+                    packageName,
+                    0,
+                    context.packageName
+                )
+            result = longArrayOf(
+                storageStats.cacheBytes,
+                storageStats.appBytes,
+                storageStats.dataBytes
+            )
+        } else {
+            try {
+                val clazz = Class.forName("android.content.pm.PackageManager")
+                val method = clazz.getMethod(
+                    "getPackageSizeInfo",
+                    String::class.java,
+                    Class.forName("android.content.pm.IPackageStatsObserver")
+                )
+                val observer = object : IPackageStatsObserver.Stub() {
+                    override fun onGetStatsCompleted(stats: PackageStats?, succeeded: Boolean) {
+                        if (succeeded) {
+                            println("cacheBytes=${stats?.cacheSize}")
+                            println("appBytes=${stats?.codeSize}")
+                            println("dataBytes=${stats?.dataSize}")
+                            result = longArrayOf(
+                                stats?.cacheSize ?: 0L,
+                                stats?.codeSize ?: 0L,
+                                stats?.dataSize ?: 0L
+                            )
+                        }
+                    }
+                }
+                method.invoke(pm, packageName, observer)
+                // 注意：此方法在 Android 5.0+ 已被废弃，可能无效，实际开发中建议使用 StorageStatsManager（API 26+）
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+    return result
 }
