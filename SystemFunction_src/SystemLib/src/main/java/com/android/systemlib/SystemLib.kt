@@ -606,8 +606,7 @@ fun convert(storageUuid: UUID): String? {
         // will contain 4xxx instead of 5xxx and (b) we've already matched against
         // known namespace (Version 5) UUIDs above.
         if (uuidString.startsWith(FAT_UUID_PREFIX)) {
-            val fatStr = uuidString.substring(FAT_UUID_PREFIX.length)
-                .uppercase()
+            val fatStr = uuidString.substring(FAT_UUID_PREFIX.length).uppercase()
             return fatStr.substring(0, 4) + "-" + fatStr.substring(4)
         }
         return storageUuid.toString()
@@ -621,17 +620,11 @@ fun getStorageStats(context: Context, storageUuid: UUID, packageName: String): L
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val iStorage =
                 IStorageStatsManager.Stub.asInterface(ServiceManager.getService(Context.STORAGE_STATS_SERVICE))
-            val storageStats =
-                iStorage.queryStatsForPackage(
-                    convert(storageUuid),
-                    packageName,
-                    0,
-                    context.packageName
-                )
+            val storageStats = iStorage.queryStatsForPackage(
+                convert(storageUuid), packageName, 0, context.packageName
+            )
             result = longArrayOf(
-                storageStats.cacheBytes,
-                storageStats.appBytes,
-                storageStats.dataBytes
+                storageStats.cacheBytes, storageStats.appBytes, storageStats.dataBytes
             )
         } else {
             try {
@@ -648,9 +641,7 @@ fun getStorageStats(context: Context, storageUuid: UUID, packageName: String): L
                             println("appBytes=${stats?.codeSize}")
                             println("dataBytes=${stats?.dataSize}")
                             result = longArrayOf(
-                                stats?.cacheSize ?: 0L,
-                                stats?.codeSize ?: 0L,
-                                stats?.dataSize ?: 0L
+                                stats?.cacheSize ?: 0L, stats?.codeSize ?: 0L, stats?.dataSize ?: 0L
                             )
                         }
                     }

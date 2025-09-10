@@ -3,19 +3,25 @@ package com.android.android12
 import android.app.INotificationManager
 import android.content.ComponentName
 import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
 import android.debug.IAdbManager
 import android.hardware.ISensorPrivacyManager
 import android.hardware.SensorPrivacyManager
 import android.net.IEthernetManager
 import android.net.IEthernetServiceListener
 import android.os.Build
+import android.os.PowerManager
 import android.os.ServiceManager
 import android.service.SensorPrivacyIndividualEnabledSensorProto
 import android.service.SensorPrivacyToggleSourceProto
+import android.service.dreams.DreamService
+import android.service.dreams.IDreamManager
 import android.util.Log
 import com.android.internal.widget.ILockSettings
 import com.android.internal.widget.LockPatternUtils
 import com.android.internal.widget.LockscreenCredential
+import java.lang.reflect.Method
 
 /**
  * frameworks/base/services/core/java/com/android/server/SensorPrivacyService.java
@@ -173,4 +179,118 @@ fun grantNotificationListenerAccessGranted12(serviceComponent: ComponentName) {
     Log.d(
         "GrantUtils", "grantNotificationListenerAccessGranted12 ${serviceComponent.className}"
     )
+}
+
+/**
+ *     IDreamManager的所有接口
+ *     void dream();//启动屏保
+ *
+ *     void awaken();
+ *
+ *     (maxTargetSdk = 30, trackingBug = 170729553)
+ *     void setDreamComponents(in ComponentName[] componentNames);//设置屏保
+ *
+ *     (maxTargetSdk = 30, trackingBug = 170729553)
+ *     ComponentName[] getDreamComponents();//获取屏保
+ *
+ *     ComponentName getDefaultDreamComponentForUser(int userId);//获取默认屏保
+ *
+ *     void testDream(int userId, in ComponentName componentName);//测试屏保
+ *
+ *     boolean isDreaming();//是否已经进入屏保状态
+ *
+ *     void finishSelf(in IBinder token, boolean immediate);//结束屏保
+ *
+ *     void startDozing(in IBinder token, int screenState, int screenBrightness);
+ *
+ *     void stopDozing(in IBinder token);
+ *
+ *     void forceAmbientDisplayEnabled(boolean enabled);
+ *
+ *     ComponentName[] getDreamComponentsForUser(int userId);
+ *
+ *     void setDreamComponentsForUser(int userId, in ComponentName[] componentNames);
+ *
+ */
+/**
+ * 获取所有安装的屏保app
+ */
+fun getDreamPackage(context: Context) {
+    try {
+        val pm = context.packageManager
+        val dreamIntent = Intent(DreamService.SERVICE_INTERFACE)
+        val resolveInfos = pm.queryIntentServices(dreamIntent, PackageManager.GET_META_DATA)
+        println("getDreamPackageSize=${resolveInfos.size}")
+        resolveInfos.forEach {
+            println("getDreamPackage=${it.serviceInfo.packageName}/${it.serviceInfo.name}")
+        }
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+}
+
+/**
+ * 启动屏保
+ */
+fun dream() {
+    try {
+        val iDreamManager = IDreamManager.Stub.asInterface(ServiceManager.getService("dreams"))
+        iDreamManager.dream()
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+}
+
+/**
+ * 通过PowerManager启动屏保
+ */
+fun setDefaultDreamTime(context: Context, time: Long) {
+    try {
+        val powerManager: PowerManager =
+            context.getSystemService(Context.POWER_SERVICE) as PowerManager
+        val method: Method =
+            powerManager.javaClass.getMethod("dream", Long::class.javaPrimitiveType)
+        method.invoke(powerManager, time)
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+}
+
+/**
+ * 通过ComponentName启用屏保，适合调试的调用
+ */
+fun testDream(componentName: ComponentName) {
+    try {
+        val iDreamManager = IDreamManager.Stub.asInterface(ServiceManager.getService("dreams"))
+        iDreamManager.testDream(0, componentName)
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+}
+
+fun getDreamComponents() {
+    val iDreamManager = IDreamManager.Stub.asInterface(ServiceManager.getService("dreams"))
+    iDreamManager.dreamComponents.forEach {
+        println("获取已经安装的屏保app=${it.packageName}/${it.className}")
+    }
+}
+
+fun setDefaultDream(componentName: ComponentName) {
+    try {
+        val iDreamManager = IDreamManager.Stub.asInterface(ServiceManager.getService("dreams"))
+        iDreamManager.dreamComponents = arrayOf(componentName)
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+}
+
+
+fun getDefaultDreamComponent12() {
+    try {
+        val iDreamManager = IDreamManager.Stub.asInterface(ServiceManager.getService("dreams"))
+        val componentName = iDreamManager.getDefaultDreamComponentForUser(0)
+        println("默认屏保=${componentName.packageName}/${componentName.className}")
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
 }
