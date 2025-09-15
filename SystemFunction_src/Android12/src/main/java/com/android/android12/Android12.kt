@@ -182,6 +182,10 @@ fun grantNotificationListenerAccessGranted12(serviceComponent: ComponentName) {
 }
 
 /**
+ * 屏保app可以参考
+ * 万花筒 com.android.dreams.basic/com.android.dreams.basic.Colors
+ * 时钟 com.android.deskclock/com.android.deskclock.Screensaver
+ * com.google.android.deskclock/com.android.deskclock.Screensaver
  *     IDreamManager的所有接口
  *     void dream();//启动屏保
  *
@@ -211,6 +215,10 @@ fun grantNotificationListenerAccessGranted12(serviceComponent: ComponentName) {
  *
  *     void setDreamComponentsForUser(int userId, in ComponentName[] componentNames);
  *
+ * 是否打开屏保 Settings.Secure.SCREENSAVER_ENABLED
+ * 休眠的时候是否打开屏保 Settings.Secure.SCREENSAVER_ACTIVATE_ON_SLEEP
+ * 底座的时候是否打开屏保 Settings.Secure.SCREENSAVER_ACTIVATE_ON_DOCK
+ * 查看开关状态 settings list secure|grep screensaver
  */
 /**
  * 获取所有安装的屏保app
@@ -235,7 +243,7 @@ fun getDreamPackage(context: Context) {
 fun dream() {
     try {
         val iDreamManager = IDreamManager.Stub.asInterface(ServiceManager.getService("dreams"))
-        iDreamManager.dream()
+        if (!iDreamManager.isDreaming) iDreamManager.dream()
     } catch (e: Exception) {
         e.printStackTrace()
     }

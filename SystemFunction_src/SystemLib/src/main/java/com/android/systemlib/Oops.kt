@@ -280,10 +280,10 @@ const val APP_OP_AUTO_REVOKE_PERMISSIONS_IF_UNUSED = 97//未使用权限移除
 const val APP_OP_AUTO_REVOKE_MANAGED_BY_INSTALLER = 98//管理安装的权限
 const val APP_OP_NO_ISOLATED_STORAGE = 99//数据虚拟文件系统隔离
 
-val MODE_ALLOWED = 0
-val MODE_IGNORED = 1
-val MODE_ERRORED = 2
-val MODE_DEFAULT = 3
+val MODE_ALLOWED = 0//访问者可以访问该敏感操作
+val MODE_IGNORED = 1//访问者不可以访问该敏感操作，但是不会引发crash;
+val MODE_ERRORED = 2//访问者不可以访问该敏感操作，会引发crash;
+val MODE_DEFAULT = 3//访问者来决定访问该敏感操作的准入规则。
 val MODE_FOREGROUND = 4
 fun setMode(context: Context, code: Int, packageName: String, mode: Int) {
     try {

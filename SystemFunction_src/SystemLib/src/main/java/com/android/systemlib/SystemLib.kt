@@ -556,6 +556,20 @@ fun setConfiguration(language: String): Boolean {
  * component2
  * 如果是竖屏 1在上面 2在下面
  * 如果是横屏 1在左边 2在右边
+ *
+ * https://source.android.google.cn/docs/core/display/multi-window?hl=zh-cn
+ *   //未定义
+ *     public static final int WINDOWING_MODE_UNDEFINED = 0;
+ *     //普通全屏窗口
+ *     public static final int WINDOWING_MODE_FULLSCREEN = 1;
+ *     //画中画
+ *     public static final int WINDOWING_MODE_PINNED = 2;
+ *     //分屏主窗口
+ *     public static final int WINDOWING_MODE_SPLIT_SCREEN_PRIMARY = 3;
+ *     //分屏副窗口
+ *     public static final int WINDOWING_MODE_SPLIT_SCREEN_SECONDARY = 4;
+ *     //自由窗口 自由窗口模式里面，窗口支持放大缩小以及移动位置，原理是不断的更改Task的边界(用Rect表示)，然后根据Task的边界来重新缩放Task，从而达到窗口缩放和拖动的作用。
+ *     public static final int WINDOWING_MODE_FREEFORM = 5;
  */
 fun enterSplitScreen(context: Context, component1: ComponentName, component2: ComponentName) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -569,6 +583,25 @@ fun enterSplitScreen(context: Context, component1: ComponentName, component2: Co
         intent2.component = component2
         intent2.addFlags(Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT or Intent.FLAG_ACTIVITY_NEW_TASK)
         context.startActivity(intent2)
+    }
+}
+
+/**
+ * 多屏显示
+ */
+fun enterMultiScreen(context: Context, component1: ComponentName) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        val options = ActivityOptions.makeBasic()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            //display0表达第一块屏幕 display1表达第二块屏幕
+            options.launchDisplayId = 0
+        }
+        val secondIntent = Intent()
+        secondIntent.component = component1
+        secondIntent.addFlags(
+            Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_MULTIPLE_TASK
+        )
+        context.startActivity(secondIntent, options.toBundle())
     }
 }
 

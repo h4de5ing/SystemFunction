@@ -284,6 +284,18 @@ fun reboot() = IPowerManager.Stub.asInterface(ServiceManager.getService(Context.
     .reboot(false, "reboot", false)
 
 /**
+ * Returns current time in milliseconds since boot, not counting time spent in deep sleep.
+ * 唤醒时间，不包括睡眠时间
+ */
+fun uptimeMillis(): Long = SystemClock.uptimeMillis()
+
+/**
+ * Returns milliseconds since boot, including time spent in sleep.
+ * 唤醒时间，包括睡眠时间
+ */
+fun elapsedRealtime(): Long = SystemClock.elapsedRealtime()
+
+/**
  * 恢复出厂设置
  * Can't perform master clear/factory reset
  */
