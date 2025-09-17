@@ -31,17 +31,20 @@ fun injectInit() {
 }
 
 fun injectMotionEvent(action: Int, x: Float, y: Float) {
-    val downTime = SystemClock.uptimeMillis()
-    val eventTime = SystemClock.uptimeMillis()
-    val event = MotionEvent.obtain(downTime, eventTime, action, x, y, 0)
-    try {
-        event.source = InputDevice.SOURCE_TOUCHSCREEN
-        iInput?.injectInputEvent(event, 0)
-        "注入鼠标点击事件成功,$action,$x,$y".logI()
-    } catch (e: RemoteException) {
-        e.printStackTrace()
-    } finally {
-        event.recycle()
+    scope.launch(Dispatchers.IO) {
+        val downTime = SystemClock.uptimeMillis()
+        val eventTime = SystemClock.uptimeMillis()
+//        val event = MotionEvent.obtain(downTime, eventTime, action, x, y, 0)
+        try {
+//            event.source = InputDevice.SOURCE_TOUCHSCREEN
+//            iInput?.injectInputEvent(event, 0)
+            injectMotionEvent2(action, x, y)
+            "注入鼠标点击事件成功,$action,$x,$y".logI()
+        } catch (e: RemoteException) {
+            e.printStackTrace()
+        } finally {
+//            event.recycle()
+        }
     }
 }
 
