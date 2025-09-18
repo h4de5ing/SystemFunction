@@ -28,7 +28,7 @@ android {
 dependencies {
     compileOnly files('libs/classes-header-13.jar')
     compileOnly files('libs/connect_framework_t.jar')
-    implementation 'androidx.core:core-ktx:1.17.0'
+    implementation libs.androidx.core.ktx
 }
 afterEvaluate {
     publishing {
