@@ -276,14 +276,25 @@ fun testDream(componentName: ComponentName) {
     }
 }
 
-fun getDreamComponents() {
-    val iDreamManager = IDreamManager.Stub.asInterface(ServiceManager.getService("dreams"))
-    iDreamManager.dreamComponents.forEach {
-        println("获取已经安装的屏保app=${it.packageName}/${it.className}")
+/**
+ * 获取已经设置的屏保
+ */
+fun getDreamComponents(): ComponentName? {
+    var componentName: ComponentName? = null
+    try {
+        val iDreamManager = IDreamManager.Stub.asInterface(ServiceManager.getService("dreams"))
+        val list = iDreamManager.dreamComponents
+        list.forEach {
+            println("获取已经安装的屏保app=${it.packageName}/${it.className}")
+        }
+        componentName = list.firstOrNull()
+    } catch (e: Exception) {
+        e.printStackTrace()
     }
+    return componentName
 }
 
-fun setDefaultDream(componentName: ComponentName) {
+fun setDreamComponents(componentName: ComponentName) {
     try {
         val iDreamManager = IDreamManager.Stub.asInterface(ServiceManager.getService("dreams"))
         iDreamManager.dreamComponents = arrayOf(componentName)
@@ -292,7 +303,11 @@ fun setDefaultDream(componentName: ComponentName) {
     }
 }
 
-
+/**
+ * 获取默认屏保
+ * settings get secure screensaver_default_component
+ */
+@Deprecated("这个方法暂时无用")
 fun getDefaultDreamComponent12() {
     try {
         val iDreamManager = IDreamManager.Stub.asInterface(ServiceManager.getService("dreams"))
