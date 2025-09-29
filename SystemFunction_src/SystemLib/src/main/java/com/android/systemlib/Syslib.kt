@@ -146,6 +146,28 @@ fun getPrivilegedConfiguredNetworks(context: Context): List<WifiConfiguration> =
     IWifiManager.Stub.asInterface(ServiceManager.getService(Context.WIFI_SERVICE))
         .getPrivilegedConfiguredNetworks(context.packageName).list as List<WifiConfiguration>
 
+fun setDefaultLauncher(context: Context, componentName: ComponentName) {
+    try {
+        val iPackageManager = IPackageManager.Stub.asInterface(ServiceManager.getService("package"))
+        val pm = context.packageManager
+        val homeActivities = pm.queryIntentActivities(HOME_INTENT, 0)
+        val set = arrayOfNulls<ComponentName>(homeActivities.size)
+        for (i in homeActivities.indices) {
+            val info = homeActivities[i].activityInfo
+            set[i] = ComponentName(info.packageName, info.name)
+        }
+        iPackageManager.replacePreferredActivity(
+            HOME_INTENT_FILTER,
+            AccessibilityEventCompat.TYPE_TOUCH_INTERACTION_START,
+            set,
+            componentName,
+            0
+        )
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+}
+
 /**
  * 静默设置默认桌面
  */

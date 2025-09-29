@@ -10,6 +10,7 @@ import android.bluetooth.BluetoothManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.IPackageDataObserver
 import android.content.pm.IPackageManager
 import android.content.pm.IPackageStatsObserver
@@ -46,8 +47,13 @@ import java.util.TimeZone
 import java.util.UUID
 
 
-val HOME_INTENT = Intent("android.intent.action.MAIN").addCategory("android.intent.category.HOME")
-    .addCategory("android.intent.category.DEFAULT")
+val HOME_INTENT = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)
+    .addCategory(Intent.CATEGORY_DEFAULT)
+
+val HOME_INTENT_FILTER = IntentFilter(Intent.ACTION_MAIN).apply {
+    addCategory(Intent.CATEGORY_HOME)
+    addCategory(Intent.CATEGORY_DEFAULT)
+}
 
 /**
  * 获取默认Launcher的包名
