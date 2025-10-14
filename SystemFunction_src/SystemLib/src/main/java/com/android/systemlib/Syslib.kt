@@ -21,7 +21,6 @@ import android.media.IAudioService
 import android.net.ConnectivityManager
 import android.net.IConnectivityManager
 import android.net.IEthernetManager
-import android.net.IEthernetServiceListener
 import android.net.LinkAddress
 import android.net.LinkProperties
 import android.net.NetworkCapabilities
@@ -1001,48 +1000,17 @@ fun getAs() {
     am.getInstalledAccessibilityServiceList(0)
 }
 
-fun ethernetListener(onChange: (String, Boolean) -> Unit) {
-    val iEthernetManager =
-        IEthernetManager.Stub.asInterface(ServiceManager.getService("ethernet")) as IEthernetManager
-    iEthernetManager.addListener(object : IEthernetServiceListener.Stub() {
-        override fun onAvailabilityChanged(iface: String, isAvailable: Boolean) {
-            onChange(iface, isAvailable)
-        }
-    })
-}
-
 fun isAvailable(face: String): Boolean {
     val iEthernetManager =
         IEthernetManager.Stub.asInterface(ServiceManager.getService("ethernet")) as IEthernetManager
     return iEthernetManager.isAvailable(face)
 }
 
-fun ethernetStart() {
-    try {
-        val iEthernetManager =
-            IEthernetManager.Stub.asInterface(ServiceManager.getService("ethernet")) as IEthernetManager
-        iEthernetManager.Trackstart()
-    } catch (e: Exception) {
-        e.printStackTrace()
-    }
-}
-
-fun ethernetStop() {
-    try {
-        val iEthernetManager =
-            IEthernetManager.Stub.asInterface(ServiceManager.getService("ethernet")) as IEthernetManager
-        iEthernetManager.Trackstop()
-    } catch (e: Exception) {
-        e.printStackTrace()
-    }
-}
-
 /**
  * 判断是否存在ETH的控制接口
  */
 fun hasEthernetInterface(): Boolean {
-    val iEthernetManager =
-        IEthernetManager.Stub.asInterface(ServiceManager.getService("ethernet"))
+    val iEthernetManager = IEthernetManager.Stub.asInterface(ServiceManager.getService("ethernet"))
     try {
         val methods = iEthernetManager?.javaClass?.methods?.map { it.name }
         methods?.apply {
