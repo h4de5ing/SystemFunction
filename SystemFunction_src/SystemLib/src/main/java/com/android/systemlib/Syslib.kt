@@ -1076,6 +1076,20 @@ fun hasEthernetListenerInterface(): Boolean {
 }
 
 /**
+ * 遍历所有ETH接口
+ */
+fun mapEth(): List<String> {
+    try {
+        val iEthernetManager =
+            IEthernetManager.Stub.asInterface(ServiceManager.getService("ethernet"))
+        return iEthernetManager?.javaClass?.methods?.map { it.name } ?: emptyList()
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+    return emptyList()
+}
+
+/**
  * @description 是否禁用以太网功能
  * @param disable true：禁用， false 启用
  * @param isSupported 回调是否支持禁用以太网功能，true 支持，false 不支持
