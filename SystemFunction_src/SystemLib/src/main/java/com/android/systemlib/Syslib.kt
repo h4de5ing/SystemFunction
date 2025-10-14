@@ -65,7 +65,6 @@ import com.android.android12.addEthernetListener12
 import com.android.android12.disableEthernet12
 import com.android.android12.disableSensor12
 import com.android.android12.getAdbWirelessPort12
-import com.android.android12.iEthernetManager
 import com.android.android12.removeEthernetListener12
 import com.android.android13.addEthernetListener13
 import com.android.android13.disableEthernet13
@@ -1039,17 +1038,36 @@ fun ethernetStop() {
 }
 
 /**
- * @description 判断是否支持禁用以太网
- * @return 支持返回ture,否则返回false
+ * 判断是否存在ETH的控制接口
  */
-fun hasEthernetControlInterface(): Boolean {
-    if (Build.VERSION.SDK_INT < 31 || Build.VERSION.SDK_INT == 33 || Build.VERSION.SDK_INT == 34) return true
+fun hasEthernetInterface(): Boolean {
+    val iEthernetManager =
+        IEthernetManager.Stub.asInterface(ServiceManager.getService("ethernet"))
     try {
-        iEthernetManager = IEthernetManager.Stub.asInterface(ServiceManager.getService("ethernet"))
         val methods = iEthernetManager?.javaClass?.methods?.map { it.name }
         methods?.apply {
-            if (contains("Trackstop") && contains("Trackstart")) return true
+            if (Build.VERSION.SDK_INT < 33) {
+                if (contains("Trackstop") && contains("Trackstart")) return true
+            } else {
+                if (contains("setEthernetEnabled")) return true
+            }
         }
+    } catch (e: Exception) {
+        e.printStackTrace()
+        return false
+    }
+    return false
+}
+
+/**
+ * 判断大于Android13(33)的设备有没有addListener这个接口
+ */
+fun hasEthernetListenerInterface(): Boolean {
+    try {
+        val iEthernetManager =
+            IEthernetManager.Stub.asInterface(ServiceManager.getService("ethernet"))
+        val methods = iEthernetManager?.javaClass?.methods?.map { it.name }
+        methods?.apply { if (contains("addListener") && contains("removeListener")) return true }
     } catch (e: Exception) {
         e.printStackTrace()
         return false
@@ -1063,18 +1081,32 @@ fun hasEthernetControlInterface(): Boolean {
  * @param isSupported 回调是否支持禁用以太网功能，true 支持，false 不支持
  */
 fun disableEthernet(disable: Boolean, isSupported: (Boolean) -> Unit = {}) {
-    if (Build.VERSION.SDK_INT < 33) disableEthernet12(disable, isSupported)
-    else disableEthernet13(disable)
+    if (Build.VERSION.SDK_INT < 33) {//Android12及以下版本
+        if (hasEthernetInterface()) {
+            disableEthernet12(disable, isSupported)
+        } else {
+            isSupported(false)
+            println("Android${Build.VERSION.RELEASE} EthernetManager没有控制接口")
+        }
+    } else disableEthernet13(disable)
 }
 
 fun addEthernetListener(change: ((String, Boolean) -> Unit) = { _, _ -> }) {
-    if (Build.VERSION.SDK_INT < 33) addEthernetListener12(change)
-    else addEthernetListener13(change)
+    if (hasEthernetListenerInterface()) {
+        if (Build.VERSION.SDK_INT < 33) addEthernetListener12(change)
+        else addEthernetListener13(change)
+    } else {
+        println("Android${Build.VERSION.RELEASE} EthernetManager没有监听接口")
+    }
 }
 
 fun removeEthernetListener() {
-    if (Build.VERSION.SDK_INT < 33) removeEthernetListener12()
-    else removeEthernetListener13()
+    if (hasEthernetListenerInterface()) {
+        if (Build.VERSION.SDK_INT < 33) removeEthernetListener12()
+        else removeEthernetListener13()
+    } else {
+        println("Android${Build.VERSION.RELEASE} EthernetManager没有监听接口")
+    }
 }
 
 private var iStorageManager: IStorageManager? = null
