@@ -1108,6 +1108,18 @@ fun getVolumes(): List<Triple<String, Int, Int>> {
         ?: emptyList()
 }
 
+/**
+ * 如果要区分ssd或者u盘，可通过 disk的sysPath里面是否包含sata或者usb来区分
+ */
+fun getUSBVolumes() {
+    val iStorageManager2 = IStorageManager.Stub.asInterface(ServiceManager.getService("mount"))
+    val list = iStorageManager2?.getVolumes(0)
+    println("找到了【${list?.size}】个USB存储器")
+    iStorageManager2.disks?.forEach {
+        println("磁盘:${it}")
+    }
+}
+
 
 fun mount(id: String) {
     println("挂载 $id")

@@ -148,7 +148,7 @@ fun getCredentialType12(): Int {
     } else return -1
 }
 
-//TODO 需要selinux权限
+//需要selinux权限
 fun startTcp5555() {
 //    android.os.SystemProperties.set("persist.adb.tls_server.enable", "1")
 //    android.os.SystemProperties.set("ro.adb.secure", "0")
