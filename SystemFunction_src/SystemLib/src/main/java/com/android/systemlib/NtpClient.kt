@@ -19,7 +19,7 @@ class NtpClient {
      * @param timeout network timeout in milliseconds.
      * @return time if the transaction was successful.
      */
-    fun requestTime(host: String, timeout: Int): Long {
+    fun requestTime(host: String, timeout: Int = NTP_TIME_OUT_MILLISECOND): Long {
         var currentTime = System.currentTimeMillis()
         try {
             DatagramSocket().use { socket ->
