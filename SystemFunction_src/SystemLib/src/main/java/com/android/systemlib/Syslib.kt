@@ -1398,7 +1398,7 @@ fun bugReportManager(context: Context, onFinished: (String) -> Unit) {
                     onFinished(bugFile.absolutePath)
                 }
             }
-            bug.startConnectivityBugreport(bugFileFd, executorIO, callback)
+            //bug.startConnectivityBugreport(bugFileFd, executorIO, callback)
         } catch (e: Exception) {
             e.printStackTrace()
         }
