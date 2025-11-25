@@ -57,7 +57,6 @@ import android.telephony.TelephonyManager
 import android.text.TextUtils
 import android.text.format.Formatter
 import android.view.accessibility.IAccessibilityManager
-import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import androidx.core.view.accessibility.AccessibilityEventCompat
@@ -911,8 +910,9 @@ fun unmount(context: Context) {
 /**
  * 获取usb存储设备
  */
-fun getStorage(context: Context, tv: TextView) {
+fun getStorage(context: Context, onChange: (list: List<String>) -> Unit) {
     try {
+        val usbPath = mutableListOf<String>()
         val iStorageManager = IStorageManager.Stub.asInterface(ServiceManager.getService("mount"))
         iStorageManager.getVolumes(0).forEach {
             it.getDisk()?.isUsb?.apply {
@@ -923,11 +923,11 @@ fun getStorage(context: Context, tv: TextView) {
                 val total = Formatter.formatFileSize(context, totalBytes)
                 val read = File(it.path).canRead()
                 val write = File(it.path).canWrite()
-                tv.append(
-                    it.path + " r:${read} w:${write} " + " ${used}/${total}" + "\n"
-                )
+                println(it.path + " r:${read} w:${write} " + " ${used}/${total}")
+                usbPath.add(it.path)
             }
         }
+        onChange((usbPath))
     } catch (e: Exception) {
         e.printStackTrace()
     }
