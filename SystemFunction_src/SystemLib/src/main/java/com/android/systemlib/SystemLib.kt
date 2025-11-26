@@ -38,7 +38,6 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.BufferedReader
-import java.io.File
 import java.io.IOException
 import java.io.InputStream
 import java.io.InputStreamReader
@@ -468,10 +467,10 @@ fun getBatteryCapacity(context: Context): Int {
     var batteryCapacity = 0
     val mPowerProfile: Any
     try {
-        val POWER_PROFILE_CLASS = "com.android.internal.os.PowerProfile"
-        mPowerProfile = Class.forName(POWER_PROFILE_CLASS).getConstructor(Context::class.java)
+        val powerProFileClass = "com.android.internal.os.PowerProfile"
+        mPowerProfile = Class.forName(powerProFileClass).getConstructor(Context::class.java)
             .newInstance(context)
-        batteryCapacity = (Class.forName(POWER_PROFILE_CLASS).getMethod("getBatteryCapacity")
+        batteryCapacity = (Class.forName(powerProFileClass).getMethod("getBatteryCapacity")
             .invoke(mPowerProfile) as Double).toInt()
     } catch (e: java.lang.Exception) {
         e.printStackTrace()
@@ -611,17 +610,37 @@ fun enterMultiScreen(context: Context, component1: ComponentName) {
     }
 }
 
+private const val contextFlagsIncludeCode = 0x00000001
+private const val contextFlagsIgnoreSecurity = 0x00000002
+private const val contextFlagsRestricted = 0x00000004
+private const val contextFlagsDeviceProtectedStorage = 0x00000008
+private const val contextFlagsCredentialProtectedStorage = 0x00000010
+private const val contextFlagsRegisterPackage = 0x40000000
+
 /**
- * 获取了对应app的上下文，就可以获取应用的数据，可以用于数据备份
+ * 获取了对应app的上下文，就可以获取目标应用的一些数据
+ * 动态加载其他应用程序的代码：通过使用 CONTEXT_INCLUDE_CODE 和 CONTEXT_IGNORE_SECURITY，你可以加载其他应用程序的类并实例化对象，调用方法。这常用于插件化框架。
+ *
+ * 访问其他应用程序的资源：即使没有包含代码，你也可以访问其他应用程序的资源（如字符串、图片等）。例如，你可以使用 getResources() 方法获取目标应用程序的资源。
+ *
+ * 访问特定存储区域的数据：通过 CONTEXT_DEVICE_PROTECTED_STORAGE 和 CONTEXT_CREDENTIAL_PROTECTED_STORAGE，你可以访问目标应用程序在不同安全级别的存储区域的数据。
+ *
+ * 绕过安全限制：使用 CONTEXT_IGNORE_SECURITY 可以绕过一些安全限制，但要注意这可能会带来安全风险，并且只有在调用者具有足够权限（如系统应用）时才可能成功。
+ *
+ * 创建受限的上下文：使用 CONTEXT_RESTRICTED 可以创建一个受限制的上下文，用于安全沙盒环境。
  */
 fun getPackageContext(context: Context, packageName: String) {
-    val targetContext = context.createPackageContext(packageName, 0)
-    val path = targetContext.getExternalFilesDir("logs")
-    println("path=${path?.listFiles()?.map { it.name }?.joinToString(",")}")
-
-    val file = File(path, "log.txt")
-    val result = file.readText()
-    println("result=$result")
+    try {
+        val targetContext =
+            context.createPackageContext(packageName, 0)
+        val appInfo = targetContext.packageManager.getApplicationInfo(packageName, 0)
+        val assets = targetContext.resources.assets.list("")
+        assets?.forEach {
+            println("assets=$it")
+        }
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
 }
 
 private val UUID_PRIVATE_INTERNAL: String? = null
