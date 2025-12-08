@@ -391,15 +391,26 @@ fun setStatusBarDisabled(context: Context, componentName: ComponentName, isDisab
 }
 
 /**
- * kiosk模式
+ * 启动kiosk模式
  */
-fun kiosk(context: Context, admin: ComponentName, packages: Array<String>): Boolean {
+fun kiosk(context: Activity, admin: ComponentName, packages: Array<String>): Boolean {
     return try {
-        (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager).setLockTaskPackages(
-            admin, packages
-        )
+        val dpm =
+            (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager)
+        if (dpm.isDeviceOwnerApp(admin.packageName)) {
+            dpm.setLockTaskPackages(admin, packages)// 设备所有者应用可以完全控制
+            println("设备所有者应用可以完全控制")
+        }
+        if (dpm.isLockTaskPermitted(admin.packageName)) {
+            context.startLockTask()
+            println("启动Kiosk锁屏成功")
+        } else {
+//            context.stopLockTask()
+            println("启动Kiosk锁屏失败")
+        }
         true
-    } catch (_: Exception) {
+    } catch (e: Exception) {
+        e.fillInStackTrace()
         false
     }
 }

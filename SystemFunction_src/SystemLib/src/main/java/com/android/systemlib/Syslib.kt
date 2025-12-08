@@ -433,7 +433,7 @@ private fun copyInstallFile(
     apkFilePath: String,
     change: ((Int, String) -> Unit)
 ): Boolean {
-    var `in`: InputStream? = null
+    var inputStream: InputStream? = null
     var out: OutputStream? = null
     var session: PackageInstaller.Session? = null
     var success = false
@@ -441,11 +441,11 @@ private fun copyInstallFile(
         val apkFile = File(apkFilePath)
         session = packageInstaller.openSession(sessionId)
         out = session.openWrite("base.apk", 0, apkFile.length())
-        `in` = FileInputStream(apkFile)
+        inputStream = FileInputStream(apkFile)
         var total = 0
         var c: Int
         val buffer = ByteArray(65536)
-        while (`in`.read(buffer).also { c = it } != -1) {
+        while (inputStream.read(buffer).also { c = it } != -1) {
             total += c
             out.write(buffer, 0, c)
         }
@@ -456,7 +456,7 @@ private fun copyInstallFile(
         e.printStackTrace()
     } finally {
         closeQuietly(out)
-        closeQuietly(`in`)
+        closeQuietly(inputStream)
         closeQuietly(session)
     }
     return success
