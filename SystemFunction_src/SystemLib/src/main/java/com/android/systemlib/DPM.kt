@@ -392,6 +392,29 @@ fun setStatusBarDisabled(context: Context, componentName: ComponentName, isDisab
 
 /**
  * 启动kiosk模式
+ * Android management API:
+ * Example:
+ * {
+ *   "kioskCustomization": {
+ *     "systemNavigation": "NAVIGATION_ENABLED",
+ *     "deviceSettings": "SETTINGS_ACCESS_BLOCKED"
+ *   },
+ *   "applications": [
+ *     {
+ *       "packageName": "com.android.chrome",
+ *       "installType": "KIOSK",
+ *       "defaultPermissionPolicy": "GRANT"
+ *     }
+ *   ],
+ *   "policyEnforcementRules": [
+ *     {
+ *       "blockAction": {
+ *         "blockAfterDays": 0
+ *       },
+ *       "settingName": "applicationsPolicy"
+ *     }
+ *   ]
+ * }
  */
 fun kiosk(context: Activity, admin: ComponentName, packages: Array<String>): Boolean {
     return try {

@@ -1,6 +1,6 @@
-import java.io.ByteArrayOutputStream
 import java.text.SimpleDateFormat
 import java.util.Date
+
 plugins {
     alias(libs.plugins.library)
     alias(libs.plugins.kotlin)
@@ -10,7 +10,7 @@ plugins {
 android {
     compileSdk = 36
     namespace = "com.android.android14"
-    
+
     defaultConfig {
         minSdk = 21
         targetSdk = 36
@@ -19,18 +19,14 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = false
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
         }
     }
-    
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_22
         targetCompatibility = JavaVersion.VERSION_22
     }
-    
+
     publishing {
         singleVariant("release") {
             withSourcesJar()

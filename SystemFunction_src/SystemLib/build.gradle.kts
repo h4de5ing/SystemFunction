@@ -1,6 +1,6 @@
-import java.io.ByteArrayOutputStream
 import java.text.SimpleDateFormat
 import java.util.Date
+
 plugins {
     alias(libs.plugins.library)
     alias(libs.plugins.kotlin)
@@ -10,7 +10,7 @@ plugins {
 android {
     compileSdk = 36
     namespace = "com.android.systemlib"
-    
+
     defaultConfig {
         minSdk = 21
         targetSdk = 36
@@ -21,16 +21,16 @@ android {
             isMinifyEnabled = false
         }
     }
-    
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_22
         targetCompatibility = JavaVersion.VERSION_22
     }
-    
+
     buildFeatures {
         buildConfig = true
     }
-    
+
     publishing {
         singleVariant("release") {
             withSourcesJar()
