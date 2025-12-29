@@ -1477,7 +1477,7 @@ fun getFactoryMacAddresses(): String {
     var mac = "02:00:00:00:00:00"
     try {
         val iWifi = IWifiManager.Stub.asInterface(ServiceManager.getService("wifi"))
-        mac = iWifi.factoryMacAddresses[0]
+        mac = iWifi.factoryMacAddresses.firstOrNull() ?: ""
     } catch (e: Exception) {
         e.printStackTrace()
     }
