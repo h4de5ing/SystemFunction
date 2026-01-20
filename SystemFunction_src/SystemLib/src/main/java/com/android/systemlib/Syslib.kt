@@ -966,13 +966,13 @@ fun get_recent(context: Context) {
 }
 
 fun runCommand(command: String): String {
-    var process: java.lang.Process? = null
+    var process: Process? = null
     var result = ""
     var os: DataOutputStream? = null
     var read: BufferedReader? = null
     try {
         process = Runtime.getRuntime().exec(command)
-        Thread.sleep(5000)
+        Thread.sleep(1000)
         os = DataOutputStream(process.outputStream)
         read = BufferedReader(InputStreamReader(process.inputStream))
 //        os.writeBytes("${command}\n")
