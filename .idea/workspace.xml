@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="f6d1db21-c9dc-4932-a414-e09e1550db1c" name="Changes" comment="更新使用说明文档：新增问题报告指南，详细说明问题报告流程和注意事项，包括检查已有问题、提供详细信息、代码示例和截图要求，并列出应避免的模糊描述和多重问题报告行为">
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/SystemFunction_src/.idea/CopilotChatHistory.xml" beforeDir="false" afterPath="$PROJECT_DIR$/SystemFunction_src/.idea/CopilotChatHistory.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/SystemFunction_src/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/SystemFunction_src/.idea/compiler.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/SystemFunction_src/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/SystemFunction_src/.idea/misc.xml" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "associatedIndex": 0
+}]]></component>
+  <component name="ProjectId" id="30AGZBRCM0uFZ7nnyVBYtnyQjFB" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "master",
+    "last_opened_file_path": "D:/repository/SystemFunction"
+  }
+}]]></component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="f6d1db21-c9dc-4932-a414-e09e1550db1c" name="Changes" comment="" />
+      <created>1753063016681</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1753063016681</updated>
+    </task>
+    <task id="LOCAL-00001" summary="新增 Apache License 2.0 许可证文件，并更新 README.md 和新增 README-CN.md 中文文档，明确系统功能库的使用前提、依赖配置和开发者注意事项">
+      <option name="closed" value="true" />
+      <created>1753063769922</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1753063769922</updated>
+    </task>
+    <task id="LOCAL-00002" summary="更新使用说明文档：新增问题报告指南，详细说明问题报告流程和注意事项，包括检查已有问题、提供详细信息、代码示例和截图要求，并列出应避免的模糊描述和多重问题报告行为">
+      <option name="closed" value="true" />
+      <created>1753064484083</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1753064484083</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
+    <servers />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="新增 Apache License 2.0 许可证文件，并更新 README.md 和新增 README-CN.md 中文文档，明确系统功能库的使用前提、依赖配置和开发者注意事项" />
+    <MESSAGE value="更新使用说明文档：新增问题报告指南，详细说明问题报告流程和注意事项，包括检查已有问题、提供详细信息、代码示例和截图要求，并列出应避免的模糊描述和多重问题报告行为" />
+    <option name="LAST_COMMIT_MESSAGE" value="更新使用说明文档：新增问题报告指南，详细说明问题报告流程和注意事项，包括检查已有问题、提供详细信息、代码示例和截图要求，并列出应避免的模糊描述和多重问题报告行为" />
+  </component>
+</project>
