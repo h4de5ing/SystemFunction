@@ -3,8 +3,8 @@
   <groupId>com.android.systemlib</groupId>
   <artifactId>systemlib</artifactId>
   <versioning>
-    <latest>1.0-20250327</latest>
-    <release>1.0-20250327</release>
+    <latest>1.0-20260227</latest>
+    <release>1.0-20260227</release>
     <versions>
       <version>1.0-20220411</version>
       <version>1.0-20220425</version>
@@ -17,7 +17,8 @@
       <version>1.0-20230710</version>
       <version>1.0-20240506</version>
       <version>1.0-20250327</version>
+      <version>1.0-20260227</version>
     </versions>
-    <lastUpdated>20250327111259</lastUpdated>
+    <lastUpdated>20260227121444</lastUpdated>
   </versioning>
 </metadata>
