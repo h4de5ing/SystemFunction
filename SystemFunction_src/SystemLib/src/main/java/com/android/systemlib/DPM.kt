@@ -19,6 +19,7 @@ import com.android.android12.isDisableLockScreen12
 import com.android.android13.setLock
 import com.android.android14.setLock14
 import com.android.android14.setProfileOwner14
+import com.android.android16.setActiveAdmin16
 import java.io.File
 
 /**
@@ -28,8 +29,12 @@ import java.io.File
  * 静默激活设备管理器
  */
 fun setActiveAdmin(componentName: ComponentName) {
-    IDevicePolicyManager.Stub.asInterface(ServiceManager.getService("device_policy"))
-        .setActiveAdmin(componentName, true, 0)
+    if (Build.VERSION.SDK_INT >= 36) {
+        setActiveAdmin16(componentName)
+    } else {
+        IDevicePolicyManager.Stub.asInterface(ServiceManager.getService("device_policy"))
+            .setActiveAdmin(componentName, true, 0)
+    }
 }
 
 /**

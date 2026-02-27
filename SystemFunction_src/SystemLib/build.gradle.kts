@@ -41,6 +41,8 @@ dependencies {
     implementation(project(":Android12"))
     implementation(project(":Android13"))
     implementation(project(":Android14"))
+    implementation(project(":Android15"))
+    implementation(project(":Android16"))
     compileOnly(files("libs/classes.jar")) // Android10
 }
 
