@@ -68,6 +68,9 @@ import com.android.android13.addEthernetListener13
 import com.android.android13.disableEthernet13
 import com.android.android13.disableSensor13
 import com.android.android13.removeEthernetListener13
+import com.android.android15.disableNFC15
+import com.android.android15.enableNFC15
+import com.android.android15.setPackagesSuspendedAsUser15
 import com.android.systemlib.ota.PayloadSpecs
 import java.io.BufferedReader
 import java.io.Closeable
@@ -656,10 +659,15 @@ fun isHiddenAPP(packageName: String): Boolean =
  * 暂停应用 图标变成灰色，app不能使用
  */
 fun suspendedAPP(packageName: String, isHidden: Boolean) {
-    val mIPackageManager = IPackageManager.Stub.asInterface(ServiceManager.getService("package"))
-    mIPackageManager.setPackagesSuspendedAsUser(
-        arrayOf(packageName), isHidden, null, null, null, "android", 0
-    )
+    if (Build.VERSION.SDK_INT >= 35) {
+        setPackagesSuspendedAsUser15(packageName, isHidden)
+    } else {
+        val mIPackageManager =
+            IPackageManager.Stub.asInterface(ServiceManager.getService("package"))
+        mIPackageManager.setPackagesSuspendedAsUser(
+            arrayOf(packageName), isHidden, null, null, null, "android", 0
+        )
+    }
 }
 
 /**
@@ -995,9 +1003,13 @@ fun runCommand(command: String): String {
 }
 
 fun getAs() {
-    val am: IAccessibilityManager =
-        IAccessibilityManager.Stub.asInterface(ServiceManager.getService(Context.ACCESSIBILITY_SERVICE))
-    am.getInstalledAccessibilityServiceList(0)
+    if (Build.VERSION.SDK_INT >= 35) {
+        com.android.android15.getInstalledAccessibilityServiceList15()
+    } else {
+        val am: IAccessibilityManager =
+            IAccessibilityManager.Stub.asInterface(ServiceManager.getService(Context.ACCESSIBILITY_SERVICE))
+        am.getInstalledAccessibilityServiceList(0)
+    }
 }
 
 fun isAvailable(face: String): Boolean {
@@ -1489,8 +1501,12 @@ fun getFactoryMacAddresses(): String {
  */
 fun enableNFC() {
     try {
-        val iNfc = INfcAdapter.Stub.asInterface(ServiceManager.getService("nfc"))
-        iNfc.enable()
+        if (Build.VERSION.SDK_INT >= 35) {
+            enableNFC15()
+        } else {
+            val iNfc = INfcAdapter.Stub.asInterface(ServiceManager.getService("nfc"))
+            iNfc.enable()
+        }
     } catch (e: Exception) {
         e.printStackTrace()
     }
@@ -1501,8 +1517,12 @@ fun enableNFC() {
  */
 fun disableNFC() {
     try {
-        val iNfc = INfcAdapter.Stub.asInterface(ServiceManager.getService("nfc"))
-        iNfc.disable(true)
+        if (Build.VERSION.SDK_INT >= 35) {
+            disableNFC15()
+        } else {
+            val iNfc = INfcAdapter.Stub.asInterface(ServiceManager.getService("nfc"))
+            iNfc.disable(true)
+        }
     } catch (e: Exception) {
         e.printStackTrace()
     }
