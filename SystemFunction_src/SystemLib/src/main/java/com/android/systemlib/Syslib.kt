@@ -10,6 +10,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.om.IOverlayManager
 import android.content.pm.ApplicationInfo
 import android.content.pm.IPackageManager
 import android.content.pm.PackageInstaller
@@ -1164,6 +1165,38 @@ class MyStorageEventListener(val onChange: ((String?, String?, Int?, Int?) -> Un
     override fun onDiskScanned(p0: DiskInfo?, p1: Int) = Unit
 
     override fun onDiskDestroyed(p0: DiskInfo?) = Unit
+}
+
+/** VolumeInfo 常量 */
+const val VOLUME_TYPE_PUBLIC = 0
+const val VOLUME_STATE_UNMOUNTED = 0
+const val VOLUME_STATE_MOUNTED = 2
+
+private const val NAV_BAR_MODE_3BUTTON_OVERLAY = "com.android.internal.systemui.navbar.threebutton"
+private const val NAV_BAR_MODE_GESTURAL_OVERLAY = "com.android.internal.systemui.navbar.gestural"
+
+/**
+ * 设置导航栏为手势模式
+ */
+fun setGestural() {
+    try {
+        IOverlayManager.Stub.asInterface(ServiceManager.getService("overlay"))
+            .setEnabledExclusiveInCategory(NAV_BAR_MODE_GESTURAL_OVERLAY, 0)
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+}
+
+/**
+ * 设置导航栏为三按钮模式
+ */
+fun set3Buttons() {
+    try {
+        IOverlayManager.Stub.asInterface(ServiceManager.getService("overlay"))
+            .setEnabledExclusiveInCategory(NAV_BAR_MODE_3BUTTON_OVERLAY, 0)
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
 }
 
 fun ota(file: File, onStatusUpdate: ((Int, Float) -> Unit), onErrorCode: ((Int) -> Unit)) {
