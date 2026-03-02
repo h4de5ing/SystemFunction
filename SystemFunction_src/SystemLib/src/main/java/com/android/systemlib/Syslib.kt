@@ -86,6 +86,7 @@ import java.lang.reflect.Field
 import java.net.Inet4Address
 import java.net.NetworkInterface
 import java.util.concurrent.Executors
+import java.util.zip.ZipFile
 
 /**
  * 移除WIFI配置
@@ -413,6 +414,10 @@ fun installAPK(
 ) {
     try {
         val apkFile = File(apkFilePath)
+        if (apkFile.extension.equals("xapk", ignoreCase = true)) {
+            installXAPK(context, apkFilePath, change)
+            return
+        }
         val packageInstaller = context.packageManager.packageInstaller
         val sessionParams =
             PackageInstaller.SessionParams(PackageInstaller.SessionParams.MODE_FULL_INSTALL)
@@ -427,6 +432,74 @@ fun installAPK(
         }
     } catch (e: Exception) {
         change(-1, "${e.message}")
+        e.printStackTrace()
+    }
+}
+
+/**
+ * 静默安装xapk
+ */
+private fun installXAPK(
+    context: Context,
+    xapkFilePath: String,
+    change: ((Int, String) -> Unit)
+) {
+    try {
+        val packageInstaller = context.packageManager.packageInstaller
+        val xapkFile = File(xapkFilePath)
+        val apkSizes = mutableMapOf<String, Long>()
+        ZipFile(xapkFile).use { zip ->
+            val entries = zip.entries()
+            while (entries.hasMoreElements()) {
+                val entry = entries.nextElement()
+                if (!entry.isDirectory && entry.name.endsWith(".apk")) {
+                    apkSizes[File(entry.name).name] = entry.size
+                }
+            }
+        }
+        if (apkSizes.isEmpty()) {
+            change(-5, "xapk has no apk entries")
+            return
+        }
+
+        val sessionParams =
+            PackageInstaller.SessionParams(PackageInstaller.SessionParams.MODE_FULL_INSTALL)
+        sessionParams.setSize(apkSizes.values.sum())
+        val sessionId = packageInstaller.createSession(sessionParams)
+        if (sessionId == -1) {
+            change(-5, "create xapk session failed")
+            return
+        }
+
+        var session: PackageInstaller.Session? = null
+        try {
+            session = packageInstaller.openSession(sessionId)
+            ZipFile(xapkFile).use { zip ->
+                val entries = zip.entries()
+                while (entries.hasMoreElements()) {
+                    val entry = entries.nextElement()
+                    if (!entry.isDirectory && entry.name.endsWith(".apk")) {
+                        val apkName = File(entry.name).name
+                        val apkSize = apkSizes[apkName] ?: -1L
+                        zip.getInputStream(entry).use { input ->
+                            session.openWrite(apkName, 0, apkSize).use { out ->
+                                input.copyTo(out)
+                                session.fsync(out)
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            session?.abandon()
+            throw e
+        } finally {
+            closeQuietly(session)
+        }
+
+        execInstallCommand(context, packageInstaller, sessionId, change)
+    } catch (e: Exception) {
+        change(-5, "${e.message}")
         e.printStackTrace()
     }
 }
