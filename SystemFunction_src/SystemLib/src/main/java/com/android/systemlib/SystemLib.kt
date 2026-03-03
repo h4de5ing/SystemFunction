@@ -210,6 +210,7 @@ fun setStatusBarInt(context: Context, status: Int) {
         val statusBarManager = Class.forName("android.app.StatusBarManager")
         val expand = statusBarManager.getMethod("disable", Int::class.java)
         expand.invoke(service, status)
+        setStatusBar2(context, if (status == DISABLE_NONE) DISABLE2_NONE else DISABLE2_MASK)
         //如下代码不生效
 //        val iStatusBarManager =
 //            IStatusBarService.Stub.asInterface(ServiceManager.getService("statusbar"))
