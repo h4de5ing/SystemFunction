@@ -56,6 +56,7 @@ import android.provider.Settings
 import android.telephony.TelephonyManager
 import android.text.TextUtils
 import android.text.format.Formatter
+import android.util.Log
 import android.view.accessibility.IAccessibilityManager
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
@@ -716,6 +717,7 @@ fun isDisUninstallAPP(packageName: String): Boolean {
 /**
  * 隐藏app 应用图标隐藏，不能使用
  */
+@Deprecated("不建议使用，可能会导致系统app丢失", replaceWith =  ReplaceWith("disableApp"))
 fun hiddenAPP(packageName: String, isHidden: Boolean) {
     IPackageManager.Stub.asInterface(ServiceManager.getService("package"))
         .setApplicationHiddenSettingAsUser(packageName, isHidden, 0)
