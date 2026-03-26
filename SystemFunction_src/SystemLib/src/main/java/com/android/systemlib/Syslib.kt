@@ -566,7 +566,7 @@ private fun execInstallCommand(
             }
 
             override fun onFinished(sessionId: Int, success: Boolean) {
-                change(if (success) 0 else -4, "")
+                change(if (success) 0 else -4, "onFinished but failed,check on device")
             }
         }, Handler(Looper.getMainLooper()))
         session.commit(intentSender)
@@ -717,7 +717,7 @@ fun isDisUninstallAPP(packageName: String): Boolean {
 /**
  * 隐藏app 应用图标隐藏，不能使用
  */
-@Deprecated("不建议使用，可能会导致系统app丢失", replaceWith =  ReplaceWith("disableApp"))
+@Deprecated("不建议使用，可能会导致系统app丢失", replaceWith = ReplaceWith("disableApp"))
 fun hiddenAPP(packageName: String, isHidden: Boolean) {
     IPackageManager.Stub.asInterface(ServiceManager.getService("package"))
         .setApplicationHiddenSettingAsUser(packageName, isHidden, 0)
