@@ -32,6 +32,7 @@ import android.telephony.TelephonyManager
 import android.text.TextUtils
 import android.util.Log
 import android.view.View
+import com.android.internal.app.LocalePicker
 import com.android.internal.util.MemInfoReader
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
@@ -540,7 +541,12 @@ fun isScreenOn(): Boolean =
 /**
  * 设置系统语言
  */
-fun setConfiguration(language: String): Boolean {
+fun setConfiguration(language: String) {
+    setConfiguration2(language)
+    setConfiguration3(language)
+}
+
+private fun setConfiguration2(language: String): Boolean {
     try {
         val ams =
             IActivityManager.Stub.asInterface(ServiceManager.getService(Context.ACTIVITY_SERVICE))
@@ -552,6 +558,24 @@ fun setConfiguration(language: String): Boolean {
         } else config.locale = Locale(language)
         return ams.updateConfiguration(config)
     } catch (e: Exception) {
+        Log.e("setConfiguration2", "第一次设置语言失败")
+        e.printStackTrace()
+        return false
+    }
+}
+
+private fun setConfiguration3(language: String): Boolean {
+    try {
+        var locale: Locale? = null
+        if (language.contains("-")) {
+            val splits = language.split("-")
+            if (splits.size == 2) locale = Locale(splits[0], splits[1])
+            else if (splits.size >= 3) locale = Locale(splits[0], splits[splits.size - 1])
+        } else locale = Locale(language)
+        LocalePicker.updateLocale(locale)
+        return true
+    } catch (e: Exception) {
+        Log.e("setConfiguration3", "第二次设置语言失败")
         e.printStackTrace()
         return false
     }
@@ -633,8 +657,7 @@ private const val contextFlagsRegisterPackage = 0x40000000
  */
 fun getPackageContext(context: Context, packageName: String) {
     try {
-        val targetContext =
-            context.createPackageContext(packageName, 0)
+        val targetContext = context.createPackageContext(packageName, 0)
         val appInfo = targetContext.packageManager.getApplicationInfo(packageName, 0)
         val assets = targetContext.resources.assets.list("")
         assets?.forEach {
