@@ -56,7 +56,6 @@ import android.provider.Settings
 import android.telephony.TelephonyManager
 import android.text.TextUtils
 import android.text.format.Formatter
-import android.util.Log
 import android.view.accessibility.IAccessibilityManager
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
@@ -441,9 +440,7 @@ fun installAPK(
  * 静默安装xapk
  */
 private fun installXAPK(
-    context: Context,
-    xapkFilePath: String,
-    change: ((Int, String) -> Unit)
+    context: Context, xapkFilePath: String, change: ((Int, String) -> Unit)
 ) {
     try {
         val packageInstaller = context.packageManager.packageInstaller
