@@ -17,6 +17,7 @@ import android.content.pm.IPackageStatsObserver
 import android.content.pm.PackageManager
 import android.content.pm.PackageStats
 import android.content.pm.ResolveInfo
+import android.content.res.Configuration
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.net.wifi.IWifiManager
@@ -31,7 +32,6 @@ import android.telephony.TelephonyManager
 import android.text.TextUtils
 import android.util.Log
 import android.view.View
-import com.android.internal.app.LocalePicker
 import com.android.internal.util.MemInfoReader
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
@@ -542,14 +542,15 @@ fun isScreenOn(): Boolean =
  */
 fun setConfiguration(language: String): Boolean {
     try {
-        var locale: Locale? = null
+        val ams =
+            IActivityManager.Stub.asInterface(ServiceManager.getService(Context.ACTIVITY_SERVICE))
+        val config = Configuration()
         if (language.contains("-")) {
             val splits = language.split("-")
-            if (splits.size == 2) locale = Locale(splits[0], splits[1])
-            else if (splits.size >= 3) locale = Locale(splits[0], splits[splits.size - 1])
-        } else locale = Locale(language)
-        LocalePicker.updateLocale(locale)
-        return true
+            if (splits.size == 2) config.locale = Locale(splits[0], splits[1])
+            else if (splits.size >= 3) config.locale = Locale(splits[0], splits[splits.size - 1])
+        } else config.locale = Locale(language)
+        return ams.updateConfiguration(config)
     } catch (e: Exception) {
         e.printStackTrace()
         return false
