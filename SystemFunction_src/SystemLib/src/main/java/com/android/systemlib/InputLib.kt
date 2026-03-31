@@ -14,11 +14,15 @@ import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.MotionEvent.PointerCoords
 import android.view.MotionEvent.PointerProperties
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
 import java.lang.reflect.Method
 
 private const val TAG = "InputLib"
 
 private var iInput: IInputManager? = null
+private val scope = MainScope()
 
 // Cached reflection method for InputEvent.setDisplayId(int) — hidden API
 private var setDisplayIdMethod: Method? = null
@@ -27,7 +31,8 @@ private fun setDisplayId(event: InputEvent, displayId: Int) {
     if (displayId < 0) return
     try {
         if (setDisplayIdMethod == null) {
-            setDisplayIdMethod = InputEvent::class.java.getMethod("setDisplayId", Int::class.javaPrimitiveType)
+            setDisplayIdMethod =
+                InputEvent::class.java.getMethod("setDisplayId", Int::class.javaPrimitiveType)
         }
         setDisplayIdMethod!!.invoke(event, displayId)
     } catch (e: Exception) {
@@ -58,7 +63,7 @@ private var touchDownTime = 0L
  * @param displayId Target display ID. Pass -1 (default) for the default display.
  *                  Pass the VirtualDisplay ID to route input to a virtual display.
  */
-fun injectMotionEvent2(action: Int, x: Float, y: Float, displayId: Int = -1) {
+fun injectMotionEvent(action: Int, x: Float, y: Float, displayId: Int = -1) {
     val now = SystemClock.uptimeMillis()
 
     // Bug fix: preserve downTime for the lifetime of a touch gesture.
@@ -82,10 +87,20 @@ fun injectMotionEvent2(action: Int, x: Float, y: Float, displayId: Int = -1) {
 
     val event = try {
         MotionEvent.obtain(
-            downTime, now, action, 1,
-            pointerProperties, pointerCoords,
-            0, 0, 1f, 1f, 0, 0,
-            InputDevice.SOURCE_TOUCHSCREEN, 0
+            downTime,
+            now,
+            action,
+            1,
+            pointerProperties,
+            pointerCoords,
+            0,
+            0,
+            1f,
+            1f,
+            0,
+            0,
+            InputDevice.SOURCE_TOUCHSCREEN,
+            0
         )
     } catch (e: Exception) {
         Log.e(TAG, "Failed to create MotionEvent", e)
@@ -128,10 +143,20 @@ fun injectScrollEvent(x: Float, y: Float, deltaY: Float, displayId: Int = -1) {
         }
     }
     val event = MotionEvent.obtain(
-        now, now, MotionEvent.ACTION_SCROLL, 1,
-        pointerProperties, pointerCoords,
-        0, 0, 1f, 1f, 0, 0,
-        InputDevice.SOURCE_MOUSE, 0
+        now,
+        now,
+        MotionEvent.ACTION_SCROLL,
+        1,
+        pointerProperties,
+        pointerCoords,
+        0,
+        0,
+        1f,
+        1f,
+        0,
+        0,
+        InputDevice.SOURCE_MOUSE,
+        0
     )
 
     setDisplayId(event, displayId)
@@ -159,8 +184,14 @@ fun injectKeyEvent(action: Int, code: Int) {
     }
     val now = SystemClock.uptimeMillis()
     val event = KeyEvent(
-        now, now, action, androidKeyCode, 0, 0,
-        KeyCharacterMap.VIRTUAL_KEYBOARD, 0,
+        now,
+        now,
+        action,
+        androidKeyCode,
+        0,
+        0,
+        KeyCharacterMap.VIRTUAL_KEYBOARD,
+        0,
         KeyEvent.FLAG_SOFT_KEYBOARD or KeyEvent.FLAG_KEEP_TOUCH_MODE,
         InputDevice.SOURCE_KEYBOARD
     )
@@ -168,6 +199,20 @@ fun injectKeyEvent(action: Int, code: Int) {
         iInput?.injectInputEvent(event, 0)
     } catch (e: Exception) {
         Log.e(TAG, "injectKeyEvent failed: code=$code->$androidKeyCode", e)
+    }
+}
+
+/**
+ * 根据Android keycode注入
+ */
+fun injectKeyEvent(keyCode: Int) {
+    try {
+        scope.launch(Dispatchers.IO) {
+            Log.d(TAG, "Android keyCode=$keyCode")
+            Instrumentation().sendKeyDownUpSync(keyCode)
+        }
+    } catch (e: Exception) {
+        e.printStackTrace()
     }
 }
 
@@ -182,8 +227,14 @@ fun injectKeyEventByAndroidCode(keyCode: Int, displayId: Int = -1) {
     if (im != null) {
         for (action in intArrayOf(KeyEvent.ACTION_DOWN, KeyEvent.ACTION_UP)) {
             val event = KeyEvent(
-                now, now, action, keyCode, 0, 0,
-                KeyCharacterMap.VIRTUAL_KEYBOARD, 0,
+                now,
+                now,
+                action,
+                keyCode,
+                0,
+                0,
+                KeyCharacterMap.VIRTUAL_KEYBOARD,
+                0,
                 KeyEvent.FLAG_FROM_SYSTEM,
                 InputDevice.SOURCE_KEYBOARD
             )
@@ -193,13 +244,6 @@ fun injectKeyEventByAndroidCode(keyCode: Int, displayId: Int = -1) {
             } catch (e: Exception) {
                 Log.e(TAG, "injectKeyEventByAndroidCode failed: keyCode=$keyCode", e)
             }
-        }
-    } else {
-        // Fallback: Instrumentation does not support displayId
-        try {
-            Instrumentation().sendKeyDownUpSync(keyCode)
-        } catch (e: Exception) {
-            Log.e(TAG, "injectKeyEventByAndroidCode fallback failed: keyCode=$keyCode", e)
         }
     }
 }
@@ -223,81 +267,81 @@ fun injectEvent(inputEvent: InputEvent) {
  * https://android.googlesource.com/platform/frameworks/native/+/master/include/android/keycodes.h
  */
 val JS_KEYCODE_TO_ANDROID = mapOf(
-    3   to KeyEvent.KEYCODE_BREAK,
-    8   to KeyEvent.KEYCODE_DEL,
-    9   to KeyEvent.KEYCODE_TAB,
-    12  to KeyEvent.KEYCODE_CLEAR,
-    13  to KeyEvent.KEYCODE_ENTER,
-    16  to KeyEvent.KEYCODE_SHIFT_LEFT,
-    17  to KeyEvent.KEYCODE_CTRL_LEFT,
-    18  to KeyEvent.KEYCODE_ALT_LEFT,
-    19  to KeyEvent.KEYCODE_BREAK,
-    20  to KeyEvent.KEYCODE_CAPS_LOCK,
-    27  to KeyEvent.KEYCODE_ESCAPE,
-    32  to KeyEvent.KEYCODE_SPACE,
-    33  to KeyEvent.KEYCODE_PAGE_UP,
-    34  to KeyEvent.KEYCODE_PAGE_DOWN,
-    35  to KeyEvent.KEYCODE_MOVE_END,
-    36  to KeyEvent.KEYCODE_MOVE_HOME,
-    37  to KeyEvent.KEYCODE_DPAD_LEFT,
-    38  to KeyEvent.KEYCODE_DPAD_UP,
-    39  to KeyEvent.KEYCODE_DPAD_RIGHT,
-    40  to KeyEvent.KEYCODE_DPAD_DOWN,
-    41  to KeyEvent.KEYCODE_STAR,
-    44  to KeyEvent.KEYCODE_SYSRQ,
-    45  to KeyEvent.KEYCODE_INSERT,
-    46  to KeyEvent.KEYCODE_FORWARD_DEL,
-    47  to KeyEvent.KEYCODE_HELP,
-    48  to KeyEvent.KEYCODE_0,
-    49  to KeyEvent.KEYCODE_1,
-    50  to KeyEvent.KEYCODE_2,
-    51  to KeyEvent.KEYCODE_3,
-    52  to KeyEvent.KEYCODE_4,
-    53  to KeyEvent.KEYCODE_5,
-    54  to KeyEvent.KEYCODE_6,
-    55  to KeyEvent.KEYCODE_7,
-    56  to KeyEvent.KEYCODE_8,
-    57  to KeyEvent.KEYCODE_9,
-    58  to KeyEvent.KEYCODE_SEMICOLON,
-    59  to KeyEvent.KEYCODE_SEMICOLON,
-    60  to KeyEvent.KEYCODE_SHIFT_RIGHT,
-    61  to KeyEvent.KEYCODE_EQUALS,
-    62  to KeyEvent.KEYCODE_SPACE,
-    63  to KeyEvent.KEYCODE_SLASH,
-    64  to KeyEvent.KEYCODE_AT,
-    65  to KeyEvent.KEYCODE_A,
-    66  to KeyEvent.KEYCODE_B,
-    67  to KeyEvent.KEYCODE_C,
-    68  to KeyEvent.KEYCODE_D,
-    69  to KeyEvent.KEYCODE_E,
-    70  to KeyEvent.KEYCODE_F,
-    71  to KeyEvent.KEYCODE_G,
-    72  to KeyEvent.KEYCODE_H,
-    73  to KeyEvent.KEYCODE_I,
-    74  to KeyEvent.KEYCODE_J,
-    75  to KeyEvent.KEYCODE_K,
-    76  to KeyEvent.KEYCODE_L,
-    77  to KeyEvent.KEYCODE_M,
-    78  to KeyEvent.KEYCODE_N,
-    79  to KeyEvent.KEYCODE_O,
-    80  to KeyEvent.KEYCODE_P,
-    81  to KeyEvent.KEYCODE_Q,
-    82  to KeyEvent.KEYCODE_R,
-    83  to KeyEvent.KEYCODE_S,
-    84  to KeyEvent.KEYCODE_T,
-    85  to KeyEvent.KEYCODE_U,
-    86  to KeyEvent.KEYCODE_V,
-    87  to KeyEvent.KEYCODE_W,
-    88  to KeyEvent.KEYCODE_X,
-    89  to KeyEvent.KEYCODE_Y,
-    90  to KeyEvent.KEYCODE_Z,
-    91  to KeyEvent.KEYCODE_META_LEFT,
-    92  to KeyEvent.KEYCODE_META_RIGHT,
-    93  to KeyEvent.KEYCODE_MENU,
-    96  to KeyEvent.KEYCODE_NUMPAD_0,
-    97  to KeyEvent.KEYCODE_NUMPAD_1,
-    98  to KeyEvent.KEYCODE_NUMPAD_2,
-    99  to KeyEvent.KEYCODE_NUMPAD_3,
+    3 to KeyEvent.KEYCODE_BREAK,
+    8 to KeyEvent.KEYCODE_DEL,
+    9 to KeyEvent.KEYCODE_TAB,
+    12 to KeyEvent.KEYCODE_CLEAR,
+    13 to KeyEvent.KEYCODE_ENTER,
+    16 to KeyEvent.KEYCODE_SHIFT_LEFT,
+    17 to KeyEvent.KEYCODE_CTRL_LEFT,
+    18 to KeyEvent.KEYCODE_ALT_LEFT,
+    19 to KeyEvent.KEYCODE_BREAK,
+    20 to KeyEvent.KEYCODE_CAPS_LOCK,
+    27 to KeyEvent.KEYCODE_ESCAPE,
+    32 to KeyEvent.KEYCODE_SPACE,
+    33 to KeyEvent.KEYCODE_PAGE_UP,
+    34 to KeyEvent.KEYCODE_PAGE_DOWN,
+    35 to KeyEvent.KEYCODE_MOVE_END,
+    36 to KeyEvent.KEYCODE_MOVE_HOME,
+    37 to KeyEvent.KEYCODE_DPAD_LEFT,
+    38 to KeyEvent.KEYCODE_DPAD_UP,
+    39 to KeyEvent.KEYCODE_DPAD_RIGHT,
+    40 to KeyEvent.KEYCODE_DPAD_DOWN,
+    41 to KeyEvent.KEYCODE_STAR,
+    44 to KeyEvent.KEYCODE_SYSRQ,
+    45 to KeyEvent.KEYCODE_INSERT,
+    46 to KeyEvent.KEYCODE_FORWARD_DEL,
+    47 to KeyEvent.KEYCODE_HELP,
+    48 to KeyEvent.KEYCODE_0,
+    49 to KeyEvent.KEYCODE_1,
+    50 to KeyEvent.KEYCODE_2,
+    51 to KeyEvent.KEYCODE_3,
+    52 to KeyEvent.KEYCODE_4,
+    53 to KeyEvent.KEYCODE_5,
+    54 to KeyEvent.KEYCODE_6,
+    55 to KeyEvent.KEYCODE_7,
+    56 to KeyEvent.KEYCODE_8,
+    57 to KeyEvent.KEYCODE_9,
+    58 to KeyEvent.KEYCODE_SEMICOLON,
+    59 to KeyEvent.KEYCODE_SEMICOLON,
+    60 to KeyEvent.KEYCODE_SHIFT_RIGHT,
+    61 to KeyEvent.KEYCODE_EQUALS,
+    62 to KeyEvent.KEYCODE_SPACE,
+    63 to KeyEvent.KEYCODE_SLASH,
+    64 to KeyEvent.KEYCODE_AT,
+    65 to KeyEvent.KEYCODE_A,
+    66 to KeyEvent.KEYCODE_B,
+    67 to KeyEvent.KEYCODE_C,
+    68 to KeyEvent.KEYCODE_D,
+    69 to KeyEvent.KEYCODE_E,
+    70 to KeyEvent.KEYCODE_F,
+    71 to KeyEvent.KEYCODE_G,
+    72 to KeyEvent.KEYCODE_H,
+    73 to KeyEvent.KEYCODE_I,
+    74 to KeyEvent.KEYCODE_J,
+    75 to KeyEvent.KEYCODE_K,
+    76 to KeyEvent.KEYCODE_L,
+    77 to KeyEvent.KEYCODE_M,
+    78 to KeyEvent.KEYCODE_N,
+    79 to KeyEvent.KEYCODE_O,
+    80 to KeyEvent.KEYCODE_P,
+    81 to KeyEvent.KEYCODE_Q,
+    82 to KeyEvent.KEYCODE_R,
+    83 to KeyEvent.KEYCODE_S,
+    84 to KeyEvent.KEYCODE_T,
+    85 to KeyEvent.KEYCODE_U,
+    86 to KeyEvent.KEYCODE_V,
+    87 to KeyEvent.KEYCODE_W,
+    88 to KeyEvent.KEYCODE_X,
+    89 to KeyEvent.KEYCODE_Y,
+    90 to KeyEvent.KEYCODE_Z,
+    91 to KeyEvent.KEYCODE_META_LEFT,
+    92 to KeyEvent.KEYCODE_META_RIGHT,
+    93 to KeyEvent.KEYCODE_MENU,
+    96 to KeyEvent.KEYCODE_NUMPAD_0,
+    97 to KeyEvent.KEYCODE_NUMPAD_1,
+    98 to KeyEvent.KEYCODE_NUMPAD_2,
+    99 to KeyEvent.KEYCODE_NUMPAD_3,
     100 to KeyEvent.KEYCODE_NUMPAD_4,
     101 to KeyEvent.KEYCODE_NUMPAD_5,
     102 to KeyEvent.KEYCODE_NUMPAD_6,
