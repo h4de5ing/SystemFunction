@@ -46,6 +46,52 @@ A Kotlin library that wraps commonly used hidden system APIs for Android system 
 | `lockNow` (2-param)                     | Yes                          | Yes          | Yes                        | -           | -           | -           |
 | `lockNow` (3-param, with callerPackage) | -                            | -            | -                          | Yes         | Yes         | Yes         |
 
+## Repository Structure
+
+```
+SystemFunction/
+├── SystemFunction_src/     # Full source code of the library and all version-specific modules
+│   ├── SystemLib/          # Core library (main entry point, unified API surface)
+│   ├── Android12/          # API 31–32 compatibility implementations
+│   ├── Android13/          # API 33 compatibility implementations
+│   ├── Android14/          # API 34 compatibility implementations
+│   ├── Android15/          # API 35 compatibility implementations
+│   └── Android16/          # API 36 compatibility implementations
+├── SystemLib_repository/   # Pre-built Maven repository (AAR artifacts, ready to consume)
+├── API_REFERENCE.md        # Full API reference (Chinese)
+└── API_REFERENCE_EN.md     # Full API reference (English)
+```
+
+### SystemLib_repository — Pre-built Maven Artifacts
+
+The `SystemLib_repository` directory is a local Maven repository. It contains pre-compiled AAR artifacts for all modules so you can consume the library without building from source.
+
+Available artifacts (all versioned `1.0-<date>`):
+
+| Artifact | Group ID | Description |
+|----------|----------|-------------|
+| `systemlib` | `com.android.systemlib` | Core library — main dependency for most projects |
+| `android12` | `com.android.android12` | API 31–32 compatibility layer |
+| `android13` | `com.android.android13` | API 33 compatibility layer |
+| `android14` | `com.android.android14` | API 34 compatibility layer |
+| `android15` | `com.android.android15` | API 35 compatibility layer |
+| `android16` | `com.android.android16` | API 36 compatibility layer |
+| `hideapi` | `com.android.hideapi` | Hidden API stub jar |
+| `mdmsdk` | `com.android.mdmsdk` | MDM SDK |
+
+> **Typical usage**: add `systemlib` only. It already bundles all version-specific modules internally.
+
+### SystemFunction_src — Source Code
+
+The source project is a standard Android multi-module Gradle project. To build and publish locally:
+
+```bash
+cd SystemFunction_src
+./gradlew :SystemLib:publishReleasePublicationToMavenRepository
+```
+
+This publishes the updated AARs back into `SystemLib_repository`.
+
 ## Quick Start
 
 ### Prerequisites

@@ -16,7 +16,6 @@
             <option value="$PROJECT_DIR$/Android15" />
             <option value="$PROJECT_DIR$/Android16" />
             <option value="$PROJECT_DIR$/SystemLib" />
-            <option value="$PROJECT_DIR$/t" />
           </set>
         </option>
       </GradleProjectSettings>

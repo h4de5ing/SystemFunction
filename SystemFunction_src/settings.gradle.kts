@@ -13,7 +13,6 @@ dependencyResolutionManagement {
         mavenCentral()
         maven { url = uri("https://jitpack.io") }
         maven { url = uri("https://github.com/h4de5ing/SystemFunction/raw/master/SystemLib_repository") }
-        maven { url = uri("https://gitee.com/lex1992/repository/raw/master/repository") }
     }
 }
 

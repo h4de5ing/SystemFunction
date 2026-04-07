@@ -1,6 +1,5 @@
 [versions]
 agp = "9.1.0"
-kotlin = "2.3.20"
 coreKtx = "1.18.0"
 # SDK Versions
 compileSdk = "36"
@@ -14,4 +13,3 @@ androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "coreKtx"
 [plugins]
 application = { id = "com.android.application", version.ref = "agp" }
 library = { id = "com.android.library", version.ref = "agp" }
-kotlin = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }

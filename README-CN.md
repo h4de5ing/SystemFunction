@@ -46,6 +46,52 @@
 | `lockNow`（2参数）                    | 是                         | 是            | 是                       | -           | -           | -           |
 | `lockNow`（3参数，含调用方包名）             | -                         | -            | -                       | 是           | 是           | 是           |
 
+## 仓库结构
+
+```
+SystemFunction/
+├── SystemFunction_src/     # 库的完整源码及所有版本兼容模块
+│   ├── SystemLib/          # 核心库（主入口，统一 API 层）
+│   ├── Android12/          # API 31–32 兼容实现
+│   ├── Android13/          # API 33 兼容实现
+│   ├── Android14/          # API 34 兼容实现
+│   ├── Android15/          # API 35 兼容实现
+│   └── Android16/          # API 36 兼容实现
+├── SystemLib_repository/   # 预编译 Maven 仓库（AAR 产物，可直接引用）
+├── API_REFERENCE.md        # 完整 API 参考文档（中文）
+└── API_REFERENCE_EN.md     # 完整 API 参考文档（英文）
+```
+
+### SystemLib_repository — 预编译 Maven 产物
+
+`SystemLib_repository` 目录是一个本地 Maven 仓库，包含所有模块的预编译 AAR，无需自行构建即可直接使用。
+
+可用产物（版本号格式均为 `1.0-<日期>`）：
+
+| 产物          | Group ID                | 说明               |
+| ----------- | ----------------------- | ---------------- |
+| `systemlib` | `com.android.systemlib` | 核心库，大多数项目只需引用此产物 |
+| `android12` | `com.android.android12` | API 31–32 兼容层    |
+| `android13` | `com.android.android13` | API 33 兼容层       |
+| `android14` | `com.android.android14` | API 34 兼容层       |
+| `android15` | `com.android.android15` | API 35 兼容层       |
+| `android16` | `com.android.android16` | API 36 兼容层       |
+| `hideapi`   | `com.android.hideapi`   | 隐藏 API stub jar  |
+| `mdmsdk`    | `com.android.mdmsdk`    | MDM SDK          |
+
+> **典型用法**：只添加 `systemlib` 依赖即可，它已内部聚合所有版本兼容模块。
+
+### SystemFunction_src — 源码工程
+
+源码工程是标准的 Android 多模块 Gradle 项目。本地构建并发布：
+
+```bash
+cd SystemFunction_src
+./gradlew :SystemLib:publishReleasePublicationToMavenRepository
+```
+
+执行后会将更新后的 AAR 写入 `SystemLib_repository`。
+
 ## 快速开始
 
 ### 前提条件
