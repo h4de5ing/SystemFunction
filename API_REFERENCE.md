@@ -26,7 +26,8 @@
 17. [屏保（Dream）管理](#17-屏保dream管理)
 18. [设备类型检测](#18-设备类型检测)
 19. [图像工具类](#19-图像工具类)
-20. [OEMConfig 限制条目解析](#20-oemconfig-限制条目解析)
+20. [AppOps / 权限管理](#20-appops--权限管理)
+21. [OEMConfig 限制条目解析](#21-oemconfig-限制条目解析)
 
 ---
 
@@ -64,11 +65,15 @@
 
 ### `setDefaultLauncher(context: Context, packageName: String)`
 
-**需要系统权限**。静默设置默认桌面（通过 `IPackageManager.replacePreferredActivity`）。
+> **权限**：系统签名 / `IPackageManager.replacePreferredActivity`
+
+静默设置默认桌面。
 
 ### `setDefaultLauncher(context: Context, componentName: ComponentName)`
 
-**需要系统权限**。通过 ComponentName 静默设置默认桌面。
+> **权限**：系统签名
+
+通过 ComponentName 静默设置默认桌面。
 
 ### `clearDefaultLauncher(context: Context, packageName: String)`
 
@@ -76,11 +81,13 @@
 
 ### `cleanDefaultLauncher(context: Context)`
 
-清空所有 Launcher 的 preferredActivity 设置（所有已注册桌面）。
+清空所有 Launcher 的 preferredActivity 设置。
 
 ### `setHomeActivity(className: ComponentName)`
 
-通过 `IPackageManager` 设置 Home Activity（需要系统权限）。
+> **权限**：系统签名
+
+通过 `IPackageManager` 设置 Home Activity。
 
 ---
 
@@ -100,12 +107,14 @@
 | `DISABLE_HOME`                | 0x00200000         | 禁用并隐藏 Home 键    |
 | `DISABLE_RECENT`              | 0x01000000         | 禁用并隐藏 Recent 键  |
 | `DISABLE_BACK`                | 0x00400000         | 禁用并隐藏 Back 键    |
-| `DISABLE_CLOCK`               | 0x00800000         | 禁用状态栏时间         |
+| `DISABLE_CLOCK`               | 0x00800000         | 禁用状态栏时钟         |
 | `STATUS_DISABLE_NAVIGATION`   | BACK\|HOME\|RECENT | 禁用整个导航栏         |
 
 ### `setStatusBarInt(context: Context, status: Int)`
 
-通过反射调用 `StatusBarManager.disable(status)` 设置状态栏禁用项，同时自动调用 `setStatusBar2`。传 `DISABLE_NONE` 恢复全部。
+> **权限**：`android.permission.STATUS_BAR` 或系统签名
+
+通过反射调用 `StatusBarManager.disable(status)`，同时自动调用 `setStatusBar2`。传 `DISABLE_NONE` 恢复全部。
 
 ### `setStatusBar2(context: Context, status: Int)`
 
@@ -113,11 +122,15 @@
 
 ### `setGestural()`
 
-**需要系统权限**。通过 `IOverlayManager` 将导航栏切换为手势导航模式。
+> **权限**：系统签名 / `IOverlayManager`
+
+将导航栏切换为手势导航模式。
 
 ### `set3Buttons()`
 
-**需要系统权限**。通过 `IOverlayManager` 将导航栏切换为三按钮模式。
+> **权限**：系统签名 / `IOverlayManager`
+
+将导航栏切换为三按钮模式。
 
 ---
 
@@ -135,17 +148,23 @@
 
 ### `getSystemPropertyString(key: String): String?`
 
-读取 `getprop` 中的属性值。
+读取系统属性（`getprop`）值。
 
 ### `setSystemPropertyString(key: String, value: String)`
 
-**需要 SELinux 权限**。设置系统属性值。
+> **权限**：系统签名 + SELinux 规则
+
+设置系统属性值。
 
 ### `getImeis(context: Context): Pair<String, String>`
+
+> **权限**：`READ_PHONE_STATE`
 
 获取双卡设备的 IMEI1 和 IMEI2，返回 `Pair(imei1, imei2)`。
 
 ### `getSubscriberId(context: Context): String`
+
+> **权限**：`READ_PHONE_STATE`
 
 获取 SIM 卡的 IMSI（subscriberId）。
 
@@ -159,7 +178,7 @@
 
 ### `getSDCard(): Triple<Long, Long, Long>`
 
-获取外部存储（SD卡）的 `Triple(已用, 可用, 总量)` 字节数。
+获取外部存储（SD 卡）的 `Triple(已用, 可用, 总量)` 字节数。
 
 ### `getRomMemorySize(context: Context): Triple<Long, Long, Long>`
 
@@ -183,7 +202,7 @@
 
 ### `ping(): Int`
 
-ping `www.baidu.com` 3次，成功返回 `200`，失败返回 `404`。
+ping `www.baidu.com` 3 次，成功返回 `200`，失败返回 `404`。
 
 ### `isRoot(): Boolean`
 
@@ -198,6 +217,8 @@ ping `www.baidu.com` 3次，成功返回 `200`，失败返回 `404`。
 通过 `ConnectivityManager.getLinkProperties` 获取当前活跃网络的 IPv4 地址（Android 6+）。
 
 ### `getStorageStats(context: Context, storageUuid: UUID, packageName: String): LongArray`
+
+> **最低 API**：26
 
 获取指定应用的存储占用，返回 `LongArray(cacheBytes, appBytes, dataBytes)`。
 
@@ -216,11 +237,15 @@ ping `www.baidu.com` 3次，成功返回 `200`，失败返回 `404`。
 
 ### `setTime(context: Context, time: Long)`
 
-**需要 `SET_TIME` 权限**。通过 `AlarmManager.setTime()` 设置系统时间（Unix 时间戳，毫秒）。
+> **权限**：`SET_TIME`
+
+通过 `AlarmManager.setTime()` 设置系统时间（Unix 时间戳，毫秒）。
 
 ### `setTimeZone(context: Context, zone: String)`
 
-**需要 `SET_TIME` 权限**。设置系统时区，`zone` 格式示例：`Asia/Shanghai`。
+> **权限**：`SET_TIME`
+
+设置系统时区，`zone` 格式示例：`Asia/Shanghai`。
 
 ### `getAllSystemZone(): Array<String>?`
 
@@ -228,7 +253,7 @@ ping `www.baidu.com` 3次，成功返回 `200`，失败返回 `404`。
 
 ### `setConfiguration(language: String): Boolean`
 
-设置系统语言（通过 `LocalePicker.updateLocale`）。`language` 支持格式：`zh`、`zh-CN`、`zh-Hant-TW`。
+通过 `LocalePicker.updateLocale` 设置系统语言。`language` 支持格式：`zh`、`zh-CN`、`zh-Hant-TW`。
 
 ---
 
@@ -238,11 +263,15 @@ ping `www.baidu.com` 3次，成功返回 `200`，失败返回 `404`。
 
 ### `shutdown()`
 
-**需要系统权限**。通过 `IPowerManager.shutdown()` 关机。
+> **权限**：系统签名 / `IPowerManager`
+
+通过 `IPowerManager.shutdown()` 关机。
 
 ### `reboot()`
 
-**需要系统权限**。通过 `IPowerManager.reboot()` 重启。
+> **权限**：系统签名 / `IPowerManager`
+
+通过 `IPowerManager.reboot()` 重启。
 
 ### `reset(context: Context)`
 
@@ -250,7 +279,9 @@ ping `www.baidu.com` 3次，成功返回 `200`，失败返回 `404`。
 
 ### `goToSleep()`
 
-**需要系统权限**。通过 `IPowerManager.goToSleep()` 使设备进入休眠（息屏锁屏）。
+> **权限**：系统签名 / `IPowerManager`
+
+通过 `IPowerManager.goToSleep()` 使设备进入休眠（息屏锁屏）。
 
 ### `goToSleep(context: Context)`
 
@@ -258,7 +289,9 @@ ping `www.baidu.com` 3次，成功返回 `200`，失败返回 `404`。
 
 ### `wakeUp(context: Context)`
 
-**需要系统权限**。通过 `IPowerManager.wakeUp()` 点亮屏幕。
+> **权限**：系统签名 / `IPowerManager`
+
+通过 `IPowerManager.wakeUp()` 点亮屏幕。
 
 ### `isScreenOn(): Boolean`
 
@@ -274,20 +307,25 @@ ping `www.baidu.com` 3次，成功返回 `200`，失败返回 `404`。
 
 ### `lockScreen(mode: Int = 0)` *(Android14.kt)*
 
-**需要 Android 14+**。通过 `SurfaceComposer.setPowerMode()` 只息屏不锁屏（`mode=0` 关闭，`mode=2` 开启）。
+> **最低 API**：34  
+> **说明**：只息屏，不触发锁屏。`mode=0` 关闭屏幕，`mode=2` 开启屏幕。
+
+通过 `SurfaceComposer.setPowerMode()` 控制显示器电源状态。
 
 ---
 
 ## 6. DPM（设备策略管理）
 
-> 文件：`DPM.kt`
+> 文件：`DPM.kt`  
 > 以下方法均需要 `DevicePolicyManager` 相关权限（Profile Owner 或 Device Owner）。
 
 ### 激活 / 注销
 
 #### `setActiveAdmin(componentName: ComponentName)`
 
-静默激活设备管理器（兼容 Android 12–16）。
+> **兼容**：API 31–36（Android 16 新增第4个参数 `callerPackageName`，自动适配）
+
+静默激活设备管理器。
 
 #### `removeActiveAdmin(componentName: ComponentName)`
 
@@ -295,7 +333,9 @@ ping `www.baidu.com` 3次，成功返回 `200`，失败返回 `404`。
 
 #### `setProfileOwner(componentName: ComponentName)`
 
-激活 Admin 后，将其设为 Profile Owner（兼容 Android 12–14）。
+> **兼容**：API 31–36（Android 14+ 参数从3个变为2个，自动适配）
+
+激活 Admin 后，将其设为 Profile Owner。
 
 #### `setActiveProfileOwner(componentName: ComponentName)`
 
@@ -323,7 +363,7 @@ ping `www.baidu.com` 3次，成功返回 `200`，失败返回 `404`。
 
 #### `openProfileOwner(activity: Activity, componentName: ComponentName)`
 
-打开系统提供的 Provision Managed Profile 界面（用于引导用户授权）。
+打开系统提供的 Provision Managed Profile 界面（引导用户授权）。
 
 #### `setAdmin(activity: Activity, componentName: ComponentName)`
 
@@ -333,15 +373,19 @@ ping `www.baidu.com` 3次，成功返回 `200`，失败返回 `404`。
 
 #### `lock(callerPackageName: String): Boolean`
 
-立即锁定设备（兼容 Android 12–14）。
+> **兼容**：API 31–36（API 34+ 需传 `callerPackageName`，自动适配）
+
+立即锁定设备。
 
 #### `setDisableLockScreen(context: Context, oldPassword: String, isDisable: Boolean, change: (String) -> Unit)`
 
-禁用/启用锁屏，需要提供旧密码（只支持 PIN 和密码类型）。
+禁用/启用锁屏，需要提供旧密码（仅支持 PIN 和密码类型）。
 
 #### `getCredentialType(): Int`
 
-获取当前锁屏凭据类型：`-1`=无/滑动, `1`=图案, `3`=PIN, `4`=密码。
+> **最低 API**：30
+
+获取当前锁屏凭据类型：`-1`=无/滑动，`1`=图案，`3`=PIN，`4`=密码。
 
 #### `resetPassword(context: Context, password: String, change: (String) -> Unit)`
 
@@ -353,7 +397,7 @@ ping `www.baidu.com` 3次，成功返回 `200`，失败返回 `404`。
 
 #### `setPasswordQuality(context: Context, admin: ComponentName, quality: Int)`
 
-设置密码强度。`quality` 参考 `DevicePolicyManager.PASSWORD_QUALITY_*` 常量。
+设置密码强度，`quality` 参考 `DevicePolicyManager.PASSWORD_QUALITY_*` 常量。
 
 #### `getPasswordQualityList(context: Context): List<Pair<String, Int>>`
 
@@ -399,7 +443,9 @@ ping `www.baidu.com` 3次，成功返回 `200`，失败返回 `404`。
 
 #### `setStatusBarDisabled(context: Context, componentName: ComponentName, isDisable: Boolean)`
 
-**需要 Android 6+**。通过 DPM 禁用/启用状态栏。
+> **最低 API**：23
+
+通过 DPM 禁用/启用状态栏。
 
 #### `disableMDM(context: Context, componentName: ComponentName, key: String, isDisable: Boolean, change: (Boolean) -> Unit)`
 
@@ -427,7 +473,9 @@ ping `www.baidu.com` 3次，成功返回 `200`，失败返回 `404`。
 
 #### `setDelegatedScopes(context: Context, componentName: ComponentName, packageName: String)`
 
-**需要 Android 8+**。授权指定包名禁止卸载的委托权限。
+> **最低 API**：26
+
+授权指定包名禁止卸载的委托权限。
 
 #### `setSystemUpdatePolicy(context: Context, componentName: ComponentName, policy: SystemUpdatePolicy)`
 
@@ -459,18 +507,24 @@ ping `www.baidu.com` 3次，成功返回 `200`，失败返回 `404`。
 
 #### `installAPK(context: Context, apkFilePath: String, change: ((Int, String) -> Unit))`
 
+> **权限**：`INSTALL_PACKAGES`
+
 静默安装 APK 或 XAPK。回调 `change(code, message)`：
 
-- `0` 成功
-- `-1` 参数/初始化错误
-- `-2` 文件复制失败
-- `-3` 提交失败
-- `-4` 安装失败（设备端可查看）
-- `-5` XAPK 相关错误
+| 代码   | 说明           |
+| ---- | ------------ |
+| `0`  | 成功           |
+| `-1` | 参数/初始化错误     |
+| `-2` | 文件复制失败       |
+| `-3` | 提交失败         |
+| `-4` | 安装失败（设备端可查看） |
+| `-5` | XAPK 相关错误    |
 
 ### 卸载
 
 #### `uninstall(context: Context, packageName: String)`
+
+> **权限**：`DELETE_PACKAGES`
 
 静默卸载应用（通过 `PackageInstaller.uninstall`）。
 
@@ -478,9 +532,10 @@ ping `www.baidu.com` 3次，成功返回 `200`，失败返回 `404`。
 
 #### `hiddenAPP(packageName: String, isHidden: Boolean)`
 
-**需要系统权限**。隐藏应用（图标不可见，`pm list packages` 也不可见）。
+> **权限**：系统签名  
+> **注意**：可能导致系统应用丢失，不建议对系统应用使用。
 
-> 注意：可能导致系统 app 丢失，不建议对系统应用使用。
+隐藏应用（图标不可见，`pm list packages` 也不可见）。
 
 #### `isHiddenAPP(packageName: String): Boolean`
 
@@ -496,7 +551,7 @@ ping `www.baidu.com` 3次，成功返回 `200`，失败返回 `404`。
 
 #### `setDisableAPP(context: Context, packageName: ComponentName, isDisable: Boolean)`
 
-启用/禁用组件（逻辑与 `disableApp` 相同，参数语义一致）。
+启用/禁用组件（与 `disableApp` 功能相同）。
 
 #### `isDisableAPP(context: Context, packageName: ComponentName): Boolean`
 
@@ -506,7 +561,10 @@ ping `www.baidu.com` 3次，成功返回 `200`，失败返回 `404`。
 
 #### `suspendedAPP(packageName: String, isHidden: Boolean)`
 
-**需要系统权限**。暂停应用（图标变灰，不可使用），兼容 Android 12–16。
+> **权限**：系统签名  
+> **兼容**：API 31–36（自动适配各版本参数差异）
+
+暂停应用（图标变灰，不可使用）。
 
 #### `isSuspendedAPP(packageName: String): Boolean`
 
@@ -520,7 +578,9 @@ ping `www.baidu.com` 3次，成功返回 `200`，失败返回 `404`。
 
 #### `disUninstallAPP(packageName: String, isDisable: Boolean)`
 
-**需要系统权限**。禁止/允许卸载指定应用（通过 `IPackageManager.setBlockUninstallForUser`）。
+> **权限**：系统签名
+
+禁止/允许卸载指定应用（通过 `IPackageManager.setBlockUninstallForUser`）。
 
 #### `isDisUninstallAPP(packageName: String): Boolean`
 
@@ -558,7 +618,9 @@ ping `www.baidu.com` 3次，成功返回 `200`，失败返回 `404`。
 
 #### `grant(context: Context, packageName: String, permName: String)`
 
-**需要系统权限**。通过 `IPackageManager.grantRuntimePermission` 静默授予运行时权限。
+> **权限**：系统签名
+
+通过 `IPackageManager.grantRuntimePermission` 静默授予运行时权限。
 
 ### 电池优化
 
@@ -588,7 +650,7 @@ ping `www.baidu.com` 3次，成功返回 `200`，失败返回 `404`。
 
 #### `enterMultiScreen(context: Context, component1: ComponentName)`
 
-将指定 Activity 启动到第二块屏幕（displayId=0 为第一块）。
+将指定 Activity 启动到第二块屏幕。
 
 ---
 
@@ -656,19 +718,23 @@ ping `www.baidu.com` 3次，成功返回 `200`，失败返回 `404`。
 
 添加 WiFi 配置，返回 networkId（-1 失败）。
 
-#### `addWifi(context: Context, ssid: String, pass: String)` *(Android 10+)*
+#### `addWifi(context: Context, ssid: String, pass: String)`
+
+> **最低 API**：29
 
 创建仅对当前 App 生效的 WiFi 连接（不写入系统配置）。
 
 #### `getPrivilegedConfiguredNetworks(context: Context): List<WifiConfiguration>`
 
-**需要系统权限**。通过 `IWifiManager` 获取所有已保存的 WiFi 配置（含密码）。
+> **权限**：系统签名
+
+通过 `IWifiManager` 获取所有已保存的 WiFi 配置（含密码）。
 
 ### 热点
 
 #### `setHotSpotDisabled(isDisable: Boolean): Boolean`
 
-禁用个人热点（调用 `IWifiManager.stopSoftAp()`）。启用请传 `false`（当前实现只支持关闭）。
+禁用个人热点（调用 `IWifiManager.stopSoftAp()`）。当前实现仅支持关闭，不支持开启。
 
 #### `isHotSpotDisabled(): Boolean`
 
@@ -678,7 +744,9 @@ ping `www.baidu.com` 3次，成功返回 `200`，失败返回 `404`。
 
 #### `disableEthernet(disable: Boolean, isSupported: (Boolean) -> Unit)`
 
-禁用/启用以太网，兼容 Android 12–13。`isSupported` 回调是否支持该操作。
+> **兼容**：API 31–32 使用 `Trackstop/Trackstart`；API 33+ 使用 `setEthernetEnabled`
+
+禁用/启用以太网。`isSupported` 回调是否支持该操作。
 
 #### `addEthernetListener(change: ((String, Boolean) -> Unit))`
 
@@ -704,21 +772,25 @@ ping `www.baidu.com` 3次，成功返回 `200`，失败返回 `404`。
 
 #### `setHttpProxy(context: Context, host: String)`
 
-设置 HTTP 代理（写入 Settings.Global `http_proxy`，格式 `host:port`）。
+设置 HTTP 代理（写入 `Settings.Global` `http_proxy`，格式 `host:port`）。
 
 #### `setGlobalProxy(context: Context, proxyInfo: ProxyInfo)`
 
-设置全局代理（写入 Settings.Global 多个字段）。支持 PAC 文件 URL。
+设置全局代理（写入 `Settings.Global` 多个字段）。支持 PAC 文件 URL。
 
 ### NFC
 
 #### `enableNFC()`
 
-启用 NFC（兼容 Android 12–15）。
+> **兼容**：API 31–34 使用 `INfcAdapter`；API 35+ 通过 `NfcAdapter` 反射调用
+
+启用 NFC。
 
 #### `disableNFC()`
 
-禁用 NFC（兼容 Android 12–15）。
+> **兼容**：同上
+
+禁用 NFC。
 
 ### USB 数据
 
@@ -734,15 +806,19 @@ ping `www.baidu.com` 3次，成功返回 `200`，失败返回 `404`。
 
 #### `getAdbWirelessPort(): Int`
 
-获取无线 ADB 端口（默认 5555）。需要 Android 12+。
+> **最低 API**：31
+
+获取无线 ADB 端口（默认 5555）。
 
 #### `allowWirelessDebugging(alwaysAllow: Boolean, ssid: String)` *(Android12.kt)*
+
+> **最低 API**：31
 
 允许指定 SSID 的网络进行无线调试。
 
 #### `startAdbd()` *(Android12.kt)*
 
-启动 ADB 守护进程（设置系统属性 `ctl.start=adbd`）。
+启动 ADB 守护进程（设置系统属性 `ctl.start=adbd`）。需要 SELinux 权限。
 
 #### `stopAdbd()` *(Android12.kt)*
 
@@ -752,8 +828,8 @@ ping `www.baidu.com` 3次，成功返回 `200`，失败返回 `404`。
 
 ## 10. 输入注入（触摸 / 键盘 / 滚动）
 
-> 文件：`InputLib.kt`
-> **需要系统权限**，无系统权限可改用无障碍服务实现。
+> 文件：`InputLib.kt`  
+> **权限**：`INJECT_EVENTS`（系统签名）；无系统权限可改用无障碍服务。
 
 ### `injectInit()`
 
@@ -761,13 +837,11 @@ ping `www.baidu.com` 3次，成功返回 `200`，失败返回 `404`。
 
 ### `injectMotionEvent(action: Int, x: Float, y: Float)`
 
-在子线程注入触摸事件（调用 `injectMotionEvent2`）。
-
-- `action`：`MotionEvent.ACTION_DOWN` / `ACTION_UP` / `ACTION_MOVE`
+在子线程注入触摸事件。`action`：`MotionEvent.ACTION_DOWN` / `ACTION_UP` / `ACTION_MOVE`。
 
 ### `injectMotionEvent2(action: Int, x: Float, y: Float)`
 
-直接注入触摸事件（同步，使用 `IInputManager.injectInputEvent`，source=TOUCHSCREEN）。
+直接同步注入触摸事件（source=TOUCHSCREEN）。
 
 ### `injectScrollEvent(x: Float, y: Float, deltaY: Float)`
 
@@ -789,8 +863,8 @@ ping `www.baidu.com` 3次，成功返回 `200`，失败返回 `404`。
 
 ## 11. Sensor 隐私控制
 
-> 文件：`Syslib.kt`（统一入口）, `Android12.kt`, `Android13.kt`
-> 仅支持 Android 12–13（API 31–33）。
+> 文件：`Syslib.kt`（统一入口），`Android12.kt`，`Android13.kt`  
+> **仅支持 Android 12–13（API 31–33）**。API 34+ 此接口已从系统中移除。
 
 ### `disableSensor(isDisable: Boolean, sensor: Int)`
 
@@ -802,7 +876,9 @@ ping `www.baidu.com` 3次，成功返回 `200`，失败返回 `404`。
 
 ### `addIndividualSensorPrivacyListener(change: (Boolean) -> Unit)` *(Android13.kt)*
 
-注册传感器隐私变化监听（Android 13 专用）。
+> **最低 API**：33
+
+注册传感器隐私变化监听。
 
 ### `removeIndividualSensorPrivacyListener()` *(Android13.kt)*
 
@@ -819,6 +895,8 @@ ping `www.baidu.com` 3次，成功返回 `200`，失败返回 `404`。
 读取 `Settings.Global` 中的字符串值。
 
 ### `setSystemGlobal(context: Context, key: String, value: String): Boolean`
+
+> **权限**：`WRITE_SECURE_SETTINGS`
 
 写入 `Settings.Global` 中的字符串值。
 
@@ -854,28 +932,35 @@ ping `www.baidu.com` 3次，成功返回 `200`，失败返回 `404`。
 
 ### `enableAccessibilityService(context: Context, packageName: String, accessibilityService: String)`
 
-**需要 `WRITE_SECURE_SETTINGS` 权限**。启用指定辅助功能服务（追加到已启用列表）。
+> **权限**：`WRITE_SECURE_SETTINGS`
+
+启用指定辅助功能服务（追加到已启用列表）。
 
 ### `disableAccessibilityService(context: Context, packageName: String, accessibilityService: String)`
 
-**需要 `WRITE_SECURE_SETTINGS` 权限**。从已启用列表中移除指定辅助功能服务。
+> **权限**：`WRITE_SECURE_SETTINGS`
+
+从已启用列表中移除指定辅助功能服务。
 
 ### `enabledAccessibilityServices(context: Context, enable: Boolean)`
 
-**需要 `WRITE_SECURE_SETTINGS` 权限**。启用/禁用当前应用的辅助服务总开关。
+> **权限**：`WRITE_SECURE_SETTINGS`
+
+启用/禁用当前应用的辅助服务总开关。
 
 ---
 
 ## 14. OTA 升级
 
-> 文件：`Syslib.kt`
+> 文件：`Syslib.kt`  
+> **前提**：设备必须为 A/B 分区（Virtual A/B 也支持）。
 
 ### `ota(file: File, onStatusUpdate: ((Int, Float) -> Unit), onErrorCode: ((Int) -> Unit))`
 
-**需要 A/B 分区设备**。通过 `UpdateEngine` 执行本地 OTA 升级包。
+通过 `UpdateEngine` 执行本地 OTA 升级包。
 
 - `file`：OTA zip 文件（本地路径）
-- `onStatusUpdate(status, percent)`：升级进度回调，`status` 见下方常量
+- `onStatusUpdate(status, percent)`：升级进度回调
 - `onErrorCode(errorCode)`：完成回调，`errorCode=0` 为成功
 
 ### `getUpdateStatus(status: Int): String`
@@ -898,7 +983,10 @@ ping `www.baidu.com` 3次，成功返回 `200`，失败返回 `404`。
 
 ### `bugReportManager(context: Context, onFinished: (String) -> Unit)`
 
-**需要 `DUMP` 权限**（Android 11+）。通过 `BugreportManager` 捕获日志，输出到应用外部文件目录，完成后回调文件路径。
+> **权限**：`DUMP`  
+> **最低 API**：30
+
+通过 `BugreportManager` 捕获日志，输出到应用外部文件目录，完成后回调文件路径。
 
 ---
 
@@ -936,7 +1024,7 @@ ping `www.baidu.com` 3次，成功返回 `200`，失败返回 `404`。
 
 ### `getDreamComponents(): ComponentName?`
 
-获取当前已设置的屏保 ComponentName。
+获取当前已设置的屏保 ComponentName（返回列表中第一个）。
 
 ### `setDreamComponents(componentName: ComponentName)`
 
@@ -944,7 +1032,9 @@ ping `www.baidu.com` 3次，成功返回 `200`，失败返回 `404`。
 
 ### `grantNotificationListenerAccessGranted12(serviceComponent: ComponentName)` *(Android12.kt)*
 
-**需要系统权限**。静默授予指定组件通知监听权限。
+> **权限**：系统签名
+
+静默授予指定组件通知监听权限。
 
 ---
 
@@ -1004,7 +1094,7 @@ Bitmap 扩展方法，将 Bitmap 缩放为 72x72。
 
 ### `copyDir(src: String, des: String)`
 
-递归遍历并打印目录结构（当前实现仅做遍历，无实际复制）。
+> **注意**：当前实现仅遍历目录树并打印路径，**不执行实际文件复制**。请勿用于文件复制操作。
 
 ### `Activity.toast(message: String)`
 
@@ -1012,7 +1102,85 @@ Bitmap 扩展方法，将 Bitmap 缩放为 72x72。
 
 ---
 
-## 20. OEMConfig 限制条目解析
+## 20. AppOps / 权限管理
+
+> 文件：`Oops.kt`
+
+### AppOps 模式常量
+
+| 常量                | 值   | 说明     |
+| ----------------- | --- | ------ |
+| `MODE_ALLOWED`    | 0   | 允许访问   |
+| `MODE_IGNORED`    | 1   | 拒绝但不崩溃 |
+| `MODE_ERRORED`    | 2   | 拒绝并崩溃  |
+| `MODE_DEFAULT`    | 3   | 由访问者决定 |
+| `MODE_FOREGROUND` | 4   | 仅前台允许  |
+
+### 电池优化模式常量
+
+| 常量                  | 值   | 说明       |
+| ------------------- | --- | -------- |
+| `MODE_UNRESTRICTED` | 1   | 无限制（白名单） |
+| `MODE_OPTIMIZED`    | 2   | 优化（默认）   |
+| `MODE_RESTRICTED`   | 3   | 受限       |
+
+### `setMode(context: Context, code: Int, packageName: String, mode: Int)`
+
+> **权限**：系统签名 / `IAppOpsService`
+
+通过 AppOps 操作码设置指定应用的权限模式。同时调用 `setMode` 和 `setUidMode`。
+
+- `code`：AppOps 操作码（参见附录 AppOps 操作码对照表）
+
+### `checkUsageStatsViaReflection(context: Context, opCode: Int, targetPackageName: String): Boolean`
+
+通过反射调用 `AppOpsManager.checkOp` 验证 `setMode` 的授权结果，返回是否为 `MODE_ALLOWED`。
+
+### `grantNotificationListenerAccessGranted(context: Context, packageName: String)`
+
+> **权限**：系统签名  
+> **兼容**：API 30 及以下使用2参数接口；API 31+ 使用3参数接口，自动适配
+
+根据包名查找通知监听服务并静默授权。
+
+### `grantPermission(context: Context, packageName: String, permission: String)`
+
+> **权限**：系统签名
+
+给指定包名的指定运行时权限静默授权（仅授予 dangerous 级别权限）。
+
+### `grantPermission(context: Context, packageName: String)`
+
+> **权限**：系统签名
+
+一键给指定包名的所有请求的运行时权限（dangerous 级别）静默授权。
+
+### `getBatteryOptimization(context: Context, packageName: String): Int`
+
+获取应用当前的电池优化状态，返回 `MODE_UNRESTRICTED / MODE_OPTIMIZED / MODE_RESTRICTED`。
+
+### `setBatteryOptimization(context: Context, packageName: String, mode: Int)`
+
+> **最低 API**：23  
+> **权限**：系统签名 / `IDeviceIdleController`
+
+设置应用的电池优化状态：
+
+- `MODE_UNRESTRICTED`：加入白名单，不受后台限制
+- `MODE_OPTIMIZED`：从白名单移除，允许后台
+- `MODE_RESTRICTED`：从白名单移除，限制后台
+
+### `getOpCode()`
+
+通过反射打印当前设备 `AppOpsManager` 支持的所有 OP 代码到 Logcat（tag: `OpCodeDumper`）。
+
+### `dumpAppOps(): String`
+
+导出当前设备所有 AppOps 操作码对照表（APP_OP_ 常量、操作码整数值、OPSTR_ 字符串），并写入 `/sdcard/ops.txt`，同时返回完整字符串。
+
+---
+
+## 21. OEMConfig 限制条目解析
 
 > 文件：`oemconfig.kt`
 
@@ -1030,7 +1198,17 @@ Bitmap 扩展方法，将 Bitmap 缩放为 72x72。
 
 ### `cameraListener(onStatusChanged: (Int, String) -> Unit, onTorchStatusChanged: (Int, String) -> Unit)`
 
+> **最低 API**：33
+
 通过 `ICameraService.addListener()` 监听摄像头状态变化和手电筒状态变化。
+
+---
+
+## 附录：AppOps 操作码对照表（Android 14 / API 34）
+
+完整对照表见 `SystemLib/src/main/java/com/android/systemlib/ops.txt`。
+
+可通过 `dumpAppOps()` 在运行时生成当前设备对应版本的完整列表。
 
 ---
 
@@ -1048,3 +1226,6 @@ Bitmap 扩展方法，将 Bitmap 缩放为 72x72。
 | 电池优化白名单            | 系统签名                                       |
 | 应用隐藏/冻结            | 系统签名                                       |
 | OTA 升级             | `android.permission.OTA_UPDATE` + A/B 分区   |
+| AppOps 设置          | 系统签名 / `IAppOpsService`                    |
+| 通知监听授权             | 系统签名 / `INotificationManager`              |
+| 电池优化设置             | 系统签名 / `IDeviceIdleController`             |
