@@ -17,6 +17,7 @@ import android.content.pm.IPackageStatsObserver
 import android.content.pm.PackageManager
 import android.content.pm.PackageStats
 import android.content.pm.ResolveInfo
+import android.content.res.Configuration
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.net.wifi.IWifiManager
@@ -540,7 +541,30 @@ fun isScreenOn(): Boolean =
 /**
  * 设置系统语言
  */
-fun setConfiguration(language: String): Boolean {
+fun setConfiguration(language: String) {
+    setConfiguration2(language)
+    setConfiguration3(language)
+}
+
+private fun setConfiguration2(language: String): Boolean {
+    try {
+        val ams =
+            IActivityManager.Stub.asInterface(ServiceManager.getService(Context.ACTIVITY_SERVICE))
+        val config = Configuration()
+        if (language.contains("-")) {
+            val splits = language.split("-")
+            if (splits.size == 2) config.locale = Locale(splits[0], splits[1])
+            else if (splits.size >= 3) config.locale = Locale(splits[0], splits[splits.size - 1])
+        } else config.locale = Locale(language)
+        return ams.updateConfiguration(config)
+    } catch (e: Exception) {
+        Log.e("setConfiguration2", "第一次设置语言失败")
+        e.printStackTrace()
+        return false
+    }
+}
+
+private fun setConfiguration3(language: String): Boolean {
     try {
         var locale: Locale? = null
         if (language.contains("-")) {
@@ -551,6 +575,7 @@ fun setConfiguration(language: String): Boolean {
         LocalePicker.updateLocale(locale)
         return true
     } catch (e: Exception) {
+        Log.e("setConfiguration3", "第二次设置语言失败")
         e.printStackTrace()
         return false
     }
@@ -632,8 +657,7 @@ private const val contextFlagsRegisterPackage = 0x40000000
  */
 fun getPackageContext(context: Context, packageName: String) {
     try {
-        val targetContext =
-            context.createPackageContext(packageName, 0)
+        val targetContext = context.createPackageContext(packageName, 0)
         val appInfo = targetContext.packageManager.getApplicationInfo(packageName, 0)
         val assets = targetContext.resources.assets.list("")
         assets?.forEach {

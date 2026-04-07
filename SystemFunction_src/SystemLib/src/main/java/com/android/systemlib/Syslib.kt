@@ -223,7 +223,6 @@ fun getAllLaunchers2(context: Context): MutableList<Pair<String, String>> {
             if (resolveInfo != null) {
                 val appName = resolveInfo.activityInfo.loadLabel(pm).toString()
                 if (!TextUtils.isEmpty(appName)) {
-                    resolveInfo.activityInfo.packageName.logI()
                     list.add(
                         Pair(
                             resolveInfo.activityInfo.loadLabel(pm).toString(),
