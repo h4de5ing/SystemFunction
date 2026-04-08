@@ -1,0 +1,32 @@
+Android版本: 14 (API 34)
+UpdateEngine 常量表
+
++--------------------------------------------------------+----+----------------------------+
+| 常量名称                                               | 值 | 中文说明                   |
++--------------------------------------------------------+----+----------------------------+
+| UpdateStatusConstants.IDLE                             | 0  | 空闲                       |
+| UpdateStatusConstants.CHECKING_FOR_UPDATE              | 1  | 检查更新中                 |
+| UpdateStatusConstants.UPDATE_AVAILABLE                 | 2  | 发现可用更新               |
+| UpdateStatusConstants.DOWNLOADING                      | 3  | 下载中                     |
+| UpdateStatusConstants.VERIFYING                        | 4  | 校验中                     |
+| UpdateStatusConstants.FINALIZING                       | 5  | 收尾处理中                 |
+| UpdateStatusConstants.UPDATED_NEED_REBOOT              | 6  | 更新完成，等待重启         |
+| UpdateStatusConstants.REPORTING_ERROR_EVENT            | 7  | 上报错误事件               |
+| UpdateStatusConstants.ATTEMPTING_ROLLBACK              | 8  | 尝试回滚                   |
+| UpdateStatusConstants.DISABLED                         | 9  | 更新功能已禁用             |
+| ErrorCodeConstants.SUCCESS                             | 0  | 成功                       |
+| ErrorCodeConstants.ERROR                               | 1  | 通用错误                   |
+| ErrorCodeConstants.FILESYSTEM_COPIER_ERROR             | 4  | 文件系统拷贝失败           |
+| ErrorCodeConstants.POST_INSTALL_RUNNER_ERROR           | 5  | 安装后脚本执行失败         |
+| ErrorCodeConstants.PAYLOAD_MISMATCHED_TYPE_ERROR       | 6  | payload 类型不匹配         |
+| ErrorCodeConstants.INSTALL_DEVICE_OPEN_ERROR           | 7  | 安装分区打开失败           |
+| ErrorCodeConstants.KERNEL_DEVICE_OPEN_ERROR            | 8  | 内核设备打开失败           |
+| ErrorCodeConstants.DOWNLOAD_TRANSFER_ERROR             | 9  | 下载传输失败               |
+| ErrorCodeConstants.PAYLOAD_HASH_MISMATCH_ERROR         | 10 | payload 哈希不匹配         |
+| ErrorCodeConstants.PAYLOAD_SIZE_MISMATCH_ERROR         | 11 | payload 大小不匹配         |
+| ErrorCodeConstants.DOWNLOAD_PAYLOAD_VERIFICATION_ERROR | 12 | 下载 payload 校验失败      |
+| ErrorCodeConstants.PAYLOAD_TIMESTAMP_ERROR             | 51 | payload 时间戳错误         |
+| ErrorCodeConstants.UPDATED_BUT_NOT_ACTIVE              | 52 | 更新完成但未切换为激活槽位 |
+| ErrorCodeConstants.NOT_ENOUGH_SPACE                    | 60 | 空间不足                   |
+| ErrorCodeConstants.DEVICE_CORRUPTED                    | 61 | 设备分区已损坏             |
++--------------------------------------------------------+----+----------------------------+
