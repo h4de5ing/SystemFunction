@@ -1,0 +1,79 @@
+Android版本: 14 (API 34)
+UserManager.DISALLOW_* 常量表
+
++-------------------------------------------+-------------------------------------+----------------------------+
+| 常量名                                    | 系统内部字符串                      | 中文说明                   |
++-------------------------------------------+-------------------------------------+----------------------------+
+| DISALLOW_ADD_CLONE_PROFILE                | no_add_clone_profile                | 禁止添加分身资料           |
+| DISALLOW_ADD_MANAGED_PROFILE              | no_add_managed_profile              | 禁止添加工作资料           |
+| DISALLOW_ADD_USER                         | no_add_user                         | 禁止添加用户               |
+| DISALLOW_ADD_WIFI_CONFIG                  | no_add_wifi_config                  | 禁止新增 Wi-Fi 配置        |
+| DISALLOW_ADJUST_VOLUME                    | no_adjust_volume                    | 禁止调节音量               |
+| DISALLOW_AIRPLANE_MODE                    | no_airplane_mode                    | 禁止切换飞行模式           |
+| DISALLOW_AMBIENT_DISPLAY                  | no_ambient_display                  | 禁止环境显示               |
+| DISALLOW_APPS_CONTROL                     | no_control_apps                     | 禁止管理应用               |
+| DISALLOW_AUTOFILL                         | no_autofill                         | 禁止自动填充               |
+| DISALLOW_BIOMETRIC                        | disallow_biometric                  | 禁止生物识别               |
+| DISALLOW_BLUETOOTH                        | no_bluetooth                        | 禁止使用蓝牙               |
+| DISALLOW_BLUETOOTH_SHARING                | no_bluetooth_sharing                | 禁止蓝牙分享               |
+| DISALLOW_CAMERA                           | no_camera                           | 禁止使用相机               |
+| DISALLOW_CAMERA_TOGGLE                    | disallow_camera_toggle              | 禁止切换相机开关           |
+| DISALLOW_CELLULAR_2G                      | no_cellular_2g                      | 禁止使用 2G 蜂窝网络       |
+| DISALLOW_CHANGE_WIFI_STATE                | no_change_wifi_state                | 禁止开关 Wi-Fi 状态        |
+| DISALLOW_CONFIG_BLUETOOTH                 | no_config_bluetooth                 | 禁止配置蓝牙               |
+| DISALLOW_CONFIG_BRIGHTNESS                | no_config_brightness                | 禁止调整亮度设置           |
+| DISALLOW_CONFIG_CELL_BROADCASTS           | no_config_cell_broadcasts           | 禁止配置小区广播           |
+| DISALLOW_CONFIG_CREDENTIALS               | no_config_credentials               | 禁止配置凭据               |
+| DISALLOW_CONFIG_DATE_TIME                 | no_config_date_time                 | 禁止修改日期和时间         |
+| DISALLOW_CONFIG_DEFAULT_APPS              | disallow_config_default_apps        | 禁止配置默认应用           |
+| DISALLOW_CONFIG_LOCALE                    | no_config_locale                    | 禁止修改语言和地区         |
+| DISALLOW_CONFIG_LOCATION                  | no_config_location                  | 禁止配置位置信息           |
+| DISALLOW_CONFIG_MOBILE_NETWORKS           | no_config_mobile_networks           | 禁止配置移动网络           |
+| DISALLOW_CONFIG_PRIVATE_DNS               | disallow_config_private_dns         | 禁止配置私有 DNS           |
+| DISALLOW_CONFIG_SCREEN_TIMEOUT            | no_config_screen_timeout            | 禁止修改屏幕超时           |
+| DISALLOW_CONFIG_TETHERING                 | no_config_tethering                 | 禁止配置网络共享           |
+| DISALLOW_CONFIG_VPN                       | no_config_vpn                       | 禁止配置 VPN               |
+| DISALLOW_CONFIG_WIFI                      | no_config_wifi                      | 禁止配置 Wi-Fi             |
+| DISALLOW_CONTENT_CAPTURE                  | no_content_capture                  | 禁止内容捕获               |
+| DISALLOW_CONTENT_SUGGESTIONS              | no_content_suggestions              | 禁止内容建议               |
+| DISALLOW_CREATE_WINDOWS                   | no_create_windows                   | 禁止创建悬浮窗             |
+| DISALLOW_CROSS_PROFILE_COPY_PASTE         | no_cross_profile_copy_paste         | 禁止跨资料复制粘贴         |
+| DISALLOW_DATA_ROAMING                     | no_data_roaming                     | 禁止数据漫游               |
+| DISALLOW_DEBUGGING_FEATURES               | no_debugging_features               | 禁止调试功能               |
+| DISALLOW_FACTORY_RESET                    | no_factory_reset                    | 禁止恢复出厂设置           |
+| DISALLOW_FUN                              | no_fun                              | 禁止娱乐功能               |
+| DISALLOW_GRANT_ADMIN                      | no_grant_admin                      | 禁止授予设备管理员         |
+| DISALLOW_INSTALL_APPS                     | no_install_apps                     | 禁止安装应用               |
+| DISALLOW_INSTALL_UNKNOWN_SOURCES          | no_install_unknown_sources          | 禁止未知来源安装           |
+| DISALLOW_INSTALL_UNKNOWN_SOURCES_GLOBALLY | no_install_unknown_sources_globally | 全局禁止未知来源安装       |
+| DISALLOW_MICROPHONE_TOGGLE                | disallow_microphone_toggle          | 禁止切换麦克风开关         |
+| DISALLOW_MODIFY_ACCOUNTS                  | no_modify_accounts                  | 禁止修改账号               |
+| DISALLOW_MOUNT_PHYSICAL_MEDIA             | no_physical_media                   | 禁止挂载物理介质           |
+| DISALLOW_NETWORK_RESET                    | no_network_reset                    | 禁止重置网络               |
+| DISALLOW_OEM_UNLOCK                       | no_oem_unlock                       | 禁止 OEM 解锁              |
+| DISALLOW_OUTGOING_BEAM                    | no_outgoing_beam                    | 禁止外发 Beam              |
+| DISALLOW_OUTGOING_CALLS                   | no_outgoing_calls                   | 禁止拨打电话               |
+| DISALLOW_PRINTING                         | no_printing                         | 禁止打印                   |
+| DISALLOW_RECORD_AUDIO                     | no_record_audio                     | 禁止录音                   |
+| DISALLOW_REMOVE_MANAGED_PROFILE           | no_remove_managed_profile           | 禁止移除工作资料           |
+| DISALLOW_REMOVE_USER                      | no_remove_user                      | 禁止删除用户               |
+| DISALLOW_RUN_IN_BACKGROUND                | no_run_in_background                | 禁止后台运行               |
+| DISALLOW_SAFE_BOOT                        | no_safe_boot                        | 禁止进入安全模式           |
+| DISALLOW_SET_USER_ICON                    | no_set_user_icon                    | 禁止设置用户头像           |
+| DISALLOW_SET_WALLPAPER                    | no_set_wallpaper                    | 禁止设置壁纸               |
+| DISALLOW_SHARE_INTO_MANAGED_PROFILE       | no_sharing_into_profile             | 禁止分享到工作资料         |
+| DISALLOW_SHARE_LOCATION                   | no_share_location                   | 禁止共享位置               |
+| DISALLOW_SHARING_ADMIN_CONFIGURED_WIFI    | no_sharing_admin_configured_wifi    | 禁止共享管理员配置的 Wi-Fi |
+| DISALLOW_SMS                              | no_sms                              | 禁止短信                   |
+| DISALLOW_SYSTEM_ERROR_DIALOGS             | no_system_error_dialogs             | 禁止系统错误弹窗           |
+| DISALLOW_ULTRA_WIDEBAND_RADIO             | no_ultra_wideband_radio             | 禁止超宽带无线电           |
+| DISALLOW_UNIFIED_PASSWORD                 | no_unified_password                 | 禁止统一密码               |
+| DISALLOW_UNINSTALL_APPS                   | no_uninstall_apps                   | 禁止卸载应用               |
+| DISALLOW_UNMUTE_DEVICE                    | disallow_unmute_device              | 禁止取消设备静音           |
+| DISALLOW_UNMUTE_MICROPHONE                | no_unmute_microphone                | 禁止取消麦克风静音         |
+| DISALLOW_USB_FILE_TRANSFER                | no_usb_file_transfer                | 禁止 USB 文件传输          |
+| DISALLOW_USER_SWITCH                      | no_user_switch                      | 禁止用户切换               |
+| DISALLOW_WALLPAPER                        | no_wallpaper                        | 禁止壁纸功能               |
+| DISALLOW_WIFI_DIRECT                      | no_wifi_direct                      | 禁止 Wi-Fi Direct          |
+| DISALLOW_WIFI_TETHERING                   | no_wifi_tethering                   | 禁止 Wi-Fi 热点共享        |
++-------------------------------------------+-------------------------------------+----------------------------+
