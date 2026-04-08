@@ -7,6 +7,7 @@ import android.os.RecoverySystem
 import android.os.SystemProperties
 import android.os.UpdateEngine
 import android.os.UpdateEngineCallback
+import androidx.annotation.RequiresPermission
 import java.io.BufferedInputStream
 import java.io.File
 import java.io.FileOutputStream
@@ -31,6 +32,7 @@ class OtaInstaller(private val context: Context) {
         val onSuccess: (String) -> Unit = {},
     )
 
+    @SuppressLint("MissingPermission")
     fun install(sourceFile: File, callbacks: Callbacks) {
         if (!isRunning.compareAndSet(false, true)) {
             callbacks.onError("OTA is already running")
@@ -56,6 +58,7 @@ class OtaInstaller(private val context: Context) {
         }
     }
 
+    @SuppressLint("SetWorldReadable")
     private fun copyPackage(sourceFile: File, callbacks: Callbacks) {
         val sourceSize = sourceFile.length()
         targetPackageFile.parentFile?.mkdirs()
@@ -97,6 +100,7 @@ class OtaInstaller(private val context: Context) {
         }
     }
 
+    @RequiresPermission("android.permission.RECOVERY")
     private fun installRecoveryPackage(callbacks: Callbacks) {
         callbacks.onStatus("INSTALLING")
         RecoverySystem.installPackage(context, targetPackageFile)

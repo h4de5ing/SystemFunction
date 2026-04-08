@@ -44,8 +44,6 @@ import android.os.PatternMatcher
 import android.os.PowerManager
 import android.os.ServiceManager
 import android.os.SystemClock
-import android.os.UpdateEngine
-import android.os.UpdateEngineCallback
 import android.os.storage.DiskInfo
 import android.os.storage.IStorageEventListener
 import android.os.storage.IStorageManager
@@ -72,7 +70,6 @@ import com.android.android13.removeEthernetListener13
 import com.android.android15.disableNFC15
 import com.android.android15.enableNFC15
 import com.android.android15.setPackagesSuspendedAsUser15
-import com.android.systemlib.ota.PayloadSpecs
 import java.io.BufferedReader
 import java.io.Closeable
 import java.io.DataOutputStream
@@ -1268,97 +1265,6 @@ fun set3Buttons() {
     } catch (e: Exception) {
         e.printStackTrace()
     }
-}
-
-fun ota(file: File, onStatusUpdate: ((Int, Float) -> Unit), onErrorCode: ((Int) -> Unit)) {
-    try {
-        val slot = getSystemPropertyString("ro.boot.slot_suffix")
-        if (TextUtils.isEmpty(slot)) {
-            onStatusUpdate(UpdateEngine.UpdateStatusConstants.DISABLED, 0f)
-            onErrorCode(UpdateEngine.ErrorCodeConstants.PAYLOAD_MISMATCHED_TYPE_ERROR)
-        } else {
-            val updateEngine = UpdateEngine()
-            updateEngine.bind(object : UpdateEngineCallback() {
-                override fun onStatusUpdate(status: Int, percent: Float) {
-                    onStatusUpdate(status, percent)
-                }
-
-                override fun onPayloadApplicationComplete(errorCode: Int) {
-                    onErrorCode(errorCode)
-                }
-            })
-            val specs = PayloadSpecs().forNonStreaming(file)
-            updateEngine.applyPayload(
-                specs.url, specs.offset, specs.size, specs.properties.toTypedArray()
-            )
-        }
-    } catch (e: Exception) {
-        e.printStackTrace()
-    }
-}
-
-fun getUpdateStatus(status: Int): String {
-    StringBuilder()
-    val message = when (status) {
-        UpdateEngine.UpdateStatusConstants.IDLE -> StringBuilder("0-IDLE")
-        UpdateEngine.UpdateStatusConstants.CHECKING_FOR_UPDATE -> StringBuilder("1-检查更新")
-        UpdateEngine.UpdateStatusConstants.UPDATE_AVAILABLE -> StringBuilder("2-更新可用")
-        UpdateEngine.UpdateStatusConstants.DOWNLOADING -> StringBuilder("3-下载中")
-        UpdateEngine.UpdateStatusConstants.VERIFYING -> StringBuilder("4-验证中")
-        UpdateEngine.UpdateStatusConstants.FINALIZING -> StringBuilder("5-搞定")
-        UpdateEngine.UpdateStatusConstants.UPDATED_NEED_REBOOT -> StringBuilder("6-更新后需要重启")
-        UpdateEngine.UpdateStatusConstants.REPORTING_ERROR_EVENT -> StringBuilder("7-报告错误事件")
-        UpdateEngine.UpdateStatusConstants.ATTEMPTING_ROLLBACK -> StringBuilder("8-尝试回滚")
-        UpdateEngine.UpdateStatusConstants.DISABLED -> StringBuilder("9-禁用")
-        else -> StringBuilder()
-    }
-    try {
-        val constants = UpdateEngine.UpdateStatusConstants()
-        val declaredFields = constants.javaClass.declaredFields
-        for (field in declaredFields) {
-            field.isAccessible = true
-            val name = field.name
-            val o = field[constants]
-            if (o != null && o as Int == status) message.append(",").append(name)
-        }
-    } catch (e: Exception) {
-        e.printStackTrace()
-    }
-    return message.toString()
-}
-
-fun getUpdateError(errorCode: Int): String {
-    StringBuilder()
-    val message = when (errorCode) {
-        UpdateEngine.ErrorCodeConstants.SUCCESS -> StringBuilder("升级成功")
-        UpdateEngine.ErrorCodeConstants.ERROR -> StringBuilder("升级错误")
-        UpdateEngine.ErrorCodeConstants.FILESYSTEM_COPIER_ERROR -> StringBuilder("文件系统复制错误")
-        UpdateEngine.ErrorCodeConstants.POST_INSTALL_RUNNER_ERROR -> StringBuilder("安装后runner错误")
-        UpdateEngine.ErrorCodeConstants.PAYLOAD_MISMATCHED_TYPE_ERROR -> StringBuilder("不匹配类型错误")
-        UpdateEngine.ErrorCodeConstants.INSTALL_DEVICE_OPEN_ERROR -> StringBuilder("安装设备打开错误")
-        UpdateEngine.ErrorCodeConstants.KERNEL_DEVICE_OPEN_ERROR -> StringBuilder("内核设备打开错误")
-        UpdateEngine.ErrorCodeConstants.DOWNLOAD_TRANSFER_ERROR -> StringBuilder("下载传输错误")
-        UpdateEngine.ErrorCodeConstants.PAYLOAD_HASH_MISMATCH_ERROR -> StringBuilder("哈希不匹配错误")
-        UpdateEngine.ErrorCodeConstants.PAYLOAD_SIZE_MISMATCH_ERROR -> StringBuilder("大小不匹配错误")
-        UpdateEngine.ErrorCodeConstants.DOWNLOAD_PAYLOAD_VERIFICATION_ERROR -> StringBuilder("验证错误")
-        UpdateEngine.ErrorCodeConstants.PAYLOAD_TIMESTAMP_ERROR -> StringBuilder("时间戳错误")
-        UpdateEngine.ErrorCodeConstants.UPDATED_BUT_NOT_ACTIVE -> StringBuilder("已更新但未激活")
-        else -> StringBuilder()
-    }
-    try {
-        val constants = UpdateEngine.ErrorCodeConstants()
-        val declaredFields = constants.javaClass.declaredFields
-        for (field in declaredFields) {
-            field.isAccessible = true
-            val name = field.name
-            val o = field[constants]
-            if (o != null && o as Int == errorCode) message.append(",").append(name)
-        }
-        println(message)
-    } catch (e: Exception) {
-        e.printStackTrace()
-    }
-    return message.toString()
 }
 
 /**
