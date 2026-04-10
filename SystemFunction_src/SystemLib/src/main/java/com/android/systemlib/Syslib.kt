@@ -138,6 +138,77 @@ fun addWifi(context: Context, ssid: String, pass: String) {
     connectivityManager.requestNetwork(request, object : ConnectivityManager.NetworkCallback() {})
 }
 
+private const val TYPE_NO_PASSWD: Int = 0x11
+private const val TYPE_WEP: Int = 0x12
+private const val TYPE_WPA_WPA2: Int = 0x13
+fun addNetwork(
+    wifiManager: WifiManager,
+    ssid: String,
+    passwd: String,
+    type: Int = TYPE_WPA_WPA2
+): Boolean {
+    return addNetwork(wifiManager, createWifiInfo(wifiManager, ssid, passwd, type))
+}
+
+private fun addNetwork(wifiManager: WifiManager, wifi: WifiConfiguration?): Boolean {
+    val netId = wifiManager.addNetwork(wifi)
+    return wifiManager.enableNetwork(netId, true)
+}
+
+private fun isExists(wifiManager: WifiManager, ssid: String): WifiConfiguration? =
+    wifiManager.configuredNetworks.firstOrNull { it.SSID == "\"$ssid\"" }
+
+private fun createWifiInfo(
+    wifiManager: WifiManager,
+    ssid: String,
+    password: String,
+    type: Int
+): WifiConfiguration {
+    val config = WifiConfiguration()
+    config.allowedAuthAlgorithms.clear()
+    config.allowedGroupCiphers.clear()
+    config.allowedKeyManagement.clear()
+    config.allowedPairwiseCiphers.clear()
+    config.allowedProtocols.clear()
+    config.SSID = "\"" + ssid + "\""
+    val tempConfig = isExists(wifiManager, ssid)
+    if (tempConfig != null) wifiManager.removeNetwork(tempConfig.networkId)
+    when (type) {
+        TYPE_NO_PASSWD -> {
+            config.wepKeys[0] = ""
+            config.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE)
+            config.wepTxKeyIndex = 0
+        }
+
+        TYPE_WEP -> {
+            config.hiddenSSID = true
+            config.wepKeys[0] = "\"" + password + "\""
+            config.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.SHARED)
+            config.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.CCMP)
+            config.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.TKIP)
+            config.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP40)
+            config.allowedGroupCiphers
+                .set(WifiConfiguration.GroupCipher.WEP104)
+            config.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE)
+            config.wepTxKeyIndex = 0
+        }
+
+        TYPE_WPA -> {
+            config.preSharedKey = "\"" + password + "\""
+            config.hiddenSSID = true
+            config.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.OPEN)
+            config.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.TKIP)
+            config.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA_PSK)
+            config.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.TKIP)
+//                config.allowedProtocols.set(WifiConfiguration.Protocol.WPA)
+            config.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.CCMP)
+            config.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.CCMP)
+            config.status = WifiConfiguration.Status.ENABLED
+        }
+    }
+    return config
+}
+
 /**
  * 获取所有已连接的wifi信息
  */
