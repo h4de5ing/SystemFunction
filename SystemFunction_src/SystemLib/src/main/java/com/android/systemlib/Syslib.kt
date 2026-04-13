@@ -1,5 +1,6 @@
 package com.android.systemlib
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.app.IActivityManager
 import android.app.IActivityTaskManager
@@ -56,6 +57,7 @@ import android.text.TextUtils
 import android.text.format.Formatter
 import android.view.accessibility.IAccessibilityManager
 import androidx.annotation.RequiresApi
+import androidx.annotation.RequiresPermission
 import androidx.core.content.ContextCompat
 import androidx.core.view.accessibility.AccessibilityEventCompat
 import com.android.android12.addEthernetListener12
@@ -155,6 +157,7 @@ private fun addNetwork(wifiManager: WifiManager, wifi: WifiConfiguration?): Bool
     return wifiManager.enableNetwork(netId, true)
 }
 
+@RequiresPermission(allOf = [Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_WIFI_STATE])
 private fun isExists(wifiManager: WifiManager, ssid: String): WifiConfiguration? =
     wifiManager.configuredNetworks.firstOrNull { it.SSID == "\"$ssid\"" }
 
@@ -193,7 +196,7 @@ private fun createWifiInfo(
             config.wepTxKeyIndex = 0
         }
 
-        TYPE_WPA -> {
+        TYPE_WPA_WPA2 -> {
             config.preSharedKey = "\"" + password + "\""
             config.hiddenSSID = true
             config.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.OPEN)
