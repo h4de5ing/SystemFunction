@@ -27,6 +27,7 @@ class OtaInstaller(private val context: Context) {
     private val targetPackageFile = File("/data/ota_package/selected_ota.zip")
 
     data class Callbacks(
+        val onProgress: (String, Int) -> Unit = { _, _ -> },
         val onStatus: (String) -> Unit = {},
         val onError: (String) -> Unit = {},
         val onSuccess: (String) -> Unit = {},
@@ -43,6 +44,7 @@ class OtaInstaller(private val context: Context) {
             try {
                 val displayName = sourceFile.name
                 callbacks.onStatus("SELECTED $displayName")
+                callbacks.onProgress("SELECTED", 0)
                 copyPackage(sourceFile, callbacks)
 
                 if (isAbDevice()) {
@@ -82,6 +84,7 @@ class OtaInstaller(private val context: Context) {
                         if (percent != lastPercent) {
                             lastPercent = percent
                             callbacks.onStatus("COPYING $percent%")
+                            callbacks.onProgress("COPYING", percent)
                         }
                     }
                 }
@@ -103,6 +106,7 @@ class OtaInstaller(private val context: Context) {
     @RequiresPermission("android.permission.RECOVERY")
     private fun installRecoveryPackage(callbacks: Callbacks) {
         callbacks.onStatus("INSTALLING")
+        callbacks.onProgress("INSTALLING", 0)
         RecoverySystem.installPackage(context, targetPackageFile)
         callbacks.onSuccess("INSTALL_PACKAGE_RETURNED")
     }
@@ -127,6 +131,7 @@ class OtaInstaller(private val context: Context) {
                     ) ?: "STATUS_$status"
                     val rawStatus = "$statusMessage [$status] $progress%"
                     terminalStatus = rawStatus
+                    callbacks.onProgress(statusMessage, progress)
                     val isComplete =
                         status == UpdateEngine.UpdateStatusConstants.UPDATED_NEED_REBOOT ||
                                 ((Build.VERSION.SDK_INT == 34) && (percent >= 1 && status == UpdateEngine.UpdateStatusConstants.FINALIZING))
@@ -160,6 +165,7 @@ class OtaInstaller(private val context: Context) {
             }
 
             callbacks.onStatus("APPLYING_PAYLOAD")
+            callbacks.onProgress("APPLYING_PAYLOAD", 0)
             updateEngine.applyPayload(
                 payloadSpec.url,
                 payloadSpec.offset,
