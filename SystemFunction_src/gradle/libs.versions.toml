@@ -1,11 +1,11 @@
 [versions]
-agp = "9.1.0"
+agp = "9.1.1"
 coreKtx = "1.18.0"
 # SDK Versions
-compileSdk = "36"
-minSdk = "21"
-targetSdk = "36"
-javaVersion = "22"
+compileSdk = "37"
+minSdk = "26"
+targetSdk = "37"
+javaVersion = "VERSION_22"
 
 [libraries]
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "coreKtx" }

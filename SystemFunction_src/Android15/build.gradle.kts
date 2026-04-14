@@ -7,11 +7,11 @@ plugins {
 }
 
 android {
-    compileSdk = 36
+    compileSdk = libs.versions.compileSdk.get().toInt()
     namespace = "com.android.android15"
 
     defaultConfig {
-        minSdk = 21
+        minSdk = libs.versions.minSdk.get().toInt()
     }
 
     buildTypes {
@@ -21,8 +21,8 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_22
-        targetCompatibility = JavaVersion.VERSION_22
+        sourceCompatibility = JavaVersion.valueOf(libs.versions.javaVersion.get())
+        targetCompatibility = JavaVersion.valueOf(libs.versions.javaVersion.get())
     }
 
     publishing {

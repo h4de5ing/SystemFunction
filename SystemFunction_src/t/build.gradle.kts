@@ -4,12 +4,12 @@ plugins {
 
 android {
     namespace = "com.android.t"
-    compileSdk = 36
+    compileSdk = libs.versions.compileSdk.get().toInt()
 
     defaultConfig {
         applicationId = "com.android.t"
-        minSdk = 26
-        targetSdk = 36
+        minSdk = libs.versions.minSdk.get().toInt()
+        targetSdk = libs.versions.targetSdk.get().toInt()
         versionCode = 1
         versionName = "1.0"
     }
@@ -32,8 +32,8 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_22
-        targetCompatibility = JavaVersion.VERSION_22
+        sourceCompatibility = JavaVersion.valueOf(libs.versions.javaVersion.get())
+        targetCompatibility = JavaVersion.valueOf(libs.versions.javaVersion.get())
     }
 }
 
