@@ -493,8 +493,6 @@ fun installAPK(
             PackageInstaller.SessionParams(PackageInstaller.SessionParams.MODE_FULL_INSTALL)
         sessionParams.setSize(apkFile.length())
 //        sessionParams.setInstallLocation(2)
-        //TODO Android 14+ 不允许杀死应用，否则安装失败
-//        if (Build.VERSION.SDK_INT >= 34) sessionParams.setDontKillApp(true)
         val sessionId = packageInstaller.createSession(sessionParams)
         if (sessionId != -1) {
             val copySuccess = copyInstallFile(packageInstaller, sessionId, apkFilePath, change)
