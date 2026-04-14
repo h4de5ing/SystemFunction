@@ -1,8 +1,37 @@
 # Android 系统功能封装库
 
-封装了 Android 系统应用中常用隐藏系统 API 的 Kotlin 库，提供统一的、感知版本差异的接口，用于需要平台签名或系统权限的操作。
+面向生产环境的 Kotlin 库，封装了 Android 系统应用中常用的隐藏系统 API，提供统一的、感知版本差异的接口，用于需要平台签名或系统权限的操作。内置对 Android 12 至 Android 16（API 31–36）的兼容适配。
 
 > **前提条件**：平台签名（`platform.jks`）+ `android.uid.system` 共享用户 ID
+
+## 适合谁使用
+
+本库面向需要调用标准 SDK API 无法满足的特权能力的团队：
+
+- **Android OEM / ODM 工程师** — 开发随定制 ROM 预装的系统应用
+- **企业设备管理开发者** — 实现 MDM/EMM 解决方案或 Kiosk 系统
+- **系统应用开发者** — 需要静默安装、设备策略控制或硬件级别访问
+- **AOSP 定制团队** — 通过特权应用而非修改框架层来扩展平台能力
+
+## 支持的使用场景
+
+- 无需用户交互，静默安装、卸载、隐藏、冻结或限制应用
+- 通过 DPM 控制锁屏、密码策略和 Kiosk 模式
+- 在系统级别切换 NFC、以太网、传感器隐私开关和 USB 数据
+- 通过代码注入触摸、滚动和键盘事件
+- 在 A/B 分区设备上通过 `UpdateEngine` 推送 OTA 升级
+- 读写 `Settings.Global/System/Secure` 和系统属性
+- 管理 WiFi 配置（含密码）并配置网络代理
+- 获取普通应用无法访问的真实设备标识符（IMEI、SN、出厂 MAC）
+- 为任意已安装应用授予或撤销运行时权限及 AppOps 模式
+
+## 注意事项与安全说明
+
+- **不适用于普通消费者应用。** 本库所有 API 均需系统 UID 和平台签名，普通 Play Store 应用无法使用。
+- **不是 Root 方案。** 本库在 AOSP 权限模型内工作，不利用漏洞也不绕过 SELinux。使用前需从厂商获取 `platform.jks` 或自行构建 ROM。
+- **隐藏 API 稳定性无保证。** 带 `@UnsupportedAppUsage` 注解的接口可能在 Android 大版本升级时被移除或修改。本库的各版本兼容模块正是为此而设计，但新版 Android 可能仍需新的适配。
+- **部分 DPM 操作不可逆。** 恢复出厂（`wipeDate`）、密码最大错误次数、Kiosk 锁定任务模式等，若误操作可能导致设备无法使用。请务必先在非生产设备上测试。
+- **传感器隐私 API 仅支持 Android 12–13。** 用于麦克风/摄像头硬件开关的 `ISensorPrivacyManager` 接口已在 Android 14 中移除，请勿在 API 34+ 上调用 `disableSensor()`。
 
 ## 功能模块
 
@@ -91,6 +120,102 @@ cd SystemFunction_src
 ```
 
 执行后会将更新后的 AAR 写入 `SystemLib_repository`。
+
+## 按功能快速查看示例
+
+以下是常见调用模式。所有示例均假设应用已使用平台签名并声明 `android.uid.system`。
+
+**静默安装 APK（带进度回调）**
+```kotlin
+installAPK(context, "/sdcard/app.apk") { code, message ->
+    when (code) {
+        0  -> Log.i(TAG, "安装成功")
+        -4 -> Log.e(TAG, "安装失败: $message")
+    }
+}
+```
+
+**静默设置默认 Launcher**
+```kotlin
+setDefaultLauncher(context, "com.example.launcher")
+```
+
+**锁定状态栏（隐藏所有内容）**
+```kotlin
+setStatusBarInt(context, STATUS_DISABLE_NAVIGATION or DISABLE_EXPAND or DISABLE_NOTIFICATION_ICONS)
+// 恢复
+setStatusBarInt(context, DISABLE_NONE)
+```
+
+**冻结 / 暂停应用**
+```kotlin
+suspendedAPP("com.example.app", true)   // 冻结
+suspendedAPP("com.example.app", false)  // 恢复
+```
+
+**静默授予运行时权限**
+```kotlin
+grant(context, "com.example.app", android.Manifest.permission.CAMERA)
+// 或一键授予所有已申请权限
+grantPermission(context, "com.example.app")
+```
+
+**设置 AppOps 模式（例如允许用量统计访问）**
+```kotlin
+// 操作码 43 = APP_OP_GET_USAGE_STATS
+setMode(context, 43, "com.example.app", MODE_ALLOWED)
+```
+
+**从 NTP 服务器同步并设置系统时间**
+```kotlin
+getNtpTime("ntp.aliyun.com", 3000) { timestamp ->
+    setTime(context, timestamp)
+}
+```
+
+**DPM — 激活管理员并进入 Kiosk 模式**
+```kotlin
+val admin = ComponentName(packageName, "$packageName.AdminReceiver")
+setActiveProfileOwner(admin)
+kiosk(activity, admin, arrayOf("com.example.kiosk"))
+```
+
+**注入触摸事件**
+```kotlin
+injectInit()
+injectMotionEvent(MotionEvent.ACTION_DOWN, 540f, 960f)
+injectMotionEvent(MotionEvent.ACTION_UP,   540f, 960f)
+```
+
+**A/B 设备 OTA 升级**
+```kotlin
+val otaFile = File("/sdcard/update.zip")
+ota(otaFile,
+    onStatusUpdate = { status, percent ->
+        Log.i(TAG, "${getUpdateStatus(status)} — ${(percent * 100).toInt()}%")
+    },
+    onErrorCode = { code ->
+        if (code == 0) Log.i(TAG, "OTA 完成，即将重启…")
+        else Log.e(TAG, "OTA 失败: ${getUpdateError(code)}")
+    }
+)
+```
+
+**禁用以太网**
+```kotlin
+disableEthernet(true) { supported ->
+    if (!supported) Log.w(TAG, "当前设备不支持以太网禁用操作")
+}
+```
+
+**获取电池优化状态**
+```kotlin
+when (getBatteryOptimization(context, "com.example.app")) {
+    MODE_UNRESTRICTED -> // 白名单，不受任何后台限制
+    MODE_OPTIMIZED    -> // Android 默认优化行为
+    MODE_RESTRICTED   -> // 后台受到严格限制
+}
+```
 
 ## 快速开始
 

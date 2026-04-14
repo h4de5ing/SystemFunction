@@ -1,8 +1,37 @@
 # Android System Function Library
 
-A Kotlin library that wraps commonly used hidden system APIs for Android system applications. It provides a unified, version-aware interface for operations that require platform signature or system privileges.
+A production-grade Kotlin library that wraps commonly used hidden system APIs for Android system applications. It provides a unified, version-aware interface for operations that require platform signature or system privileges, with built-in compatibility coverage from Android 12 through Android 16 (API 31–36).
 
 > **Requires**: platform signature (`platform.jks`) + `android.uid.system` shared user ID
+
+## Who Is This For?
+
+This library is designed for teams building privileged Android applications where standard SDK APIs are insufficient:
+
+- **Android OEM / ODM engineers** building system apps bundled with custom ROMs
+- **Enterprise device management developers** implementing MDM/EMM solutions or kiosk systems
+- **System app developers** needing silent installs, device policy control, or hardware-level access
+- **AOSP customization teams** extending platform behavior through privileged apps rather than framework changes
+
+## Supported Scenarios
+
+- Silently install, uninstall, hide, freeze, or restrict apps without user interaction
+- Control device lock screen, password policy, and kiosk mode via DPM
+- Toggle NFC, Ethernet, sensor privacy switches, and USB data at the system level
+- Inject touch, scroll, and keyboard events programmatically
+- Push OTA updates on A/B partition devices via `UpdateEngine`
+- Read and write `Settings.Global/System/Secure` and system properties
+- Manage WiFi profiles (including credentials) and configure network proxies
+- Get real device identifiers (IMEI, SN, factory MAC) that are hidden from normal apps
+- Grant or revoke runtime permissions and AppOps modes for any installed package
+
+## Non-Goals and Security Caveats
+
+- **Not for consumer apps.** Every API in this library requires system UID and platform signature. Standard Play Store apps cannot use it.
+- **Not a root solution.** This library works within the AOSP permission model — it does not exploit vulnerabilities or bypass SELinux. You need a manufacturer-provided `platform.jks` or a custom ROM build.
+- **Hidden API stability is not guaranteed.** Interfaces marked `@UnsupportedAppUsage` can be removed or changed by Google at any major Android release. The per-version compatibility modules in this library exist to manage that churn, but new Android versions may require new stubs.
+- **DPM operations are irreversible in some cases.** Factory wipe (`wipeDate`), max failed password attempts, and kiosk lock task mode can render a device unusable if called incorrectly. Test on non-production hardware first.
+- **Sensor privacy APIs (Android 12–13 only).** The `ISensorPrivacyManager` interface used for mic/camera kill switch was removed in Android 14. Do not use `disableSensor()` on API 34+.
 
 ## Feature Modules
 
@@ -91,6 +120,102 @@ cd SystemFunction_src
 ```
 
 This publishes the updated AARs back into `SystemLib_repository`.
+
+## Quick Start by Feature
+
+A selection of common call patterns. All snippets assume your app is signed with the platform key and declares `android.uid.system`.
+
+**Silent APK install with progress callback**
+```kotlin
+installAPK(context, "/sdcard/app.apk") { code, message ->
+    when (code) {
+        0  -> Log.i(TAG, "Install succeeded")
+        -4 -> Log.e(TAG, "Install failed: $message")
+    }
+}
+```
+
+**Set default launcher silently**
+```kotlin
+setDefaultLauncher(context, "com.example.launcher")
+```
+
+**Lock down the status bar (hide everything)**
+```kotlin
+setStatusBarInt(context, STATUS_DISABLE_NAVIGATION or DISABLE_EXPAND or DISABLE_NOTIFICATION_ICONS)
+// Restore
+setStatusBarInt(context, DISABLE_NONE)
+```
+
+**Freeze / suspend an app**
+```kotlin
+suspendedAPP("com.example.app", true)   // suspend
+suspendedAPP("com.example.app", false)  // restore
+```
+
+**Grant a runtime permission silently**
+```kotlin
+grant(context, "com.example.app", android.Manifest.permission.CAMERA)
+// or grant all requested permissions at once
+grantPermission(context, "com.example.app")
+```
+
+**Set AppOps mode (e.g. allow usage stats access)**
+```kotlin
+// OP code 43 = APP_OP_GET_USAGE_STATS
+setMode(context, 43, "com.example.app", MODE_ALLOWED)
+```
+
+**Set system time from NTP**
+```kotlin
+getNtpTime("ntp.aliyun.com", 3000) { timestamp ->
+    setTime(context, timestamp)
+}
+```
+
+**DPM — activate admin and enter kiosk mode**
+```kotlin
+val admin = ComponentName(packageName, "$packageName.AdminReceiver")
+setActiveProfileOwner(admin)
+kiosk(activity, admin, arrayOf("com.example.kiosk"))
+```
+
+**Inject a touch event**
+```kotlin
+injectInit()
+injectMotionEvent(MotionEvent.ACTION_DOWN, 540f, 960f)
+injectMotionEvent(MotionEvent.ACTION_UP,   540f, 960f)
+```
+
+**OTA update on A/B device**
+```kotlin
+val otaFile = File("/sdcard/update.zip")
+ota(otaFile,
+    onStatusUpdate = { status, percent ->
+        Log.i(TAG, "${getUpdateStatus(status)} — ${(percent * 100).toInt()}%")
+    },
+    onErrorCode = { code ->
+        if (code == 0) Log.i(TAG, "OTA complete, rebooting…")
+        else Log.e(TAG, "OTA failed: ${getUpdateError(code)}")
+    }
+)
+```
+
+**Disable Ethernet**
+```kotlin
+disableEthernet(true) { supported ->
+    if (!supported) Log.w(TAG, "This device does not support Ethernet disable")
+}
+```
+
+**Get battery optimization state**
+```kotlin
+when (getBatteryOptimization(context, "com.example.app")) {
+    MODE_UNRESTRICTED -> // whitelist — no restrictions
+    MODE_OPTIMIZED    -> // default Android behavior
+    MODE_RESTRICTED   -> // background heavily restricted
+}
+```
 
 ## Quick Start
 
