@@ -161,6 +161,7 @@ private fun addNetwork(wifiManager: WifiManager, wifi: WifiConfiguration?): Bool
 private fun isExists(wifiManager: WifiManager, ssid: String): WifiConfiguration? =
     wifiManager.configuredNetworks.firstOrNull { it.SSID == "\"$ssid\"" }
 
+@SuppressLint("MissingPermission")
 private fun createWifiInfo(
     wifiManager: WifiManager,
     ssid: String,
