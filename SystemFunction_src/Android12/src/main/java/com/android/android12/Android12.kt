@@ -219,8 +219,7 @@ fun grantNotificationListenerAccessGranted12(serviceComponent: ComponentName) {
  * 休眠的时候是否打开屏保 Settings.Secure.SCREENSAVER_ACTIVATE_ON_SLEEP
  * 底座的时候是否打开屏保 Settings.Secure.SCREENSAVER_ACTIVATE_ON_DOCK
  * 查看开关状态 settings list secure|grep screensaver
- */
-/**
+ * 查看屏保相关设置 settings list secure|grep screensaver
  * 获取所有安装的屏保app
  */
 fun getDreamPackage(context: Context) {
