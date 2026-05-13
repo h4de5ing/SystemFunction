@@ -706,7 +706,6 @@ fun isSystemAPP(context: Context, packageName: String): Boolean {
 /**
  * 判断是否为挂起状态
  */
-@RequiresApi(Build.VERSION_CODES.N)
 fun isSuspended(context: Context, packageName: String): Boolean {
     return try {
         val pm = context.packageManager
@@ -884,7 +883,6 @@ fun getPkgList(): MutableList<String> {
 /**
  * 把应用添加到电池优化白名单，需要系统权限
  */
-@RequiresApi(Build.VERSION_CODES.M)
 @SuppressLint("WrongConstant", "SoonBlockedPrivateApi")
 @Deprecated("移除,调用setBatteryOptimization方法")
 fun addPowerSaveWhitelistApp(packageName: String) {
@@ -900,7 +898,6 @@ fun addPowerSaveWhitelistApp(packageName: String) {
 /**
  * 把应用从电池优化白名单移除
  */
-@RequiresApi(Build.VERSION_CODES.M)
 @SuppressLint("WrongConstant", "SoonBlockedPrivateApi")
 @Deprecated("移除,调用setBatteryOptimization方法")
 fun removePowerSaveWhitelistApp(packageName: String) {
@@ -916,7 +913,6 @@ fun removePowerSaveWhitelistApp(packageName: String) {
 /**
  * 判断应用是否在白名单里面
  */
-@RequiresApi(Build.VERSION_CODES.M)
 @SuppressLint("WrongConstant", "SoonBlockedPrivateApi")
 fun isPowerSaveWhitelistApp(packageName: String): Boolean {
     return try {
@@ -935,7 +931,6 @@ fun isPowerSaveWhitelistApp(packageName: String): Boolean {
  * vendor\mediatek\proprietary\frameworks\base\data\etc\platform.xml
  * vendor\partner_gms\etc\sysconfig\google.xml
  */
-@RequiresApi(Build.VERSION_CODES.M)
 @SuppressLint("WrongConstant", "SoonBlockedPrivateApi")
 fun getPowerSaveWhitelistApp(): List<String> {
     return try {
@@ -1035,7 +1030,6 @@ fun disableSensor(isDisable: Boolean, sensor: Int) {
  * 取消挂载扩展存储设备
  */
 @SuppressLint("DiscouragedPrivateApi")
-@RequiresApi(Build.VERSION_CODES.N)
 fun unmount(context: Context) {
     try {
         val iStorageManager = IStorageManager.Stub.asInterface(ServiceManager.getService("mount"))
@@ -1441,7 +1435,6 @@ fun getDefaultIpAddresses(): String {
  * 获取默认的IP地址
  */
 @SuppressLint("MissingPermission")
-@RequiresApi(Build.VERSION_CODES.M)
 fun getDefaultIpAddresses(context: Context): String {
     val mCM = context.getSystemService(ConnectivityManager::class.java) as ConnectivityManager
     return formatIpAddresses(mCM.getLinkProperties(mCM.activeNetwork))

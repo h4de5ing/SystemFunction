@@ -277,14 +277,10 @@ fun setSystemPropertyString(key: String, value: String) {
  */
 @SuppressLint("MissingPermission")
 fun getSN(): String {
-    val sn: String
     val meigSerial = SystemProperties.get("persist.radio.sn")
-    sn = if (!TextUtils.isEmpty(meigSerial) && meigSerial.length >= 8) {
+    return if (!TextUtils.isEmpty(meigSerial) && meigSerial.length >= 8)
         meigSerial
-    } else {
-        Build.getSerial()
-    }
-    return sn
+    else Build.getSerial()
 }
 
 /**
