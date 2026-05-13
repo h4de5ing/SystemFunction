@@ -20,6 +20,7 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.net.wifi.IWifiManager
 import android.net.wifi.WifiManager
+import android.os.Binder
 import android.os.Build
 import android.os.Environment
 import android.os.IPowerManager
@@ -31,6 +32,7 @@ import android.text.TextUtils
 import android.util.Log
 import android.view.View
 import com.android.internal.app.LocalePicker
+import com.android.internal.statusbar.IStatusBarService
 import com.android.internal.util.MemInfoReader
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
@@ -200,24 +202,18 @@ const val STATUS_DISABLE_NAVIGATION = DISABLE_BACK or DISABLE_HOME or DISABLE_RE
 //隐藏导航栏
 const val HIDE_NAVIGATION =
     View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or View.SYSTEM_UI_FLAG_FULLSCREEN
-
-@SuppressLint("WrongConstant")
+private val disableToken = Binder()
 fun setStatusBarInt(context: Context, status: Int) {
-    val service = context.getSystemService("statusbar")
     try {
-//        (service as StatusBarManager).disable(status)
-        val statusBarManager = Class.forName("android.app.StatusBarManager")
-        val expand = statusBarManager.getMethod("disable", Int::class.java)
-        expand.invoke(service, status)
+        val statusBar =
+            IStatusBarService.Stub.asInterface(ServiceManager.getService("statusbar"))
+        statusBar.disable(status, disableToken, context.packageName)
         // disable2 只跟随禁用状态栏展开能力，避免禁用导航键时误伤 quick settings 等能力。
-        setStatusBar2(
-            context,
-            if ((status and DISABLE_EXPAND) != 0) DISABLE2_MASK else DISABLE2_NONE
+        statusBar.disable2(
+            if ((status and DISABLE_EXPAND) != 0) DISABLE2_MASK else DISABLE2_NONE,
+            disableToken,
+            context.packageName
         )
-        //如下代码不生效
-//        val iStatusBarManager =
-//            IStatusBarService.Stub.asInterface(ServiceManager.getService("statusbar"))
-//        iStatusBarManager.disable(status, Binder(), context.packageName)
     } catch (e: Exception) {
         e.printStackTrace()
     }
@@ -231,21 +227,6 @@ const val DISABLE2_GLOBAL_ACTIONS = 1 shl 3
 const val DISABLE2_ROTATE_SUGGESTIONS = 1 shl 4
 const val DISABLE2_MASK: Int =
     (DISABLE2_QUICK_SETTINGS or DISABLE2_SYSTEM_ICONS or DISABLE2_NOTIFICATION_SHADE or DISABLE2_ROTATE_SUGGESTIONS)
-
-@SuppressLint("WrongConstant")
-fun setStatusBar2(context: Context, status: Int) {
-    val service = context.getSystemService("statusbar")
-    try {
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-//            (service as StatusBarManager).disable2(status)
-//        }
-        val statusBarManager = Class.forName("android.app.StatusBarManager")
-        val expand = statusBarManager.getMethod("disable2", Int::class.java)
-        expand.invoke(service, status)
-    } catch (e: Exception) {
-        e.printStackTrace()
-    }
-}
 
 fun set(context: Context, enable: Boolean) {
     //自动旋转屏幕
