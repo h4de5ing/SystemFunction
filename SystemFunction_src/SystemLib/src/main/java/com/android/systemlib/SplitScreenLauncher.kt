@@ -14,23 +14,6 @@ import android.os.ServiceManager
 import android.os.SystemClock
 import android.util.Log
 
-data class SplitLaunchTarget(
-    val label: String,
-    val component: ComponentName,
-)
-
-object SplitLaunchTargets {
-    val PRIMARY = SplitLaunchTarget(
-        label = "App Manager",
-        component = ComponentName("com.github.appmanager2", "com.github.appmanager.MainActivity"),
-    )
-
-    val SECONDARY = SplitLaunchTarget(
-        label = "Factory Test",
-        component = ComponentName("com.qti.factory2", "com.qti.factory2.MainActivity"),
-    )
-}
-
 /**
  * 一键分屏启动器（system app 版）。
  *
@@ -44,7 +27,7 @@ object SplitLaunchTargets {
  *      这样 secondary 会继承当前 stage，把 SystemTest 这半边替换掉。
  *   4. 后台/开机场景没有现成 Activity 可当锚点，只能保留 direct-start 的 best-effort 路径。
  *
- * 最终效果：上 = primary（App Manager），下 = secondary（Factory Test）。
+ * 最终效果：上/左 = primary，下/右 = secondary。
  */
 object SplitScreenLauncher {
 
@@ -56,8 +39,8 @@ object SplitScreenLauncher {
 
     fun launchSplitPair(
         context: Context,
-        primary: SplitLaunchTarget,
-        secondary: SplitLaunchTarget,
+        primary: ComponentName,
+        secondary: ComponentName,
         onMessage: ((String) -> Unit)? = null,
     ): Boolean {
         val appContext = context.applicationContext
@@ -65,11 +48,11 @@ object SplitScreenLauncher {
             onMessage?.invoke("当前系统不支持分屏")
             return false
         }
-        if (!isResolvable(appContext, primary.component) || !isResolvable(
-                appContext, secondary.component
+        if (!isResolvable(appContext, primary) || !isResolvable(
+                appContext, secondary
             )
         ) {
-            onMessage?.invoke("目标应用不存在或未安装：${primary.label} / ${secondary.label}")
+            onMessage?.invoke("目标应用不存在或未安装：${primary.flattenToShortString()} / ${secondary.flattenToShortString()}")
             return false
         }
 
@@ -82,8 +65,8 @@ object SplitScreenLauncher {
 
     private fun launchFromCallerStage(
         activity: Activity,
-        primary: SplitLaunchTarget,
-        secondary: SplitLaunchTarget,
+        primary: ComponentName,
+        secondary: ComponentName,
         onMessage: ((String) -> Unit)?,
     ): Boolean {
         val handler = Handler(Looper.getMainLooper())
@@ -92,12 +75,12 @@ object SplitScreenLauncher {
             startPrimaryAdjacentFromCaller(activity, primary)
         } catch (t: Throwable) {
             Log.e(TAG, "launchFromCallerStage: start primary failed", t)
-            onMessage?.invoke("启动 ${primary.label} 失败: ${t.message}")
+            onMessage?.invoke("启动 ${primary.flattenToShortString()} 失败: ${t.message}")
             return false
         }
 
         handler.postDelayed({
-            waitForSplitReady(activity, primary.component, POLL_TIMEOUT_MS, handler) { ok ->
+            waitForSplitReady(activity, primary, POLL_TIMEOUT_MS, handler) { ok ->
                 if (!ok) {
                     Log.w(TAG, "caller 未进入分屏，取消 secondary 替换")
                     onMessage?.invoke("未能进入分屏，请重试")
@@ -107,7 +90,7 @@ object SplitScreenLauncher {
                     startSecondaryInCallerStage(activity, secondary)
                 } catch (t: Throwable) {
                     Log.e(TAG, "launchFromCallerStage: start secondary failed", t)
-                    onMessage?.invoke("启动 ${secondary.label} 失败: ${t.message}")
+                    onMessage?.invoke("启动 ${secondary.flattenToShortString()} 失败: ${t.message}")
                 }
             }
         }, PRE_LAUNCH_DELAY_MS)
@@ -117,8 +100,8 @@ object SplitScreenLauncher {
 
     private fun launchFromBackgroundContext(
         context: Context,
-        primary: SplitLaunchTarget,
-        secondary: SplitLaunchTarget,
+        primary: ComponentName,
+        secondary: ComponentName,
         onMessage: ((String) -> Unit)?,
     ): Boolean {
         val handler = Handler(Looper.getMainLooper())
@@ -126,7 +109,7 @@ object SplitScreenLauncher {
         handler.postDelayed({
             try {
                 startPrimary(context, primary)
-                waitForForeground(context, primary.component, POLL_TIMEOUT_MS, handler) { ok ->
+                waitForForeground(context, primary, POLL_TIMEOUT_MS, handler) { ok ->
                     if (!ok) {
                         Log.w(TAG, "primary 未及时上前台，仍尝试发起 adjacent")
                     }
@@ -153,49 +136,49 @@ object SplitScreenLauncher {
         return opts
     }
 
-    private fun startPrimary(context: Context, target: SplitLaunchTarget) {
+    private fun startPrimary(context: Context, target: ComponentName) {
         val intent = Intent().apply {
-            component = target.component
+            component = target
             addFlags(
                 Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_MULTIPLE_TASK or Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
             )
         }
         val opts = newMultiWindowOptions()
-        Log.i(TAG, "startPrimary: ${target.component.flattenToShortString()}")
+        Log.i(TAG, "startPrimary: ${target.flattenToShortString()}")
         context.startActivity(intent, opts.toBundle())
     }
 
-    private fun startPrimaryAdjacentFromCaller(activity: Activity, target: SplitLaunchTarget) {
+    private fun startPrimaryAdjacentFromCaller(activity: Activity, target: ComponentName) {
         val intent = Intent().apply {
-            component = target.component
+            component = target
             addFlags(
                 Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_MULTIPLE_TASK or Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT or Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
             )
         }
         val opts = newMultiWindowOptions()
-        Log.i(TAG, "startPrimaryAdjacentFromCaller: ${target.component.flattenToShortString()}")
+        Log.i(TAG, "startPrimaryAdjacentFromCaller: ${target.flattenToShortString()}")
         activity.startActivity(intent, opts.toBundle())
     }
 
-    private fun startSecondaryInCallerStage(activity: Activity, target: SplitLaunchTarget) {
+    private fun startSecondaryInCallerStage(activity: Activity, target: ComponentName) {
         val intent = Intent().apply {
-            component = target.component
+            component = target
             addFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED)
         }
-        Log.i(TAG, "startSecondaryInCallerStage: ${target.component.flattenToShortString()}")
+        Log.i(TAG, "startSecondaryInCallerStage: ${target.flattenToShortString()}")
         activity.startActivity(intent)
         if (!activity.isFinishing) activity.finish()
     }
 
-    private fun startSecondaryAdjacent(context: Context, target: SplitLaunchTarget) {
+    private fun startSecondaryAdjacent(context: Context, target: ComponentName) {
         val intent = Intent().apply {
-            component = target.component
+            component = target
             addFlags(
                 Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_MULTIPLE_TASK or Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT or Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
             )
         }
         val opts = newMultiWindowOptions()
-        Log.i(TAG, "startSecondaryAdjacent: ${target.component.flattenToShortString()}")
+        Log.i(TAG, "startSecondaryAdjacent: ${target.flattenToShortString()}")
         context.startActivity(intent, opts.toBundle())
     }
 
