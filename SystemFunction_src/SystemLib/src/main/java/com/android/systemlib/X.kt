@@ -240,9 +240,7 @@ fun Activity.toast(message: String) {
 }
 
 //序列化 Drawable->Bitmap->ByteArray
-fun drawable2ByteArray(icon: Drawable): ByteArray {
-    return bitmap2ByteArray(drawable2Bitmap(icon))
-}
+fun drawable2ByteArray(icon: Drawable): ByteArray = bitmap2ByteArray(drawable2Bitmap(icon))
 
 fun bitmap2ByteArray(bitmap: Bitmap): ByteArray {
     val baos = ByteArrayOutputStream()
