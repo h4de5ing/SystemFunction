@@ -13,9 +13,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.IPackageDataObserver
 import android.content.pm.IPackageManager
-import android.content.pm.IPackageStatsObserver
 import android.content.pm.PackageManager
-import android.content.pm.PackageStats
 import android.content.pm.ResolveInfo
 import android.content.res.Configuration
 import android.net.ConnectivityManager
@@ -284,9 +282,7 @@ fun getSN(): String {
     sn = if (!TextUtils.isEmpty(meigSerial) && meigSerial.length >= 8) {
         meigSerial
     } else {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) Build.getSerial() else SystemProperties.get(
-            "ro.serialno"
-        )
+        Build.getSerial()
     }
     return sn
 }
@@ -418,7 +414,7 @@ fun clearApplicationUserData(packageName: String, onChange: ((String, Boolean) -
 fun isNetAvailable(context: Context): Boolean {
     var networkCapabilities: NetworkCapabilities? = null
     val manager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-    return if (Build.VERSION.SDK_INT < 23 || manager.getNetworkCapabilities(manager.activeNetwork)
+    return if (manager.getNetworkCapabilities(manager.activeNetwork)
             ?.also { networkCapabilities = it } == null
     ) {
         false
@@ -603,37 +599,31 @@ private fun setConfiguration3(language: String): Boolean {
  *     public static final int WINDOWING_MODE_FREEFORM = 5;
  */
 fun enterSplitScreen(context: Context, component1: ComponentName, component2: ComponentName) {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-        val intent1 = Intent()
-        intent1.component = component1
-        intent1.addFlags(Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT or Intent.FLAG_ACTIVITY_MULTIPLE_TASK)
-        val options1 = ActivityOptions.makeBasic()
-        context.startActivity(intent1, options1.toBundle())
+    val intent1 = Intent()
+    intent1.component = component1
+    intent1.addFlags(Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT or Intent.FLAG_ACTIVITY_MULTIPLE_TASK)
+    val options1 = ActivityOptions.makeBasic()
+    context.startActivity(intent1, options1.toBundle())
 
-        val intent2 = Intent()
-        intent2.component = component2
-        intent2.addFlags(Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT or Intent.FLAG_ACTIVITY_NEW_TASK)
-        context.startActivity(intent2)
-    }
+    val intent2 = Intent()
+    intent2.component = component2
+    intent2.addFlags(Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT or Intent.FLAG_ACTIVITY_NEW_TASK)
+    context.startActivity(intent2)
 }
 
 /**
  * 多屏显示
  */
 fun enterMultiScreen(context: Context, component1: ComponentName) {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-        val options = ActivityOptions.makeBasic()
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            //display0表达第一块屏幕 display1表达第二块屏幕
-            options.launchDisplayId = 0
-        }
-        val secondIntent = Intent()
-        secondIntent.component = component1
-        secondIntent.addFlags(
-            Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_MULTIPLE_TASK
-        )
-        context.startActivity(secondIntent, options.toBundle())
-    }
+    val options = ActivityOptions.makeBasic()
+    //display0表达第一块屏幕 display1表达第二块屏幕
+    options.launchDisplayId = 0
+    val secondIntent = Intent()
+    secondIntent.component = component1
+    secondIntent.addFlags(
+        Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_MULTIPLE_TASK
+    )
+    context.startActivity(secondIntent, options.toBundle())
 }
 
 private const val contextFlagsIncludeCode = 0x00000001
@@ -697,44 +687,13 @@ fun convert(storageUuid: UUID): String? {
 }
 
 fun getStorageStats(context: Context, storageUuid: UUID, packageName: String): LongArray {
-    val pm = context.packageManager
     var result = longArrayOf(0L, 0L, 0L)
     try {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val iStorage =
-                IStorageStatsManager.Stub.asInterface(ServiceManager.getService(Context.STORAGE_STATS_SERVICE))
-            val storageStats = iStorage.queryStatsForPackage(
-                convert(storageUuid), packageName, 0, context.packageName
-            )
-            result = longArrayOf(
-                storageStats.cacheBytes, storageStats.appBytes, storageStats.dataBytes
-            )
-        } else {
-            try {
-                val clazz = Class.forName("android.content.pm.PackageManager")
-                val method = clazz.getMethod(
-                    "getPackageSizeInfo",
-                    String::class.java,
-                    Class.forName("android.content.pm.IPackageStatsObserver")
-                )
-                val observer = object : IPackageStatsObserver.Stub() {
-                    override fun onGetStatsCompleted(stats: PackageStats?, succeeded: Boolean) {
-                        if (succeeded) {
-                            println("cacheBytes=${stats?.cacheSize}")
-                            println("appBytes=${stats?.codeSize}")
-                            println("dataBytes=${stats?.dataSize}")
-                            result = longArrayOf(
-                                stats?.cacheSize ?: 0L, stats?.codeSize ?: 0L, stats?.dataSize ?: 0L
-                            )
-                        }
-                    }
-                }
-                method.invoke(pm, packageName, observer)
-                // 注意：此方法在 Android 5.0+ 已被废弃，可能无效，实际开发中建议使用 StorageStatsManager（API 26+）
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
+        val iStorage =
+            IStorageStatsManager.Stub.asInterface(ServiceManager.getService(Context.STORAGE_STATS_SERVICE))
+        val storageStats =
+            iStorage.queryStatsForPackage(convert(storageUuid), packageName, 0, context.packageName)
+        result = longArrayOf(storageStats.cacheBytes, storageStats.appBytes, storageStats.dataBytes)
     } catch (e: Exception) {
         e.printStackTrace()
     }
