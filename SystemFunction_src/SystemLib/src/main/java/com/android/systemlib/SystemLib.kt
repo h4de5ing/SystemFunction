@@ -209,7 +209,11 @@ fun setStatusBarInt(context: Context, status: Int) {
         val statusBarManager = Class.forName("android.app.StatusBarManager")
         val expand = statusBarManager.getMethod("disable", Int::class.java)
         expand.invoke(service, status)
-        setStatusBar2(context, if (status == DISABLE_NONE) DISABLE2_NONE else DISABLE2_MASK)
+        // disable2 只跟随禁用状态栏展开能力，避免禁用导航键时误伤 quick settings 等能力。
+        setStatusBar2(
+            context,
+            if ((status and DISABLE_EXPAND) != 0) DISABLE2_MASK else DISABLE2_NONE
+        )
         //如下代码不生效
 //        val iStatusBarManager =
 //            IStatusBarService.Stub.asInterface(ServiceManager.getService("statusbar"))
