@@ -31,7 +31,7 @@ fun lockScreen(mode: Int = 0) {
     if (Build.VERSION.SDK_INT >= 34) {
         try {
             TurnOffScreen.log("Start")
-            SurfaceComposer.Companion.instance?.apply {
+            SurfaceComposer.instance?.apply {
                 val displayIds = physicalDisplayIds
                 for (displayId in displayIds) {
                     TurnOffScreen.log("displayId: $displayId, mode: $mode")

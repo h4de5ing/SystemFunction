@@ -606,7 +606,6 @@ private fun copyInstallFile(
     return success
 }
 
-@SuppressLint("UnspecifiedImmutableFlag")
 private fun execInstallCommand(
     context: Context,
     packageInstaller: PackageInstaller,
@@ -616,25 +615,53 @@ private fun execInstallCommand(
     var session: PackageInstaller.Session? = null
     try {
         session = packageInstaller.openSession(sessionId)
-        val pendingIntent = PendingIntent.getBroadcast(context, 1, Intent(), FLAG_IMMUTABLE)
+        val installAction = "com.android.systemlib.INSTALL_COMPLETE.$sessionId"
+        val appContext = context.applicationContext
+        val receiver = object : android.content.BroadcastReceiver() {
+            override fun onReceive(ctx: Context, intent: Intent) {
+                val status = intent.getIntExtra(
+                    PackageInstaller.EXTRA_STATUS,
+                    PackageInstaller.STATUS_FAILURE
+                )
+                val msg = intent.getStringExtra(PackageInstaller.EXTRA_STATUS_MESSAGE) ?: ""
+                val pkg = intent.getStringExtra(PackageInstaller.EXTRA_PACKAGE_NAME) ?: ""
+                when (status) {
+                    PackageInstaller.STATUS_PENDING_USER_ACTION -> {
+                        val confirmIntent = intent.getParcelableExtra<Intent>(Intent.EXTRA_INTENT)
+                        if (confirmIntent != null) {
+                            confirmIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            try {
+                                appContext.startActivity(confirmIntent)
+                            } catch (e: Exception) {
+                                change(-6, "pending user action but cannot launch: ${e.message}")
+                            }
+                        } else {
+                            change(-6, "pending user action without intent")
+                        }
+                        return
+                    }
+                    PackageInstaller.STATUS_SUCCESS -> change(0, "install success: $pkg")
+                    else -> change(status, "install failed status=$status, msg=$msg, pkg=$pkg")
+                }
+                try {
+                    appContext.unregisterReceiver(this)
+                } catch (_: Exception) {
+                }
+            }
+        }
+        val filter = IntentFilter(installAction)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            appContext.registerReceiver(receiver, filter, Context.RECEIVER_NOT_EXPORTED)
+        } else {
+            appContext.registerReceiver(receiver, filter)
+        }
+
+        val intent = Intent(installAction).setPackage(appContext.packageName)
+        val flags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
+            PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        else PendingIntent.FLAG_UPDATE_CURRENT
+        val pendingIntent = PendingIntent.getBroadcast(appContext, sessionId, intent, flags)
         val intentSender = pendingIntent.intentSender
-        packageInstaller.registerSessionCallback(object : PackageInstaller.SessionCallback() {
-            override fun onCreated(sessionId: Int) {
-            }
-
-            override fun onBadgingChanged(sessionId: Int) {
-            }
-
-            override fun onActiveChanged(sessionId: Int, active: Boolean) {
-            }
-
-            override fun onProgressChanged(sessionId: Int, progress: Float) {
-            }
-
-            override fun onFinished(sessionId: Int, success: Boolean) {
-                change(if (success) 0 else -4, "onFinished but failed,check on device")
-            }
-        }, Handler(Looper.getMainLooper()))
         session.commit(intentSender)
         session.close()
     } catch (e: Exception) {
@@ -734,7 +761,7 @@ fun canUninstall(context: Context, packageName: String): Boolean {
 /**
  * 静默卸载
  */
-@SuppressLint("MissingPermission", "UnspecifiedImmutableFlag")
+@SuppressLint("MissingPermission")
 fun uninstall(context: Context, packageName: String) {
     val intent = Intent()
     intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK

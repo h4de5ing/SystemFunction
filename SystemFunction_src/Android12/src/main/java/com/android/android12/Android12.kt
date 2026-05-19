@@ -156,16 +156,6 @@ fun startTcp5555() {
 //    android.os.SystemProperties.set("service.adb.tls.port", "5555")
 }
 
-//打开adbd服务
-fun startAdbd() {
-    android.os.SystemProperties.set("ctl.start", "adbd")
-}
-
-//关闭adbd服务
-fun stopAdbd() {
-    android.os.SystemProperties.set("ctl.stop", "adbd")
-}
-
 /**
  * 根据ComponentName设置通知监听权限
  */
