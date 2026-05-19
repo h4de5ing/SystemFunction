@@ -5,7 +5,6 @@ import android.annotation.SuppressLint
 import android.app.IActivityManager
 import android.app.IActivityTaskManager
 import android.app.PendingIntent
-import android.app.PendingIntent.FLAG_IMMUTABLE
 import android.app.backup.IBackupManager
 import android.content.ComponentName
 import android.content.Context
@@ -763,9 +762,12 @@ fun canUninstall(context: Context, packageName: String): Boolean {
  */
 @SuppressLint("MissingPermission")
 fun uninstall(context: Context, packageName: String) {
-    val intent = Intent()
-    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-    val sender = PendingIntent.getActivity(context, 0, intent, FLAG_IMMUTABLE)
+    val action = "com.android.systemlib.UNINSTALL_COMPLETE.$packageName"
+    val intent = Intent(action).setPackage(context.packageName)
+    val flags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
+        PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+    else PendingIntent.FLAG_UPDATE_CURRENT
+    val sender = PendingIntent.getBroadcast(context, packageName.hashCode(), intent, flags)
     val packageInstaller: PackageInstaller = context.packageManager.packageInstaller
     packageInstaller.uninstall(packageName, sender.intentSender)
 }
