@@ -16,21 +16,6 @@
 | adservices_manager | （未提供Manager） | 广告服务总管理器，协调各类广告相关组件 |
 | alarm | android.app.AlarmManager | 闹钟/定时服务，设置定时任务或周期性唤醒 |
 | ambient_context | android.app.ambientcontext.AmbientContextManager | 环境上下文服务，感知用户环境状态（如行走、驾驶） |
-| android.frameworks.cameraservice.service.ICameraService/default | 相机HAL接口 | 相机硬件抽象层服务，控制相机设备 |
-| android.frameworks.location.altitude.IAltitudeService/default | 海拔服务接口 | 提供海拔高度数据，通常与GPS或气压传感器配合 |
-| android.frameworks.sensorservice.ISensorManager/default | 传感器HAL管理 | 底层传感器服务，管理加速度、陀螺仪等传感器数据 |
-| android.frameworks.stats.IStats/default | 统计HAL接口 | 系统统计数据收集的底层服务 |
-| android.hardware.gnss.IGnss/default | GNSS HAL接口 | 全球导航卫星系统（GPS/北斗等）硬件服务 |
-| android.hardware.light.ILights/default | 背光HAL接口 | 控制设备背光、指示灯等亮度与颜色 |
-| android.hardware.memtrack.IMemtrack/default | 内存追踪HAL | 记录媒体内存使用情况，用于多媒体调试 |
-| android.hardware.neuralnetworks.IDevice/mtk-gpu_shim | GPU神经网络设备 | 联发科GPU神经网络加速的硬件抽象层 |
-| android.hardware.neuralnetworks.IDevice/mtk-neuron_shim | 神经元加速器设备 | 联发科专用神经网络处理单元（NPU）服务 |
-| android.hardware.power.IPower/default | 电源HAL接口 | 控制CPU调频、休眠唤醒、功耗模式 |
-| android.hardware.security.keymint.IKeyMintDevice/default | 密钥管理设备 | 硬件级密钥生成与加密服务 |
-| android.hardware.security.secureclock.ISecureClock/default | 安全时钟服务 | 提供可信执行环境中的安全时钟 |
-| android.hardware.security.sharedsecret.ISharedSecret/default | 共享密钥服务 | TEE中派生共享密钥的安全服务 |
-| android.hardware.vibrator.IVibrator/default | 振动器设备 | 控制振动马达的振动模式与强度 |
-| android.hardware.vibrator.IVibratorManager/default | 振动管理器设备 | 管理多个振动器或复杂振动模式 |
 | android.os.UpdateEngineService | 系统更新引擎 | 支持A/B系统更新的底层服务 |
 | android.os.UpdateEngineStableService | 稳定版更新引擎 | 用于安全稳定的系统更新流程 |
 | android.security.apc | AndroidProtectedConfirmation | 受保护的确认服务，用于安全交易确认 |
@@ -40,9 +25,6 @@
 | android.security.legacykeystore | 传统密钥库服务 | 已废弃的密钥库，用于兼容老版本应用 |
 | android.security.maintenance | 密钥库维护服务 | 执行密钥库的垃圾回收和健康检查 |
 | android.security.metrics | 安全指标服务 | 收集密钥管理相关的安全统计信息 |
-| android.system.keystore2.IKeystoreService/default | Keystore 2.0服务 | 新一代密钥存储与管理服务 |
-| android.system.net.netd.INetd/default | 网络守护进程 | 处理网络配置、NAT、防火墙等底层网络功能 |
-| android.system.suspend.ISystemSuspend/default | 系统休眠服务 | 控制系统的睡眠与唤醒逻辑 |
 | anrmanager | 系统内部服务 | 记录和管理ANR（应用无响应）事件 |
 | app_binding | （未提供Manager） | 应用绑定服务，处理进程与应用组件的绑定关系 |
 | app_hibernation | android.apphibernation.AppHibernationManager | 应用冻结管理，将后台未使用应用置于休眠状态 |
@@ -93,7 +75,6 @@
 | dreams | android.app.DreamManager | 屏保服务，管理互动屏保程序（Daydream） |
 | drm.drmManager | android.drm.DrmManagerClient | 数字版权管理，处理加密媒体的许可 |
 | dropbox | android.os.DropBoxManager | 系统错误日志收集箱，存储崩溃、ANR等日志 |
-| duraspeed | 联发科技优化服务 | 加速特定应用的启动和运行速度 |
 | dynamic_system | android.os.image.DynamicSystemManager | 动态系统管理，支持运行GSI（通用系统镜像） |
 | emergency_affordance | 紧急功能服务 | 显示紧急信息、拨打紧急号码等 |
 | ethernet | android.net.EthernetManager | 以太网管理，配置有线网络IP和代理 |
@@ -108,7 +89,6 @@
 | hardware_properties | android.os.HardwarePropertiesManager | 硬件属性查询，如CPU温度、风扇转速（仅汽车设备） |
 | healthconnect | android.health.connect.HealthConnectManager | 健康数据平台，统一管理运动、睡眠等健康记录 |
 | imms | 多媒体消息服务 | 管理彩信（MMS）的发送与接收 |
-| imtksms | 联发科短信服务 | 联发平台拓展的短信功能管理 |
 | incidentcompanion | （未提供Manager） | 故障报告辅助服务，收集系统快照用于问题分析 |
 | incremental | android.os.incremental.IncrementalManager | 增量安装服务，支持边下载边运行应用 |
 | input | android.hardware.input.InputManager | 输入设备管理，键盘、鼠标、触摸板的设置与事件分发 |
@@ -116,7 +96,6 @@
 | inputflinger | 输入事件派发服务 | 底层输入事件处理，将触摸/按键转发至窗口 |
 | ions | ION内存管理服务 | 管理ION内存分配器，用于多媒体大数据传输 |
 | iphonesubinfo | 电话订阅信息服务 | 获取IMSI、电话号码等SIM卡信息 |
-| iphonesubinfoEx | （扩展电话订阅信息） | 联发科扩展的电话订阅信息服务 |
 | ipsec | android.net.IpSecManager | IPsec VPN管理，配置加密隧道和安全性 |
 | isms | 短信发送服务 | 处理SMS短信的发送接口（内部） |
 | isub | 订阅信息服务 | 管理SIM卡上的订阅信息列表 |
@@ -153,8 +132,6 @@
 | memtrack.proxy | 内存追踪代理 | 转发媒体内存使用跟踪请求到HAL |
 | midi | android.media.midi.MidiManager | MIDI设备管理，连接电子乐器和音乐应用 |
 | mount | IMountService | 存储设备挂载服务，管理OTG、SD卡等 |
-| mtkIms | 联发科IMS服务 | 联发科技IP多媒体子系统服务，增强VoLTE |
-| mtksimphonebook | 联发科SIM电话本 | 读写SIM卡上的联系人信息（扩展功能） |
 | mwis | 移动网络信息服务 | 获取运营商网络的状态和详细信息 |
 | nearby | android.nearby.NearbyManager | 近距离通信服务，管理超宽带（UWB）、蓝牙发现等 |
 | netd_listener | netd监听服务 | 监听网络守护进程的状态变化 |
@@ -181,7 +158,6 @@
 | permissionmgr | 权限综合管理服务 | 集中管理权限组的授予和变更记录 |
 | persistent_data_block | android.service.persistentdata.PersistentDataBlockManager | 持久数据块管理，用于存储防篡改的安全数据 |
 | phone | android.telephony.TelephonyManager | 电话功能管理，获取网络信号、拨打电话等 |
-| phoneEx | 电话服务扩展 | 联发科扩展的电话功能接口 |
 | pinner | 内存固定服务 | 将关键代码锁在内存中，避免被回收 |
 | platform_compat | （未提供Manager） | 平台兼容服务，处理版本变更时的兼容性行为 |
 | platform_compat_native | 平台兼容原生接口 | 兼容性行为的底层实现 |
@@ -203,7 +179,6 @@
 | scheduling_policy | 调度策略服务 | 控制进程和线程的CPU调度优先级 |
 | sdk_sandbox | android.app.sdksandbox.SdkSandboxManager | SDK沙箱服务，隔离第三方SDK的运行环境 |
 | search | android.app.SearchManager | 全局搜索管理，处理搜索建议和结果呈现 |
-| search_engine_service | com.mediatek.search.SearchEngineManager | 联发科搜索引擎服务，管理默认搜索引擎 |
 | search_ui | android.app.search.SearchUiManager | 搜索界面管理，提供搜索UI的辅助功能 |
 | sec_key_att_app_id_provider | 安全密钥应用ID提供器 | 为密钥认证提供应用的包名和签名 |
 | secure_element | （未提供Manager） | 安全元件服务，管理eSE（嵌入式安全芯片） |
@@ -234,7 +209,6 @@
 | system_update | android.os.SystemUpdateManager | 系统更新管理，查询更新状态和策略 |
 | tare | android.app.tare.EconomyManager | 资源经济管理，限制后台任务对资源的消耗 |
 | telecom | android.telecom.TelecomManager | 通话管理，处理拨号、接听以及电话状态 |
-| telephony.mtkregistry | 联发科电话注册表 | 联发科技电话相关服务注册管理器 |
 | telephony.registry | 电话注册表服务 | 接收电话状态变化（信号强度、通话等）的回调 |
 | telephony_ims | android.telephony.ims.ImsManager | IMS服务管理，支持VoLTE、WiFi通话等 |
 | testharness | 测试工具支持服务 | 为自动化测试提供特殊接口（如模拟传感器） |
@@ -255,7 +229,6 @@
 | usb | android.hardware.usb.UsbManager | USB管理，检测USB设备接入和配置模式 |
 | user | android.os.UserManager | 用户管理，支持多用户（访客/儿童/工作资料） |
 | vcn_management | android.net.vcn.VcnManager | 虚拟运营商网络管理，用于eSIM下的移动数据 |
-| vendor.mediatek.framework.mtksf_ext.IMtkSF_ext/default | 联发科SurfaceFlinger扩展 | 联发科技图形系统扩展功能 |
 | vibrator_manager | android.os.VibratorManager | 振动器总控，管理多个振动器协同工作 |
 | virtualdevice | android.companion.virtual.VirtualDeviceManager | 虚拟设备管理，为可折叠设备模拟副屏 |
 | voiceinteraction | （未提供Manager） | 语音交互服务，用于语音助手和语音控制 |
@@ -273,5 +246,5 @@
 
 > **说明**：
 > - “对应的类”列中，未提供Manager的服务多数为系统Native服务或内部服务，无法通过`Context.getSystemService()`直接获取。
-> - 部分服务名称包含`/default`或特定厂商前缀（如`mediatek`），表示对应的硬件抽象层（HAL）或厂商扩展服务。
 > - 功能描述基于AOSP源码及常见Android行为归纳，具体实现可能因设备或系统版本略有差异。
+> - 基于命令adb shell cmd -l 列出所有服务

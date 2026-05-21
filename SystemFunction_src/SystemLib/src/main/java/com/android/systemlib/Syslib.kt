@@ -35,10 +35,8 @@ import android.net.wifi.WifiNetworkSpecifier
 import android.nfc.INfcAdapter
 import android.os.BugreportManager
 import android.os.Build
-import android.os.Handler
 import android.os.IDeviceIdleController
 import android.os.IPowerManager
-import android.os.Looper
 import android.os.ParcelFileDescriptor
 import android.os.PatternMatcher
 import android.os.PowerManager
@@ -639,6 +637,7 @@ private fun execInstallCommand(
                         }
                         return
                     }
+
                     PackageInstaller.STATUS_SUCCESS -> change(0, "install success: $pkg")
                     else -> change(status, "install failed status=$status, msg=$msg, pkg=$pkg")
                 }
@@ -1009,6 +1008,14 @@ fun isFirstBoot(): Boolean =
 fun removeTask(taskId: Int): Boolean =
     IActivityManager.Stub.asInterface(ServiceManager.getService(Context.ACTIVITY_SERVICE))
         .removeTask(taskId)
+
+/**
+ * 结束所有任务
+ */
+fun removeAllTask() {
+    IActivityTaskManager.Stub.asInterface(ServiceManager.getService("activity_task"))
+        .removeAllVisibleRecentTasks()
+}
 
 /**
  * 结束任务
