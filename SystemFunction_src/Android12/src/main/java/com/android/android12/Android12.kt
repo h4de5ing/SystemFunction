@@ -111,6 +111,17 @@ fun allowWirelessDebugging(alwaysAllow: Boolean, ssid: String) {
     }
 }
 
+fun allowDebugging(alwaysAllow: Boolean, publicKey: String) {
+    try {
+        if (Build.VERSION.SDK_INT >= 31) {
+            val adb = IAdbManager.Stub.asInterface(ServiceManager.getService("adb"))
+            adb.allowDebugging(alwaysAllow, publicKey)
+        }
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+}
+
 fun isDisableLockScreen12(
     context: Context, oldPassword: String, isDisable: Boolean, change: (String) -> Unit
 ) {
@@ -138,6 +149,7 @@ fun isDisableLockScreen12(
  * 无 -1
  * 滑动 -1
  * 图案 1
+ * 密码或者PIN 2
  * PIN码 3
  * 密码 4
  */
@@ -147,6 +159,32 @@ fun getCredentialType12(): Int {
         return lock.getCredentialType(0)
     } else return -1
 }
+
+/**
+ * 清除锁屏密码，oldPassword 为当前密码，type 对应 getCredentialType12() 返回值（3=PIN, 4=密码）
+ */
+fun setLockCredential(oldPassword: String) {
+    try {
+        val lock = ILockSettings.Stub.asInterface(ServiceManager.getService("lock_settings"))
+        val currentCredential = when (val type = getCredentialType12()) {
+            3 -> LockscreenCredential.createPin(oldPassword)
+            4 -> LockscreenCredential.createPassword(oldPassword)
+            else -> {
+                println("setLockCredential: unsupported type=$type")
+                return
+            }
+        }
+        val result = lock.setLockCredential(
+            LockscreenCredential.createNone(), // 新凭据：清空
+            currentCredential, // 当前凭据：用于验证
+            0
+        )
+        println("setLockCredential=${result}")
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+}
+
 
 //需要selinux权限
 fun startTcp5555() {
