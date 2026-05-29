@@ -865,21 +865,6 @@ fun setDisableAPP(context: Context, packageName: ComponentName, isDisable: Boole
 fun isDisableAPP(context: Context, packageName: ComponentName): Boolean =
     context.applicationContext.packageManager.getComponentEnabledSetting(packageName) == PackageManager.COMPONENT_ENABLED_STATE_DISABLED
 
-
-//fun getStatusBarHeight(context: Context): Int {
-//    return if (Build.VERSION.SDK_INT >= 30) {
-//        val wm = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-//        val windowMetrics = wm.currentWindowMetrics
-//        val windowInsets = windowMetrics.windowInsets
-//        val insets =
-//            windowInsets.getInsetsIgnoringVisibility(WindowInsets.Type.navigationBars() or WindowInsets.Type.displayCutout())
-//        insets.top
-//    } else {//TODO 以前怎么获取的高度
-//        0
-//    }
-//}
-
-
 fun getPkgList(): MutableList<String> {
     val packages: MutableList<String> = ArrayList()
     try {

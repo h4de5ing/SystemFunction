@@ -51,9 +51,9 @@ val shortcutOverlayPaint =
  *  <uses-permission android:name="com.android.launcher3.permission.READ_SETTINGS" />
  *  <uses-permission android:name="com.android.launcher3.permission.WRITE_SETTINGS" />
  */
-class Launcher3(
-    private val contentResolver: ContentResolver, private val packageManager: PackageManager
-) {
+class Launcher3(private val context: Context) {
+    private val contentResolver: ContentResolver = context.contentResolver
+    private val packageManager: PackageManager = context.packageManager
 
     // 所有桌面 App 图标（itemType=0，全部 screen）
     fun getIcons(): List<LauncherIcon> {
@@ -163,7 +163,7 @@ class Launcher3(
     fun resolveDefaultLauncher(defaultLauncher: String): String =
         if (defaultLauncher == "android") "com.android.launcher3" else defaultLauncher
 
-    fun cleanDefaultLauncher(context: Context) {
+    fun cleanDefaultLauncher() {
         val launcherApps = context.getSystemService(LauncherApps::class.java)
     }
 
@@ -214,11 +214,11 @@ class Launcher3(
         return launcherFavorites
     }
 
-    fun getDeepShortcut(context: Context): List<LauncherFavorites> {
+    fun getDeepShortcut(): List<LauncherFavorites> {
         val list = mutableListOf<LauncherFavorites>()
         try {
             val cursor =
-                context.contentResolver.query(
+                contentResolver.query(
                     launcherFavoritesUri,
                     arrayOf("title", "intent", "icon"),
                     "title IS NOT NULL",
@@ -237,7 +237,7 @@ class Launcher3(
                         val parsed = Intent.parseUri(intentStr, 0)
                         if (!parsed.hasCategory("com.android.launcher3.DEEP_SHORTCUT")) continue
                         val pkg = parsed.`package` ?: parsed.component?.packageName ?: continue
-                        val icon = shortcutIcon(context,
+                        val icon = shortcutIcon(
                             packageManager.getApplicationIcon(pkg),
                             byteArrayToDrawable(context, iconBytes)
                         )
@@ -252,21 +252,7 @@ class Launcher3(
         return list
     }
 
-    fun byteArrayToDrawable(context: Context, byteArray: ByteArray): Drawable {
-        val bitmap = BitmapFactory.decodeByteArray(
-            byteArray,
-            0,
-            byteArray.size,
-            BitmapFactory.Options().apply { inPreferredConfig = Bitmap.Config.ARGB_8888 })
-            ?: return defaultAppDrawable(context)
-        return bitmap.toDrawable(context.resources)
-    }
-
-    private fun defaultAppDrawable(context: Context): Drawable =
-        ContextCompat.getDrawable(context, android.R.drawable.sym_def_app_icon)
-            ?: context.packageManager.defaultActivityIcon
-
-    fun shortcutIcon(context: Context, drawableTop: Drawable, drawableBottom: Drawable): ByteArray =
+    fun shortcutIcon(drawableTop: Drawable, drawableBottom: Drawable): ByteArray =
         runCatching {
             val overlayBitmap = drawable2Bitmap(drawableTop)
             val baseBitmap = drawable2Bitmap(drawableBottom).asMutableArgb8888()
@@ -298,7 +284,6 @@ class Launcher3(
         }
 
     fun createDeepShortCut(
-        context: Context,
         title: String,
         url: String,
     ) {
@@ -311,18 +296,20 @@ class Launcher3(
             val activityInfo = getDefaultBrowser()
             if (activityInfo != null && "android" != activityInfo.packageName) {
                 icon =
-                    Icon.createWithBitmap(drawable2Bitmap(activityInfo.loadIcon(context.packageManager)))
+                    Icon.createWithBitmap(drawable2Bitmap(activityInfo.loadIcon(packageManager)))
                 intent.setPackage(activityInfo.packageName)
             } else {
-                if (isExistPackageName(edgePackage)) {
-//                    icon = Icon.createWithResource(context, R.drawable.ic_edge_app_icon)
-                    intent.setPackage(edgePackage)
-                } else if (isExistPackageName(chromePackage)) {
-//                    icon = Icon.createWithResource(context, R.drawable.ic_chrome_app_icon)
-                    intent.setPackage(chromePackage)
-                } else if (isExistPackageName(browser)) {
-//                    icon = Icon.createWithResource(context, R.drawable.ic_launcher_browser)
-                    intent.setPackage(browser)
+                val browserPkg = when {
+                    isExistPackageName(edgePackage) -> edgePackage
+                    isExistPackageName(chromePackage) -> chromePackage
+                    isExistPackageName(browser) -> browser
+                    else -> null
+                }
+                if (browserPkg != null) {
+                    intent.setPackage(browserPkg)
+                    icon = Icon.createWithBitmap(
+                        drawable2Bitmap(packageManager.getApplicationIcon(browserPkg))
+                    )
                 }
             }
             if (icon == null) return
@@ -363,25 +350,25 @@ class Launcher3(
         override fun onChange(selfChange: Boolean) = onChanged()
     }
 
-    private val launcherObserver: FavoritesObserver = FavoritesObserver(Handler()) {
-        // 刷新图标
-    }
+    private var launcherObserver: FavoritesObserver? = null
 
     /**
      * 监听桌面变化
      */
-    fun registerLauncherObserver(context: Context, onChanged: () -> Unit) {
-        context.contentResolver.registerContentObserver(
+    fun registerLauncherObserver(onChanged: () -> Unit) {
+        launcherObserver = FavoritesObserver(Handler(), onChanged)
+        contentResolver.registerContentObserver(
             launcherFavoritesUri,
             true,
-            launcherObserver
+            launcherObserver!!
         )
     }
 
     /**
      * 取消桌面变化监听
      */
-    fun unregisterLauncherObserver(context: Context) {
-        context.contentResolver.unregisterContentObserver(launcherObserver)
+    fun unregisterLauncherObserver() {
+        launcherObserver?.let { contentResolver.unregisterContentObserver(it) }
+        launcherObserver = null
     }
 }
