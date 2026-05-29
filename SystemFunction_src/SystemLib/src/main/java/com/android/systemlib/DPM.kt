@@ -539,7 +539,7 @@ fun setMaximumTimeToLock(context: Context, admin: ComponentName, timeMs: Long) {
     }
 }
 
-fun getCredentialType(): Int = if (Build.VERSION.SDK_INT >= 30) getCredentialType12() else -1
+fun getCredentialType(): Int = getCredentialType12()
 
 /**
  * 重置锁屏密码
