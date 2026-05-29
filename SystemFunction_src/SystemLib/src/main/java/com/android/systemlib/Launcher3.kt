@@ -10,20 +10,16 @@ import android.content.pm.PackageManager
 import android.content.pm.ShortcutInfo
 import android.content.pm.ShortcutManager
 import android.database.ContentObserver
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.Icon
 import android.os.Handler
-import androidx.core.content.ContextCompat
+import android.os.Looper
 import androidx.core.content.IntentCompat
-import androidx.core.graphics.drawable.toDrawable
 import androidx.core.graphics.scale
 import androidx.core.net.toUri
 import java.util.UUID
-
 
 data class LauncherIcon(
     val id: Long,
@@ -34,6 +30,10 @@ data class LauncherIcon(
     val cellY: Int
 )
 
+/**
+ * 注意：ByteArray? 字段导致 data class 自动生成的 equals/hashCode 使用引用比较而非内容比较。
+ * 若需要按内容比较两个 LauncherFavorites，请手动调用 icon.contentEquals(other.icon)。
+ */
 data class LauncherFavorites(
     val title: String,
     val pkg: String,
@@ -47,15 +47,23 @@ val shortcutOverlayPaint =
     Paint(Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG or Paint.DITHER_FLAG)
 
 /**
- * Launcher3控制
- *  <uses-permission android:name="com.android.launcher3.permission.READ_SETTINGS" />
- *  <uses-permission android:name="com.android.launcher3.permission.WRITE_SETTINGS" />
+ * Launcher3 桌面数据操作封装。
+ * 需在 AndroidManifest 声明以下权限：
+ *   <uses-permission android:name="com.android.launcher3.permission.READ_SETTINGS" />
+ *   <uses-permission android:name="com.android.launcher3.permission.WRITE_SETTINGS" />
  */
 class Launcher3(private val context: Context) {
     private val contentResolver: ContentResolver = context.contentResolver
     private val packageManager: PackageManager = context.packageManager
 
-    // 所有桌面 App 图标（itemType=0，全部 screen）
+    // ─────────────────────────────────────────────
+    // 桌面图标查询（favorites 表）
+    // ─────────────────────────────────────────────
+
+    /**
+     * 查询所有桌面主屏图标（itemType=0，container=-100，不含 HotSeat）。
+     * @return 按数据库顺序排列的图标列表
+     */
     fun getIcons(): List<LauncherIcon> {
         val icons = mutableListOf<LauncherIcon>()
         val cursor = contentResolver.query(
@@ -81,7 +89,10 @@ class Launcher3(private val context: Context) {
         return icons
     }
 
-    // hotSeat（dock）图标：container = -101，screen = 槽位编号 0~4
+    /**
+     * 查询 HotSeat（Dock 栏）图标，container=-101。
+     * screen 字段即槽位编号（0~4），cellY 约定映射为 5 以便与主屏图标统一坐标系。
+     */
     private fun getHotSeatIcons(): List<LauncherIcon> {
         val icons = mutableListOf<LauncherIcon>()
         val cursor =
@@ -105,6 +116,15 @@ class Launcher3(private val context: Context) {
         return icons
     }
 
+    // ─────────────────────────────────────────────
+    // 桌面图标增删改
+    // ─────────────────────────────────────────────
+
+    /**
+     * 向桌面或 HotSeat 添加一个 App 图标。
+     * cellY == 5 表示目标为 HotSeat，此时 cellX 即槽位编号（0~4）。
+     * 若包名对应的应用不存在启动 Intent，操作静默忽略。
+     */
     fun addIcon(pkg: String, screen: Int, cellX: Int, cellY: Int) {
         val launchIntent = packageManager.getLaunchIntentForPackage(pkg) ?: return
         val label = try {
@@ -114,7 +134,6 @@ class Launcher3(private val context: Context) {
         } catch (_: PackageManager.NameNotFoundException) {
             pkg
         }
-
         val values = ContentValues().apply {
             put("title", label)
             put("intent", launchIntent.toUri(0))
@@ -136,6 +155,11 @@ class Launcher3(private val context: Context) {
         contentResolver.insert(launcherFavoritesUri, values)
     }
 
+    /**
+     * 移动已有图标到新位置。
+     * cellY == 5 表示目标为 HotSeat，此时 cellX 即目标槽位编号。
+     * @param id 图标的数据库行 ID（来自 getIcons()）
+     */
     fun moveIcon(id: Long, screen: Int, cellX: Int, cellY: Int) {
         val values = ContentValues().apply {
             if (cellY == 5) {
@@ -150,33 +174,49 @@ class Launcher3(private val context: Context) {
                 put("cellY", cellY)
             }
         }
-        contentResolver.update(launcherFavoritesUri, values, "_id = $id", null)
-    }
-
-    fun deleteIcon(id: Long) {
-        contentResolver.delete(launcherFavoritesUri, "_id = $id", null)
+        contentResolver.update(launcherFavoritesUri, values, "_id = ?", arrayOf(id.toString()))
     }
 
     /**
-     * 如果没有配置默认Launcher就使用Launcher3作为默认Launcher
+     * 删除桌面图标。
+     * @param id 图标的数据库行 ID（来自 getIcons()）
+     */
+    fun deleteIcon(id: Long) {
+        contentResolver.delete(launcherFavoritesUri, "_id = ?", arrayOf(id.toString()))
+    }
+
+    // ─────────────────────────────────────────────
+    // Launcher 默认值
+    // ─────────────────────────────────────────────
+
+    /**
+     * 若未配置自定义 Launcher（值为 "android"），回退到系统 Launcher3 包名。
      */
     fun resolveDefaultLauncher(defaultLauncher: String): String =
         if (defaultLauncher == "android") "com.android.launcher3" else defaultLauncher
 
+    /** 预留：清除默认 Launcher 绑定（尚未实现） */
     fun cleanDefaultLauncher() {
         val launcherApps = context.getSystemService(LauncherApps::class.java)
     }
 
-    //处理桌面创建快捷方式
+    // ─────────────────────────────────────────────
+    // 快捷方式（Deep Shortcut）
+    // ─────────────────────────────────────────────
+
     /**
-     * 处理从系统桌面接收到的快捷方式固定请求，提取其中的 ShortcutInfo 并保存到数据库中。
-     * ACTION_MAIN + DEEP_SHORTCUT + setPackage + setFlags(NEW_TASK|RESET_TASK) + putExtra(shortcut_id) + setComponent(shortcutInfo.activity)
-     *  #Intent;action=android.intent.action.MAIN;category=com.android.launcher3.DEEP_SHORTCUT;launchFlags=0x10200000;package=xxx;component=xxx/.Activity;S.shortcut_id=xxx;end
+     * 处理 App 请求"固定快捷方式到桌面"的系统广播（ACTION_CONFIRM_PIN_SHORTCUT）。
+     * 解析 PinItemRequest，提取 ShortcutInfo 并合成图标，构造 LauncherFavorites 供调用方写库。
+     *
+     * Intent 格式：
+     *   ACTION_MAIN + category=DEEP_SHORTCUT + package + component + extra(shortcut_id)
+     *   #Intent;action=android.intent.action.MAIN;category=com.android.launcher3.DEEP_SHORTCUT;
+     *   launchFlags=0x10200000;package=xxx;component=xxx/.Activity;S.shortcut_id=xxx;end
+     *
+     * @param launcherApps 用于获取快捷方式专属图标，传 null 时降级为 App 图标。
+     * @return 解析成功返回含合成图标的 LauncherFavorites，否则返回 null。
      */
-    fun pinShortCut(
-        intent: Intent,
-        launcherApps: LauncherApps?
-    ): LauncherFavorites? {
+    fun pinShortCut(intent: Intent, launcherApps: LauncherApps?): LauncherFavorites? {
         var launcherFavorites: LauncherFavorites? = null
         try {
             val request = IntentCompat.getParcelableExtra(
@@ -187,12 +227,18 @@ class Launcher3(private val context: Context) {
             if (request != null && request.requestType == LauncherApps.PinItemRequest.REQUEST_TYPE_SHORTCUT) {
                 val shortcutInfo = request.shortcutInfo ?: return null
                 val packageName = shortcutInfo.`package`
-                val label = shortcutInfo.shortLabel
+                val label = shortcutInfo.shortLabel?.toString() ?: packageName
                 val id = shortcutInfo.id
-                val packageIcon: Drawable = packageManager.getApplicationIcon(packageName)
 
-                val icon: Drawable? = launcherApps?.getShortcutIconDrawable(shortcutInfo, 0)
-                // Mirror ShortcutKey.makeIntent(ShortcutInfo si) from Launcher3
+                val appIcon: Drawable = packageManager.getApplicationIcon(packageName)
+                val shortcutDrawable: Drawable? = launcherApps?.getShortcutIconDrawable(shortcutInfo, 0)
+                // 合成图标：快捷方式图标为底，App 图标缩小后叠加在右下角
+                val iconBytes = if (shortcutDrawable != null) {
+                    shortcutIcon(appIcon, shortcutDrawable)
+                } else {
+                    drawable2ByteArray(appIcon)
+                }
+
                 val intentUri = Intent(Intent.ACTION_MAIN)
                     .addCategory("com.android.launcher3.DEEP_SHORTCUT")
                     .setPackage(packageName)
@@ -200,12 +246,7 @@ class Launcher3(private val context: Context) {
                     .putExtra("shortcut_id", id)
                     .setComponent(shortcutInfo.activity)
                     .toUri(0)
-                launcherFavorites = LauncherFavorites(
-                    "$label",
-                    packageName,
-                    null,
-                    intentUri,
-                )
+                launcherFavorites = LauncherFavorites(label, packageName, iconBytes, intentUri)
                 request.accept()
             }
         } catch (e: Exception) {
@@ -214,17 +255,20 @@ class Launcher3(private val context: Context) {
         return launcherFavorites
     }
 
+    /**
+     * 从 favorites 表查询所有 Deep Shortcut 条目，并合成组合图标（快捷方式图标+App 角标）。
+     * 过滤条件：intent 包含 category=com.android.launcher3.DEEP_SHORTCUT。
+     */
     fun getDeepShortcut(): List<LauncherFavorites> {
         val list = mutableListOf<LauncherFavorites>()
         try {
-            val cursor =
-                contentResolver.query(
-                    launcherFavoritesUri,
-                    arrayOf("title", "intent", "icon"),
-                    "title IS NOT NULL",
-                    null,
-                    null
-                )
+            val cursor = contentResolver.query(
+                launcherFavoritesUri,
+                arrayOf("title", "intent", "icon"),
+                "title IS NOT NULL",
+                null,
+                null
+            )
             cursor?.use {
                 val titleIdx = it.getColumnIndex("title")
                 val intentIdx = it.getColumnIndex("intent")
@@ -232,7 +276,8 @@ class Launcher3(private val context: Context) {
                 while (it.moveToNext()) {
                     val title = it.getString(titleIdx) ?: continue
                     val intentStr = it.getString(intentIdx) ?: continue
-                    val iconBytes = it.getBlob(iconIdx)
+                    // iconIdx 为 -1 时说明列不存在，getBlob(-1) 会抛异常
+                    val iconBytes = if (iconIdx >= 0) it.getBlob(iconIdx) else null
                     try {
                         val parsed = Intent.parseUri(intentStr, 0)
                         if (!parsed.hasCategory("com.android.launcher3.DEEP_SHORTCUT")) continue
@@ -252,6 +297,14 @@ class Launcher3(private val context: Context) {
         return list
     }
 
+    /**
+     * 合成快捷方式组合图标：将 drawableTop（App 图标）缩小后绘制到
+     * drawableBottom（快捷方式图标）右下角，叠加尺寸为底图的 1/SHORTCUT_OVERLAY_DIVISOR。
+     *
+     * @param drawableTop    叠加在右下角的小图（通常为 App 图标）
+     * @param drawableBottom 作为底图的大图（通常为快捷方式专属图标）
+     * @return 合成后的 PNG ByteArray；失败时返回默认 App 图标的 ByteArray
+     */
     fun shortcutIcon(drawableTop: Drawable, drawableBottom: Drawable): ByteArray =
         runCatching {
             val overlayBitmap = drawable2Bitmap(drawableTop)
@@ -283,11 +336,21 @@ class Launcher3(private val context: Context) {
             drawable2ByteArray(defaultAppDrawable(context))
         }
 
-    fun createDeepShortCut(
-        title: String,
-        url: String,
-    ) {
+    /**
+     * 将 URL 固定为浏览器快捷方式到桌面（通过系统 ShortcutManager requestPinShortcut）。
+     * 优先使用系统默认浏览器；若默认浏览器为系统（"android"），
+     * 按 Edge → Chrome → AOSP Browser 顺序降级查找。
+     *
+     * 安全：只允许 http/https scheme，其他 scheme（file://、javascript: 等）直接返回。
+     *
+     * @param title 快捷方式显示名称
+     * @param url   目标 URL，必须以 http:// 或 https:// 开头
+     */
+    fun createDeepShortCut(title: String, url: String) {
         try {
+            val scheme = url.toUri().scheme?.lowercase()
+            if (scheme != "http" && scheme != "https") return
+
             val intent = Intent(Intent.ACTION_VIEW, url.toUri())
             val edgePackage = "com.microsoft.emmx"
             val chromePackage = "com.android.chrome"
@@ -295,8 +358,7 @@ class Launcher3(private val context: Context) {
             var icon: Icon? = null
             val activityInfo = getDefaultBrowser()
             if (activityInfo != null && "android" != activityInfo.packageName) {
-                icon =
-                    Icon.createWithBitmap(drawable2Bitmap(activityInfo.loadIcon(packageManager)))
+                icon = Icon.createWithBitmap(drawable2Bitmap(activityInfo.loadIcon(packageManager)))
                 intent.setPackage(activityInfo.packageName)
             } else {
                 val browserPkg = when {
@@ -313,9 +375,12 @@ class Launcher3(private val context: Context) {
                 }
             }
             if (icon == null) return
-            val shortcut =
-                ShortcutInfo.Builder(context, "${UUID.randomUUID()}").setShortLabel(title)
-                    .setLongLabel(title).setIcon(icon).setIntent(intent).build()
+            val shortcut = ShortcutInfo.Builder(context, "${UUID.randomUUID()}")
+                .setShortLabel(title)
+                .setLongLabel(title)
+                .setIcon(icon)
+                .setIntent(intent)
+                .build()
             val shortcutManager = context.getSystemService(ShortcutManager::class.java)
             if (shortcutManager.isRequestPinShortcutSupported) {
                 shortcutManager.requestPinShortcut(shortcut, null)
@@ -325,6 +390,15 @@ class Launcher3(private val context: Context) {
         }
     }
 
+    // ─────────────────────────────────────────────
+    // 包名 / 浏览器工具
+    // ─────────────────────────────────────────────
+
+    /**
+     * 检查指定包名的应用是否已安装。
+     * 注意：Android 11+ 需在 AndroidManifest 的 <queries> 中声明目标包名，
+     * 或持有 QUERY_ALL_PACKAGES 权限，否则此方法始终返回 false。
+     */
     fun isExistPackageName(packageName: String): Boolean {
         return try {
             packageManager.getPackageInfo(packageName, PackageManager.GET_ACTIVITIES)
@@ -334,6 +408,10 @@ class Launcher3(private val context: Context) {
         }
     }
 
+    /**
+     * 获取系统默认浏览器的 ActivityInfo。
+     * 若未设置默认浏览器（系统弹出选择器），resolveActivity 返回 null。
+     */
     fun getDefaultBrowser(): ActivityInfo? {
         val intent = Intent(Intent.ACTION_VIEW, "http://".toUri())
         val defaultBrowser =
@@ -341,8 +419,10 @@ class Launcher3(private val context: Context) {
         return defaultBrowser?.activityInfo
     }
 
+    // ─────────────────────────────────────────────
+    // 桌面变化监听
+    // ─────────────────────────────────────────────
 
-    //监听桌面变化
     private class FavoritesObserver(
         handler: Handler,
         private val onChanged: () -> Unit
@@ -353,19 +433,17 @@ class Launcher3(private val context: Context) {
     private var launcherObserver: FavoritesObserver? = null
 
     /**
-     * 监听桌面变化
+     * 注册桌面 favorites 表变化监听器，回调在主线程执行。
+     * 若已有监听器，先自动注销再重新注册，避免重复回调。
      */
     fun registerLauncherObserver(onChanged: () -> Unit) {
-        launcherObserver = FavoritesObserver(Handler(), onChanged)
-        contentResolver.registerContentObserver(
-            launcherFavoritesUri,
-            true,
-            launcherObserver!!
-        )
+        launcherObserver?.let { contentResolver.unregisterContentObserver(it) }
+        launcherObserver = FavoritesObserver(Handler(Looper.getMainLooper()), onChanged)
+        contentResolver.registerContentObserver(launcherFavoritesUri, true, launcherObserver!!)
     }
 
     /**
-     * 取消桌面变化监听
+     * 注销桌面变化监听器并释放引用，防止内存泄漏。
      */
     fun unregisterLauncherObserver() {
         launcherObserver?.let { contentResolver.unregisterContentObserver(it) }
