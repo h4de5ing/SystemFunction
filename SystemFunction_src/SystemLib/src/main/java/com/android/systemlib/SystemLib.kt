@@ -20,7 +20,6 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.net.wifi.IWifiManager
 import android.net.wifi.WifiManager
-import android.os.Binder
 import android.os.Build
 import android.os.Environment
 import android.os.IPowerManager
@@ -30,9 +29,7 @@ import android.provider.Settings
 import android.telephony.TelephonyManager
 import android.text.TextUtils
 import android.util.Log
-import android.view.View
 import com.android.internal.app.LocalePicker
-import com.android.internal.statusbar.IStatusBarService
 import com.android.internal.util.MemInfoReader
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
@@ -184,25 +181,7 @@ fun cleanDefaultLauncher(context: Context) {
     }
 }
 
-//隐藏导航栏
-const val HIDE_NAVIGATION =
-    View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or View.SYSTEM_UI_FLAG_FULLSCREEN
-private val disableToken = Binder()
-fun setStatusBarInt(context: Context, status: Int) {
-    try {
-        val statusBar =
-            IStatusBarService.Stub.asInterface(ServiceManager.getService("statusbar"))
-        statusBar.disable(status, disableToken, context.packageName)
-        // disable2 只跟随禁用状态栏展开能力，避免禁用导航键时误伤 quick settings 等能力。
-        statusBar.disable2(
-            if ((status and DISABLE_EXPAND) != 0) DISABLE2_MASK else DISABLE2_NONE,
-            disableToken,
-            context.packageName
-        )
-    } catch (e: Exception) {
-        e.printStackTrace()
-    }
-}
+
 
 
 fun set(context: Context, enable: Boolean) {

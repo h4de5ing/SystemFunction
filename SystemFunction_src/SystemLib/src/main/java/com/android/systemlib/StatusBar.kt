@@ -1,9 +1,13 @@
 package com.android.systemlib
 
 import android.content.Context
+import android.os.Binder
 import android.os.Build
+import android.os.ServiceManager
+import android.view.View
 import android.view.WindowInsets
 import android.view.WindowManager
+import com.android.internal.statusbar.IStatusBarService
 
 /**
  * 状态栏控制器
@@ -131,6 +135,25 @@ const val DISABLE2_ROTATE_SUGGESTIONS = 1 shl 4
  */
 const val DISABLE2_MASK =
     DISABLE2_QUICK_SETTINGS /* 注释调这个，不然关机对话框无法弹出or DISABLE2_SYSTEM_ICONS*/ or DISABLE2_NOTIFICATION_SHADE or DISABLE2_GLOBAL_ACTIONS or DISABLE2_ROTATE_SUGGESTIONS
+
+//隐藏导航栏
+const val HIDE_NAVIGATION =
+    View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or View.SYSTEM_UI_FLAG_FULLSCREEN
+private val disableToken = Binder()
+fun setStatusBarInt(context: Context, status: Int) {
+    try {
+        val statusBar = IStatusBarService.Stub.asInterface(ServiceManager.getService("statusbar"))
+        statusBar.disable(status, disableToken, context.packageName)
+        // disable2 只跟随禁用状态栏展开能力，避免禁用导航键时误伤 quick settings 等能力。
+        statusBar.disable2(
+            if ((status and DISABLE_EXPAND) != 0) DISABLE2_MASK else DISABLE2_NONE,
+            disableToken,
+            context.packageName
+        )
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+}
 
 fun getStatusBarHeight(context: Context): Int {
     return if (Build.VERSION.SDK_INT >= 30) {
