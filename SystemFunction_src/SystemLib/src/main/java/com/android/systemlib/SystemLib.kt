@@ -184,21 +184,6 @@ fun cleanDefaultLauncher(context: Context) {
     }
 }
 
-//状态栏相关
-const val DISABLE_NONE = 0x00000000 //不禁用任何东西
-const val DISABLE_EXPAND = 0x00010000//禁用展开状态栏
-const val DISABLE_NOTIFICATION_ICONS = 0x00020000 //禁用状态栏的通知图标
-const val DISABLE_NOTIFICATION_ALERTS = 0x00040000 //禁用通知提示
-const val DISABLE_NOTIFICATION_TICKER = 0x00080000
-const val DISABLE_SYSTEM_INFO = 0x00100000 //禁用系统信息，包含状态栏右侧的wifi 电池等图标
-const val DISABLE_HOME = 0x00200000 //禁用Home按键，会隐藏按键
-const val DISABLE_RECENT = 0x01000000 //禁用Recent按键，会隐藏按键
-const val DISABLE_BACK = 0x00400000  //禁用Back按键，会隐藏按键
-const val DISABLE_CLOCK = 0x00800000  //禁用状态栏的时间
-const val DISABLE_SEARCH = 0x02000000  //禁用搜索
-const val DISABLE_ONGOING_CALL_CHIP = 0x04000000
-const val STATUS_DISABLE_NAVIGATION = DISABLE_BACK or DISABLE_HOME or DISABLE_RECENT //禁用导航栏
-
 //隐藏导航栏
 const val HIDE_NAVIGATION =
     View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or View.SYSTEM_UI_FLAG_FULLSCREEN
@@ -219,14 +204,6 @@ fun setStatusBarInt(context: Context, status: Int) {
     }
 }
 
-const val DISABLE2_NONE = 0x00000000
-const val DISABLE2_QUICK_SETTINGS = 1
-const val DISABLE2_SYSTEM_ICONS = 1 shl 1
-const val DISABLE2_NOTIFICATION_SHADE = 1 shl 2
-const val DISABLE2_GLOBAL_ACTIONS = 1 shl 3
-const val DISABLE2_ROTATE_SUGGESTIONS = 1 shl 4
-const val DISABLE2_MASK: Int =
-    (DISABLE2_QUICK_SETTINGS or DISABLE2_NOTIFICATION_SHADE or DISABLE2_ROTATE_SUGGESTIONS)
 
 fun set(context: Context, enable: Boolean) {
     //自动旋转屏幕
@@ -441,7 +418,10 @@ fun isRoot(): Boolean {
         false
     }
 }
-
+/**
+ * 返回电池设计容量，单位 mAh。
+ * 获取失败时返回 0。
+ */
 fun getBatteryCapacity(context: Context): Int {
     var batteryCapacity = 0
     val mPowerProfile: Any
@@ -451,7 +431,7 @@ fun getBatteryCapacity(context: Context): Int {
             .newInstance(context)
         batteryCapacity = (Class.forName(powerProFileClass).getMethod("getBatteryCapacity")
             .invoke(mPowerProfile) as Double).toInt()
-    } catch (e: java.lang.Exception) {
+    } catch (e: Exception) {
         e.printStackTrace()
     }
     return batteryCapacity
