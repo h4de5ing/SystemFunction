@@ -1,6 +1,6 @@
 [versions]
 agp = "9.2.1"
-coreKtx = "1.18.0"
+coreKtx = "1.19.0"
 # SDK Versions
 compileSdk = "37"
 minSdk = "26"
