@@ -15,6 +15,7 @@ import android.content.pm.ApplicationInfo
 import android.content.pm.IPackageManager
 import android.content.pm.PackageInstaller
 import android.content.pm.PackageManager
+import android.hardware.input.IInputManager
 import android.hardware.usb.IUsbManager
 import android.hardware.usb.UsbDevice
 import android.media.AudioRecordingConfiguration
@@ -52,6 +53,7 @@ import android.provider.Settings
 import android.telephony.TelephonyManager
 import android.text.TextUtils
 import android.text.format.Formatter
+import android.view.InputDevice
 import android.view.accessibility.IAccessibilityManager
 import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
@@ -141,10 +143,7 @@ private const val TYPE_NO_PASSWD: Int = 0x11
 private const val TYPE_WEP: Int = 0x12
 private const val TYPE_WPA_WPA2: Int = 0x13
 fun addNetwork(
-    wifiManager: WifiManager,
-    ssid: String,
-    passwd: String,
-    type: Int = TYPE_WPA_WPA2
+    wifiManager: WifiManager, ssid: String, passwd: String, type: Int = TYPE_WPA_WPA2
 ): Boolean {
     return addNetwork(wifiManager, createWifiInfo(wifiManager, ssid, passwd, type))
 }
@@ -160,10 +159,7 @@ private fun isExists(wifiManager: WifiManager, ssid: String): WifiConfiguration?
 
 @SuppressLint("MissingPermission")
 private fun createWifiInfo(
-    wifiManager: WifiManager,
-    ssid: String,
-    password: String,
-    type: Int
+    wifiManager: WifiManager, ssid: String, password: String, type: Int
 ): WifiConfiguration {
     val config = WifiConfiguration()
     config.allowedAuthAlgorithms.clear()
@@ -188,8 +184,7 @@ private fun createWifiInfo(
             config.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.CCMP)
             config.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.TKIP)
             config.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP40)
-            config.allowedGroupCiphers
-                .set(WifiConfiguration.GroupCipher.WEP104)
+            config.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP104)
             config.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE)
             config.wepTxKeyIndex = 0
         }
@@ -617,8 +612,7 @@ private fun execInstallCommand(
         val receiver = object : android.content.BroadcastReceiver() {
             override fun onReceive(ctx: Context, intent: Intent) {
                 val status = intent.getIntExtra(
-                    PackageInstaller.EXTRA_STATUS,
-                    PackageInstaller.STATUS_FAILURE
+                    PackageInstaller.EXTRA_STATUS, PackageInstaller.STATUS_FAILURE
                 )
                 val msg = intent.getStringExtra(PackageInstaller.EXTRA_STATUS_MESSAGE) ?: ""
                 val pkg = intent.getStringExtra(PackageInstaller.EXTRA_PACKAGE_NAME) ?: ""
@@ -655,9 +649,9 @@ private fun execInstallCommand(
         }
 
         val intent = Intent(installAction).setPackage(appContext.packageName)
-        val flags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
-            PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-        else PendingIntent.FLAG_UPDATE_CURRENT
+        val flags =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+            else PendingIntent.FLAG_UPDATE_CURRENT
         val pendingIntent = PendingIntent.getBroadcast(appContext, sessionId, intent, flags)
         val intentSender = pendingIntent.intentSender
         session.commit(intentSender)
@@ -763,9 +757,9 @@ fun canUninstall(context: Context, packageName: String): Boolean {
 fun uninstall(context: Context, packageName: String) {
     val action = "com.android.systemlib.UNINSTALL_COMPLETE.$packageName"
     val intent = Intent(action).setPackage(context.packageName)
-    val flags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
-        PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-    else PendingIntent.FLAG_UPDATE_CURRENT
+    val flags =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        else PendingIntent.FLAG_UPDATE_CURRENT
     val sender = PendingIntent.getBroadcast(context, packageName.hashCode(), intent, flags)
     val packageInstaller: PackageInstaller = context.packageManager.packageInstaller
     packageInstaller.uninstall(packageName, sender.intentSender)
@@ -1660,4 +1654,39 @@ fun registerRecordingCallback(onCallback: (List<AudioRecordingConfiguration?>?) 
     } catch (e: Exception) {
         e.printStackTrace()
     }
+}
+
+private fun getInputManagerService(): IInputManager? =
+    IInputManager.Stub.asInterface(ServiceManager.getService(Context.INPUT_SERVICE))
+
+private inline fun <T> callInputManager(
+    defaultValue: T, error: (String) -> Unit, block: (IInputManager) -> T
+): T {
+    return try {
+        val iInput = getInputManagerService()
+        if (iInput == null) {
+            error("input service unavailable")
+            defaultValue
+        } else {
+            block(iInput)
+        }
+    } catch (t: Throwable) {
+        error(t.message ?: t.javaClass.name)
+        t.printStackTrace()
+        defaultValue
+    }
+}
+
+fun getInputDeviceIds(error: (String) -> Unit = {}): IntArray =
+    callInputManager(IntArray(0), error) { iInput -> iInput.inputDeviceIds }
+
+fun getInputDevice(deviceId: Int, error: (String) -> Unit = {}): InputDevice? =
+    callInputManager(null, error) { iInput -> iInput.getInputDevice(deviceId) }
+
+fun enableInputDevice(deviceId: Int, error: (String) -> Unit = {}) {
+    callInputManager(Unit, error) { iInput -> iInput.enableInputDevice(deviceId) }
+}
+
+fun disableInputDevice(deviceId: Int, error: (String) -> Unit = {}) {
+    callInputManager(Unit, error) { iInput -> iInput.disableInputDevice(deviceId) }
 }
