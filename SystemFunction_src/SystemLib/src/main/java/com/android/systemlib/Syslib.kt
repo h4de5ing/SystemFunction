@@ -1656,6 +1656,9 @@ fun registerRecordingCallback(onCallback: (List<AudioRecordingConfiguration?>?) 
     }
 }
 
+/**
+ * 获取输入管理服务
+ */
 private fun getInputManagerService(): IInputManager? =
     IInputManager.Stub.asInterface(ServiceManager.getService(Context.INPUT_SERVICE))
 
@@ -1677,16 +1680,37 @@ private inline fun <T> callInputManager(
     }
 }
 
+
+/**
+ * 获取输入设备ID列表
+ */
 fun getInputDeviceIds(error: (String) -> Unit = {}): IntArray =
     callInputManager(IntArray(0), error) { iInput -> iInput.inputDeviceIds }
 
+/**
+ * 获取输入设备
+ */
 fun getInputDevice(deviceId: Int, error: (String) -> Unit = {}): InputDevice? =
     callInputManager(null, error) { iInput -> iInput.getInputDevice(deviceId) }
 
+/**
+ * 启用输入设备
+ */
 fun enableInputDevice(deviceId: Int, error: (String) -> Unit = {}) {
     callInputManager(Unit, error) { iInput -> iInput.enableInputDevice(deviceId) }
 }
 
+/**
+ * 禁用输入设备
+ */
 fun disableInputDevice(deviceId: Int, error: (String) -> Unit = {}) {
     callInputManager(Unit, error) { iInput -> iInput.disableInputDevice(deviceId) }
+}
+
+/**
+ * 设置飞行模式
+ */
+fun setAirplaneMode(enable: Boolean) {
+    val ic = IConnectivityManager.Stub.asInterface(ServiceManager.getService("connectivity"))
+    ic.setAirplaneMode(enable)
 }
