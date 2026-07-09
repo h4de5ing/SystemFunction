@@ -3,8 +3,8 @@
   <groupId>com.android.android13</groupId>
   <artifactId>android13</artifactId>
   <versioning>
-    <latest>1.0-20260601</latest>
-    <release>1.0-20260601</release>
+    <latest>1.0-20260709</latest>
+    <release>1.0-20260709</release>
     <versions>
       <version>1.0-20230707</version>
       <version>1.0-20230710</version>
@@ -12,7 +12,8 @@
       <version>1.0-20250327</version>
       <version>1.0-20260227</version>
       <version>1.0-20260601</version>
+      <version>1.0-20260709</version>
     </versions>
-    <lastUpdated>20260601071918</lastUpdated>
+    <lastUpdated>20260709024832</lastUpdated>
   </versioning>
 </metadata>
