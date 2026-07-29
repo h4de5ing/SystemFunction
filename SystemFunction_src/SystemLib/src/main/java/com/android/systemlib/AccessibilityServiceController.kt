@@ -14,6 +14,7 @@ import android.view.accessibility.AccessibilityManager
  * 适用场景：应用作为系统级应用（持有 WRITE_SECURE_SETTINGS 权限）时，通过直接写
  * Settings.Secure 来启用/禁用指定无障碍服务，并在服务条目已残留但进程未运行
  * （如 adb install -r 替换安装、设备重启后作为 Launcher）时强制重写以触发系统重新绑定。
+ * Android 13+ 启用服务前还会解除当前包因侧载产生的“受限制的设置”AppOp。
  *
  * 注意：本工具类只负责 Settings 层面的开关，不感知服务进程是否真正连接。
  * 调用方如需判断“服务是否真正生效”，应结合自身服务的 onServiceConnected 状态。
@@ -100,6 +101,18 @@ object AccessibilityServiceController {
         enabled: Boolean,
     ): ToggleResult {
         return try {
+            if (enabled) {
+                val restrictedSettingsResult =
+                    RestrictedSettingsController.allowForSelf(context)
+                if (!restrictedSettingsResult.succeeded) {
+                    Log.w(
+                        TAG,
+                        "解除受限制的设置失败，继续尝试写入无障碍设置: " +
+                            restrictedSettingsResult.errorMessage,
+                    )
+                }
+            }
+
             val serviceId = getServiceId(context, serviceClass)
             val enabledServices = getEnabledServiceIds(context).toMutableSet()
             val alreadyEnabled = enabledServices.contains(serviceId)
