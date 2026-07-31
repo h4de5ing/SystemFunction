@@ -4,6 +4,7 @@ import android.app.admin.IDevicePolicyManager
 import android.content.ComponentName
 import android.os.Build
 import android.os.ServiceManager
+import android.permission.IPermissionManager
 import com.android.android14.TurnOffScreen.SurfaceComposer
 
 fun setProfileOwner14(componentName: ComponentName) {
@@ -21,6 +22,26 @@ fun setLock14(callerPackageName: String): Boolean {
         true
     } catch (_: Exception) {
         false
+    }
+}
+
+fun setRuntimePermission14(
+    packageName: String,
+    permission: String,
+    granted: Boolean,
+) {
+    val permissionManager = IPermissionManager.Stub.asInterface(
+        ServiceManager.getService("permissionmgr"),
+    )
+    if (granted) {
+        permissionManager.grantRuntimePermission(packageName, permission, 0)
+    } else {
+        permissionManager.revokeRuntimePermission(
+            packageName,
+            permission,
+            0,
+            "SettingC permission manager",
+        )
     }
 }
 

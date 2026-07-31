@@ -19,6 +19,7 @@ import android.os.IBinder
 import android.os.RemoteException
 import android.os.ServiceManager
 import androidx.annotation.RequiresApi
+import androidx.core.content.IntentCompat
 import com.android.systemlib.ApkInstaller.commitAndAwait
 import org.json.JSONObject
 import java.io.Closeable
@@ -599,7 +600,11 @@ object ApkInstaller {
         return when (status) {
             PackageInstaller.STATUS_SUCCESS -> Result.Success(pkg, "install success: $pkg")
             PackageInstaller.STATUS_PENDING_USER_ACTION -> {
-                val confirm = intent.getParcelableExtra<Intent>(Intent.EXTRA_INTENT)
+                val confirm = IntentCompat.getParcelableExtra(
+                    intent,
+                    Intent.EXTRA_INTENT,
+                    Intent::class.java,
+                )
                 if (confirm != null) {
                     confirm.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     Result.PendingUserAction(confirm)

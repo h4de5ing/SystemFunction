@@ -13,6 +13,9 @@ import android.os.ServiceManager
 import android.util.Log
 import androidx.annotation.RequiresApi
 import com.android.android12.grantNotificationListenerAccessGranted12
+import com.android.android14.setRuntimePermission14
+import com.android.android15.setRuntimePermission15
+import com.android.android16.setRuntimePermission16
 import com.android.internal.app.IAppOpsService
 import java.io.File
 import java.lang.reflect.Field
@@ -35,6 +38,31 @@ val MODE_IGNORED = 1//访问者不可以访问该敏感操作，但是不会引�
 val MODE_ERRORED = 2//访问者不可以访问该敏感操作，会引发crash;
 val MODE_DEFAULT = 3//访问者来决定访问该敏感操作的准入规则。
 val MODE_FOREGROUND = 4
+
+data class RuntimePermissionState(
+    val permission: String,
+    val granted: Boolean,
+    val appOp: String?,
+    val appOpMode: Int?,
+)
+
+data class PermissionChangeResult(
+    val success: Boolean,
+    val message: String? = null,
+)
+
+private val strOpToOpMethod by lazy {
+    runCatching {
+        AppOpsManager::class.java.getDeclaredMethod(
+            "strOpToOp",
+            String::class.java,
+        ).apply { isAccessible = true }
+    }.getOrNull()
+}
+
+private fun appOpToCode(appOp: String): Int? =
+    runCatching { strOpToOpMethod?.invoke(null, appOp) as? Int }.getOrNull()
+
 fun setMode(context: Context, code: Int, packageName: String, mode: Int = MODE_ALLOWED) {
     try {
         val packageManager = context.packageManager
@@ -47,6 +75,120 @@ fun setMode(context: Context, code: Int, packageName: String, mode: Int = MODE_A
         println("配置权限,uid=${uid},code=${code},packageName=${packageName},mode=${mode}")
     } catch (e: Exception) {
         e.printStackTrace()
+    }
+}
+
+/**
+ * 获取应用在 Manifest 中声明的动态权限及其当前状态。
+ */
+fun getDeclaredRuntimePermissions(
+    context: Context,
+    packageName: String,
+): List<RuntimePermissionState> {
+    val pm = context.packageManager
+    val packageInfo = pm.getPackageInfo(packageName, PackageManager.GET_PERMISSIONS)
+    val uid = pm.getPackageUid(packageName, 0)
+    val appOps = context.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
+    val appOpsService = IAppOpsService.Stub.asInterface(
+        ServiceManager.getService(Context.APP_OPS_SERVICE),
+    )
+
+    return packageInfo.requestedPermissions.orEmpty()
+        .filter { isRuntimePermission(pm, it) }
+        .distinct()
+        .map { permission ->
+            val appOp = AppOpsManager.permissionToOp(permission)
+            val appOpMode = appOp?.let {
+                val opCode = appOpToCode(it)
+                if (opCode != null) {
+                    runCatching {
+                        appOpsService.checkOperationRaw(opCode, uid, packageName)
+                    }.getOrNull()
+                } else {
+                    null
+                } ?: runCatching {
+                    appOps.checkOpNoThrow(it, uid, packageName)
+                }.getOrNull()
+            }
+            val runtimeGranted =
+                pm.checkPermission(permission, packageName) == PackageManager.PERMISSION_GRANTED
+            RuntimePermissionState(
+                permission = permission,
+                // 与系统设置的权限开关保持一致。AppOp 的 MODE_FOREGROUND 是“仅使用时
+                // 允许”，目标应用处于后台时有效检查可能返回 MODE_IGNORED，但这不代表
+                // Runtime Permission 已被撤销。
+                granted = runtimeGranted,
+                appOp = appOp,
+                appOpMode = appOpMode,
+            )
+        }
+}
+
+/**
+ * 允许或拒绝单个动态权限，并同步对应的 package AppOp。
+ */
+fun setRuntimePermissionGranted(
+    context: Context,
+    packageName: String,
+    permission: String,
+    granted: Boolean,
+): PermissionChangeResult {
+    val pm = context.packageManager
+    return runCatching {
+        val requestedPermissions = pm.getPackageInfo(
+            packageName,
+            PackageManager.GET_PERMISSIONS,
+        ).requestedPermissions.orEmpty()
+        require(permission in requestedPermissions) { "应用未声明权限: $permission" }
+        require(isRuntimePermission(pm, permission)) { "不是动态权限: $permission" }
+
+        val packageManagerService =
+            IPackageManager.Stub.asInterface(ServiceManager.getService("package"))
+        when {
+            Build.VERSION.SDK_INT >= 36 ->
+                setRuntimePermission16(packageName, permission, granted)
+
+            Build.VERSION.SDK_INT >= 35 ->
+                setRuntimePermission15(packageName, permission, granted)
+
+            Build.VERSION.SDK_INT >= 34 ->
+                setRuntimePermission14(packageName, permission, granted)
+
+            granted ->
+                packageManagerService.grantRuntimePermission(packageName, permission, 0)
+
+            else ->
+                packageManagerService.revokeRuntimePermission(packageName, permission, 0)
+        }
+
+        AppOpsManager.permissionToOp(permission)?.let { op ->
+            val opCode = appOpToCode(op)
+            if (opCode != null) {
+                val appInfo = pm.getApplicationInfo(packageName, 0)
+                val appOpsService = IAppOpsService.Stub.asInterface(
+                    ServiceManager.getService(Context.APP_OPS_SERVICE),
+                )
+                appOpsService.setMode(
+                    opCode,
+                    appInfo.uid,
+                    packageName,
+                    if (granted) MODE_ALLOWED else MODE_IGNORED,
+                )
+            }
+        }
+
+        val actualGranted =
+            pm.checkPermission(permission, packageName) == PackageManager.PERMISSION_GRANTED
+        PermissionChangeResult(
+            success = actualGranted == granted,
+            message = if (actualGranted == granted) null else "权限状态未生效",
+        )
+    }.getOrElse {
+        Log.e("Oops", "设置权限失败: $packageName, $permission, granted=$granted", it)
+        PermissionChangeResult(
+            success = false,
+            message = it.message ?: it.javaClass.simpleName,
+        )
     }
 }
 

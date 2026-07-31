@@ -5,6 +5,7 @@ import android.content.ComponentName
 import android.content.pm.IPackageManager
 import android.os.Build
 import android.os.ServiceManager
+import android.permission.IPermissionManager
 
 /**
  * Android 16 (API 36) 平台兼容性代码
@@ -28,4 +29,26 @@ fun setPackagesSuspendedAsUser16(packageName: String, isHidden: Boolean) {
     ipm.setPackagesSuspendedAsUser(
         arrayOf(packageName), isHidden, null, null, null, 0, "android", 0, 0
     )
+}
+
+fun setRuntimePermission16(
+    packageName: String,
+    permission: String,
+    granted: Boolean,
+) {
+    val permissionManager = IPermissionManager.Stub.asInterface(
+        ServiceManager.getService("permissionmgr"),
+    )
+    val deviceId = "default:0"
+    if (granted) {
+        permissionManager.grantRuntimePermission(packageName, permission, deviceId, 0)
+    } else {
+        permissionManager.revokeRuntimePermission(
+            packageName,
+            permission,
+            deviceId,
+            0,
+            "SettingC permission manager",
+        )
+    }
 }

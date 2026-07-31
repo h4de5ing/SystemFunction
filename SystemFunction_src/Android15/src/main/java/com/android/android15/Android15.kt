@@ -2,6 +2,7 @@ package com.android.android15
 
 import android.content.pm.IPackageManager
 import android.os.ServiceManager
+import android.permission.IPermissionManager
 import android.view.accessibility.IAccessibilityManager
 
 /**
@@ -17,6 +18,28 @@ fun setPackagesSuspendedAsUser15(packageName: String, isHidden: Boolean) {
     ipm.setPackagesSuspendedAsUser(
         arrayOf(packageName), isHidden, null, null, null, 0, "android", 0, 0
     )
+}
+
+fun setRuntimePermission15(
+    packageName: String,
+    permission: String,
+    granted: Boolean,
+) {
+    val permissionManager = IPermissionManager.Stub.asInterface(
+        ServiceManager.getService("permissionmgr"),
+    )
+    val deviceId = "default:0"
+    if (granted) {
+        permissionManager.grantRuntimePermission(packageName, permission, deviceId, 0)
+    } else {
+        permissionManager.revokeRuntimePermission(
+            packageName,
+            permission,
+            deviceId,
+            0,
+            "SettingC permission manager",
+        )
+    }
 }
 
 /**
