@@ -1,5 +1,6 @@
 package com.android.systemlib
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.IIntentReceiver
 import android.content.IIntentSender
@@ -13,11 +14,12 @@ import android.content.pm.PackageInstaller.SessionParams
 import android.content.pm.PackageManager
 import android.content.pm.VersionedPackage
 import android.os.Build
+import android.os.Bundle
 import android.os.IBinder
-import android.os.Process
 import android.os.RemoteException
 import android.os.ServiceManager
-import android.os.Bundle
+import androidx.annotation.RequiresApi
+import com.android.systemlib.ApkInstaller.commitAndAwait
 import org.json.JSONObject
 import java.io.Closeable
 import java.io.File
@@ -28,7 +30,6 @@ import java.util.Locale
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.zip.ZipFile
-import java.util.zip.ZipInputStream
 
 /**
  * ApkInstaller —— system 权限静默安装器（不依赖 root / Shizuku 等第三方特权方式）。
@@ -43,11 +44,14 @@ import java.util.zip.ZipInputStream
  *
  * 支持格式：`.apk` / `.apks` / `.xapk` / `.apkm` / 多 APK ZIP。
  */
+@SuppressLint("DiscouragedPrivateApi")
 object ApkInstaller {
 
     /** 安装结果。 */
     sealed class Result {
-        data class Success(val packageName: String, val message: String = "install success") : Result()
+        data class Success(val packageName: String, val message: String = "install success") :
+            Result()
+
         data class Failure(
             val status: Int,
             val legacyStatus: Int = -1,
@@ -81,8 +85,15 @@ object ApkInstaller {
 
     /** 已知 density token -> dpi。 */
     private val DENSITY_TOKENS = mapOf(
-        "ldpi" to 120, "mdpi" to 160, "hdpi" to 240, "xhdpi" to 320,
-        "xxhdpi" to 480, "xxxhdpi" to 640, "tvdpi" to 213, "nodpi" to 0, "anydpi" to 0
+        "ldpi" to 120,
+        "mdpi" to 160,
+        "hdpi" to 240,
+        "xhdpi" to 320,
+        "xxhdpi" to 480,
+        "xxxhdpi" to 640,
+        "tvdpi" to 213,
+        "nodpi" to 0,
+        "anydpi" to 0
     )
 
     private val VERSION_CODE_HIGHEST = -1L
@@ -145,10 +156,9 @@ object ApkInstaller {
     }
 
     /** 卸载（system 静默）。 */
+    @RequiresApi(Build.VERSION_CODES.P)
     fun uninstall(
-        context: Context,
-        packageName: String,
-        userId: Int = 0
+        context: Context, packageName: String, userId: Int = 0
     ): Result {
         return try {
             val iPackageInstaller = getIPackageInstaller() ?: return Result.Failure(
@@ -164,7 +174,9 @@ object ApkInstaller {
             )
             receiver.toResult(packageName)
         } catch (e: Throwable) {
-            Result.Failure(status = -1, message = "uninstall error: ${e.message}", packageName = packageName)
+            Result.Failure(
+                status = -1, message = "uninstall error: ${e.message}", packageName = packageName
+            )
         }
     }
 
@@ -204,9 +216,9 @@ object ApkInstaller {
                     type = SplitType.BASE,
                     isBase = true,
                     size = file.length(),
-                    openStream = { file.inputStream() }
-                )
+                    openStream = { file.inputStream() })
             )
+
             Format.APKS, Format.MULTI_APK_ZIP -> parseZipApks(file, null)
             Format.XAPK -> {
                 val manifest = readZipEntryText(file, "manifest.json")
@@ -221,6 +233,7 @@ object ApkInstaller {
                 }
                 parseZipApks(file, splitIds.ifEmpty { null })
             }
+
             Format.APKM -> {
                 val info = readZipEntryText(file, "info.json")
                 val json = info?.let { runCatching { JSONObject(it) }.getOrNull() }
@@ -246,8 +259,10 @@ object ApkInstaller {
                 filter.flatMap { listOf(it, it.replace(".apk", ".dm")) }
                     .mapNotNull { name -> zip.getEntry(name) }
             } else {
-                Collections.list(zip.entries()).filter { !it.isDirectory && it.name.lowercase().endsWith(".apk") } +
-                    Collections.list(zip.entries()).filter { !it.isDirectory && it.name.lowercase().endsWith(".dm") }
+                Collections.list(zip.entries()).filter {
+                    !it.isDirectory && it.name.lowercase().endsWith(".apk")
+                } + Collections.list(zip.entries())
+                    .filter { !it.isDirectory && it.name.lowercase().endsWith(".dm") }
             }
             for (entry in entries) {
                 val lower = entry.name.lowercase(Locale.ROOT)
@@ -263,8 +278,7 @@ object ApkInstaller {
                         localeTag = if (type == SplitType.LANGUAGE) extractLocale(entry.name) else null,
                         isBase = type == SplitType.BASE,
                         size = entry.size,
-                        openStream = { zip.getInputStream(entry) }
-                    )
+                        openStream = { zip.getInputStream(entry) })
                 )
             }
         }
@@ -274,13 +288,16 @@ object ApkInstaller {
     private fun classifySplit(name: String): SplitType {
         val n = File(name).nameWithoutExtension.lowercase(Locale.ROOT)
         if (n == "base" || n == "base-master" || n.startsWith("base-master")) return SplitType.BASE
-        val stripped = n
-            .removePrefix("split_config.")
-            .removePrefix("config.")
-            .removePrefix("split-")
-            .removePrefix("base-")
+        val stripped =
+            n.removePrefix("split_config.").removePrefix("config.").removePrefix("split-")
+                .removePrefix("base-")
         return when {
-            ABI_TOKENS.any { stripped.replace("_", "-") == it || stripped == it } -> SplitType.ARCHITECTURE
+            ABI_TOKENS.any {
+                stripped.replace(
+                    "_", "-"
+                ) == it || stripped == it
+            } -> SplitType.ARCHITECTURE
+
             DENSITY_TOKENS.keys.any { stripped == it } || Regex("\\d+dpi").matches(stripped) -> SplitType.DENSITY
             isLocaleTag(stripped) -> SplitType.LANGUAGE
             stripped.startsWith("feature") -> SplitType.FEATURE
@@ -289,29 +306,31 @@ object ApkInstaller {
     }
 
     private fun extractAbi(name: String): String =
-        File(name).nameWithoutExtension.lowercase(Locale.ROOT)
-            .removePrefix("split_config.").removePrefix("config.").removePrefix("split-")
+        File(name).nameWithoutExtension.lowercase(Locale.ROOT).removePrefix("split_config.")
+            .removePrefix("config.").removePrefix("split-")
             .let { if (it.startsWith("arm64_v8a")) "arm64-v8a" else it.replace("_", "-") }
 
     private fun extractDensity(name: String): Int {
-        val t = File(name).nameWithoutExtension.lowercase(Locale.ROOT)
-            .removePrefix("split_config.").removePrefix("config.").removePrefix("split-")
+        val t = File(name).nameWithoutExtension.lowercase(Locale.ROOT).removePrefix("split_config.")
+            .removePrefix("config.").removePrefix("split-")
         DENSITY_TOKENS[t]?.let { return it }
         Regex("(\\d+)dpi").find(t)?.let { return it.groupValues[1].toInt() }
         return 0
     }
 
     private fun extractLocale(name: String): String =
-        File(name).nameWithoutExtension.lowercase(Locale.ROOT)
-            .removePrefix("split_config.").removePrefix("config.").removePrefix("split-")
+        File(name).nameWithoutExtension.lowercase(Locale.ROOT).removePrefix("split_config.")
+            .removePrefix("config.").removePrefix("split-")
 
     private fun isLocaleTag(s: String): Boolean =
-        s.length in 2..8 && !s.contains('.') && !s.contains('_') &&
-            runCatching { Locale.forLanguageTag(s); true }.getOrDefault(false)
+        s.length in 2..8 && !s.contains('.') && !s.contains('_') && runCatching {
+            Locale.forLanguageTag(s); true
+        }.getOrDefault(false)
 
     private fun readZipEntryText(file: File, entryName: String): String? = try {
         ZipFile(file).use { zip ->
-            zip.getEntry(entryName)?.let { zip.getInputStream(it).bufferedReader().use { it.readText() } }
+            zip.getEntry(entryName)
+                ?.let { zip.getInputStream(it).bufferedReader().use { it.readText() } }
         }
     } catch (_: Throwable) {
         null
@@ -325,7 +344,11 @@ object ApkInstaller {
     private fun selectOptimal(context: Context, splits: List<SplitEntry>): List<SplitEntry> {
         if (splits.none { it.type == SplitType.BASE } && splits.size == 1) return splits
         val keep = mutableListOf<SplitEntry>()
-        keep += splits.filter { it.type in listOf(SplitType.BASE, SplitType.FEATURE, SplitType.OTHER, SplitType.DM) }
+        keep += splits.filter {
+            it.type in listOf(
+                SplitType.BASE, SplitType.FEATURE, SplitType.OTHER, SplitType.DM
+            )
+        }
 
         // ABI：取设备 SUPPORTED_ABIS 里第一个命中的
         val deviceAbis = Build.SUPPORTED_ABIS.toList()
@@ -333,14 +356,17 @@ object ApkInstaller {
         if (archSplits.isNotEmpty()) {
             for (devAbi in deviceAbis) {
                 val hit = archSplits.firstOrNull { it.abi.equals(devAbi, ignoreCase = true) }
-                if (hit != null) { keep += hit; break }
+                if (hit != null) {
+                    keep += hit; break
+                }
             }
             // 没命中则全留（交给系统判断 / 触发二进制翻译）
             if (keep.none { it.type == SplitType.ARCHITECTURE }) keep += archSplits
         }
 
         // density：取与设备最接近的
-        val dpiSplits = splits.filter { it.type == SplitType.DENSITY && it.density != null && it.density > 0 }
+        val dpiSplits =
+            splits.filter { it.type == SplitType.DENSITY && it.density != null && it.density > 0 }
         if (dpiSplits.isNotEmpty()) {
             val devDpi = context.resources.displayMetrics.densityDpi
             keep += dpiSplits.minByOrNull { kotlin.math.abs((it.density ?: 0) - devDpi) }!!
@@ -355,11 +381,18 @@ object ApkInstaller {
             var picked = false
             for (i in 0 until devLocales.size()) {
                 val tag = devLocales[i]?.toLanguageTag()?.lowercase(Locale.ROOT)
-                val hit = localeSplits.firstOrNull { it.localeTag?.equals(tag, ignoreCase = true) == true }
-                if (hit != null) { keep += hit; picked = true; break }
+                val hit = localeSplits.firstOrNull {
+                    it.localeTag?.equals(
+                        tag, ignoreCase = true
+                    ) == true
+                }
+                if (hit != null) {
+                    keep += hit; picked = true; break
+                }
             }
             if (!picked) {
-                keep += localeSplits.firstOrNull { it.localeTag?.startsWith("en") == true } ?: localeSplits.first()
+                keep += localeSplits.firstOrNull { it.localeTag?.startsWith("en") == true }
+                    ?: localeSplits.first()
             }
         }
         // 去重（按 name）
@@ -370,6 +403,7 @@ object ApkInstaller {
     // 会话构建与写入
     // ------------------------------------------------------------------
 
+    @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
     private fun installSplits(
         context: Context,
         splits: List<SplitEntry>,
@@ -454,10 +488,11 @@ object ApkInstaller {
             // 解压到缓存逐个安装
             val cacheDir = File(context.cacheDir, "apkinstaller_multi").apply { mkdirs() }
             for ((i, entry) in apkEntries.withIndex()) {
-                val tmp = File(cacheDir, "${System.currentTimeMillis()}_${i}_${File(entry.name).name}")
+                val tmp =
+                    File(cacheDir, "${System.currentTimeMillis()}_${i}_${File(entry.name).name}")
                 zip.getInputStream(entry).use { it.copyTo(FileOutputStream(tmp)) }
                 val r = install(context, tmp.absolutePath, userId, installerPackageName) { p, m ->
-                    onProgress?.invoke((p * (i + 1) / apkEntries.size).toInt(), m)
+                    onProgress?.invoke((p * (i + 1) / apkEntries.size), m)
                 }
                 tmp.delete()
                 if (r is Result.Failure) return r
@@ -471,6 +506,7 @@ object ApkInstaller {
     // 提交与结果（核心：本地 IntentSender 同步回传 + 自动批准兜底）
     // ------------------------------------------------------------------
 
+    @SuppressLint("RequestInstallPackagesPolicy")
     private fun commitAndAwait(
         context: Context,
         packageInstaller: PackageInstaller,
@@ -506,6 +542,7 @@ object ApkInstaller {
     }
 
     /** 回退提交路径：PendingIntent 广播（兼容性最好）。 */
+    @SuppressLint("RequestInstallPackagesPolicy")
     private fun commitViaPendingIntent(
         context: Context,
         packageInstaller: PackageInstaller,
@@ -527,13 +564,14 @@ object ApkInstaller {
             }
             val filter = IntentFilter(action)
             appContext.registerReceiver(
-                receiver, filter,
+                receiver,
+                filter,
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) Context.RECEIVER_NOT_EXPORTED else 0
             )
             val intent = Intent(action).setPackage(appContext.packageName)
-            val flags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
-                android.app.PendingIntent.FLAG_MUTABLE or android.app.PendingIntent.FLAG_UPDATE_CURRENT
-            else android.app.PendingIntent.FLAG_UPDATE_CURRENT
+            val flags =
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) android.app.PendingIntent.FLAG_MUTABLE or android.app.PendingIntent.FLAG_UPDATE_CURRENT
+                else android.app.PendingIntent.FLAG_UPDATE_CURRENT
             val pi = android.app.PendingIntent.getBroadcast(appContext, sessionId, intent, flags)
             session.commit(pi.intentSender)
             latch.await(AWAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS)
@@ -548,12 +586,16 @@ object ApkInstaller {
 
     /** 解析安装结果 Intent。 */
     private fun interpretResult(intent: Intent?): Result {
-        if (intent == null) return Result.Failure(status = -8, message = "install timeout, no result intent")
-        val status = intent.getIntExtra(PackageInstaller.EXTRA_STATUS, PackageInstaller.STATUS_FAILURE)
+        if (intent == null) return Result.Failure(
+            status = -8, message = "install timeout, no result intent"
+        )
+        val status =
+            intent.getIntExtra(PackageInstaller.EXTRA_STATUS, PackageInstaller.STATUS_FAILURE)
         val msg = intent.getStringExtra(PackageInstaller.EXTRA_STATUS_MESSAGE) ?: ""
         val pkg = intent.getStringExtra(PackageInstaller.EXTRA_PACKAGE_NAME) ?: ""
-        val legacy = if (EXTRA_LEGACY_STATUS != -1)
-            intent.getIntExtra(EXTRA_LEGACY_STATUS.toString(), -1) else -1
+        val legacy = if (EXTRA_LEGACY_STATUS != -1) intent.getIntExtra(
+            EXTRA_LEGACY_STATUS.toString(), -1
+        ) else -1
         return when (status) {
             PackageInstaller.STATUS_SUCCESS -> Result.Success(pkg, "install success: $pkg")
             PackageInstaller.STATUS_PENDING_USER_ACTION -> {
@@ -565,7 +607,10 @@ object ApkInstaller {
                     Result.Failure(status, legacy, "pending user action without intent", pkg)
                 }
             }
-            else -> Result.Failure(status, legacy, "install failed status=$status, msg=$msg, pkg=$pkg", pkg)
+
+            else -> Result.Failure(
+                status, legacy, "install failed status=$status, msg=$msg, pkg=$pkg", pkg
+            )
         }
     }
 
@@ -596,9 +641,7 @@ object ApkInstaller {
      * 失败返回 null，调用方回退到公开 [PackageManager.getPackageInstaller]。
      */
     private fun getPrivilegedPackageInstaller(
-        context: Context,
-        userId: Int,
-        callerPackageName: String?
+        context: Context, userId: Int, callerPackageName: String?
     ): PackageInstaller? {
         val iInstaller = getIPackageInstaller() ?: return null
         val caller = callerPackageName ?: installerPackageName(context)
@@ -606,27 +649,25 @@ object ApkInstaller {
             // API 31+ 真实签名为 4 参 (IPackageInstaller, String, String, int)，
             // 旧版为 3 参 (IPackageInstaller, String, int)。反射逐个尝试。
             runCatching {
-                PackageInstaller::class.java
-                    .getDeclaredConstructor(
-                        IPackageInstaller::class.java, String::class.java,
-                        String::class.java, Int::class.javaPrimitiveType
-                    )
-                    .apply { isAccessible = true }
+                PackageInstaller::class.java.getDeclaredConstructor(
+                    IPackageInstaller::class.java,
+                    String::class.java,
+                    String::class.java,
+                    Int::class.javaPrimitiveType
+                ).apply { isAccessible = true }
                     .newInstance(iInstaller, caller, null as String?, userId)
             }.getOrElse {
-                PackageInstaller::class.java
-                    .getDeclaredConstructor(
-                        IPackageInstaller::class.java, String::class.java, Int::class.javaPrimitiveType
-                    )
-                    .apply { isAccessible = true }
-                    .newInstance(iInstaller, caller, userId)
+                PackageInstaller::class.java.getDeclaredConstructor(
+                    IPackageInstaller::class.java, String::class.java, Int::class.javaPrimitiveType
+                ).apply { isAccessible = true }.newInstance(iInstaller, caller, userId)
             }
         } catch (_: Throwable) {
             null
         }
     }
 
-    private fun installerPackageName(context: Context): String = context.applicationContext.packageName
+    private fun installerPackageName(context: Context): String =
+        context.applicationContext.packageName
 
     // ------------------------------------------------------------------
     // 进程内 IntentSender（吸收 InstallerX LocalIntentReceiver）
@@ -640,6 +681,7 @@ object ApkInstaller {
      */
     private class LocalIntentSender : IIntentSender.Stub() {
         private val latch = CountDownLatch(1)
+
         @Volatile
         private var result: Intent? = null
 
@@ -660,16 +702,13 @@ object ApkInstaller {
 
         private fun newIntentSender(iSender: IIntentSender): IntentSender = try {
             // 隐藏构造器 IntentSender(IIntentSender) 在 SDK 中为 package-private，反射构造。
-            IntentSender::class.java
-                .getDeclaredConstructor(IIntentSender::class.java)
-                .apply { isAccessible = true }
-                .newInstance(iSender)
+            IntentSender::class.java.getDeclaredConstructor(IIntentSender::class.java)
+                .apply { isAccessible = true }.newInstance(iSender)
         } catch (_: Throwable) {
             // 回退到 2 参构造器 (IIntentSender, IBinder)。
-            IntentSender::class.java
-                .getDeclaredConstructor(IIntentSender::class.java, IBinder::class.java)
-                .apply { isAccessible = true }
-                .newInstance(iSender, null)
+            IntentSender::class.java.getDeclaredConstructor(
+                IIntentSender::class.java, IBinder::class.java
+            ).apply { isAccessible = true }.newInstance(iSender, null)
         }
 
         fun await(timeoutMs: Long): Intent? =
@@ -683,16 +722,22 @@ object ApkInstaller {
     }
 
     private fun interpretResultForUninstall(intent: Intent?, packageName: String): Result {
-        if (intent == null) return Result.Failure(status = -8, message = "uninstall timeout", packageName = packageName)
-        val status = intent.getIntExtra(PackageInstaller.EXTRA_STATUS, PackageInstaller.STATUS_FAILURE)
+        if (intent == null) return Result.Failure(
+            status = -8, message = "uninstall timeout", packageName = packageName
+        )
+        val status =
+            intent.getIntExtra(PackageInstaller.EXTRA_STATUS, PackageInstaller.STATUS_FAILURE)
         val msg = intent.getStringExtra(PackageInstaller.EXTRA_STATUS_MESSAGE) ?: ""
-        return if (status == PackageInstaller.STATUS_SUCCESS)
-            Result.Success(packageName, "uninstall success")
-        else Result.Failure(status, message = "uninstall failed status=$status, msg=$msg", packageName = packageName)
+        return if (status == PackageInstaller.STATUS_SUCCESS) Result.Success(
+            packageName, "uninstall success"
+        )
+        else Result.Failure(
+            status, message = "uninstall failed status=$status, msg=$msg", packageName = packageName
+        )
     }
 
     // ------------------------------------------------------------------
-    private val AWAIT_TIMEOUT_MS = 5 * 60 * 1000L
+    private const val AWAIT_TIMEOUT_MS = 5 * 60 * 1000L
 
     private fun closeQuietly(c: Closeable?) {
         if (c != null) runCatching { c.close() }
