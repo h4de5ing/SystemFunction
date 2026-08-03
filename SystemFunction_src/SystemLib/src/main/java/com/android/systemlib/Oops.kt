@@ -10,6 +10,7 @@ import android.content.pm.PermissionInfo
 import android.os.Build
 import android.os.IDeviceIdleController
 import android.os.ServiceManager
+import android.provider.Settings
 import android.util.Log
 import androidx.annotation.RequiresApi
 import com.android.android12.grantNotificationListenerAccessGranted12
@@ -351,6 +352,8 @@ private val MODE_UNKNOWN = 0
 val MODE_UNRESTRICTED = 1//无限制
 val MODE_OPTIMIZED = 2//优化
 val MODE_RESTRICTED = 3//受限
+private const val PROTECTED_PACKAGES_KEY = "protected_packages"
+private val protectedPackagesLock = Any()
 
 /**
  * 获取应用电池优化状态
@@ -382,7 +385,6 @@ fun getBatteryOptimization(context: Context, packageName: String): Int {
 /**
  * 设置应用电池优化状态
  */
-@RequiresApi(Build.VERSION_CODES.M)
 fun setBatteryOptimization(context: Context, packageName: String, mode: Int) = try {
     val iDeviceIdleController =
         (IDeviceIdleController.Stub.asInterface(ServiceManager.getService("deviceidle")) as IDeviceIdleController)
@@ -392,7 +394,11 @@ fun setBatteryOptimization(context: Context, packageName: String, mode: Int) = t
     val applicationInfo = packageManager.getApplicationInfo(packageName, 0)
     val uid = applicationInfo.uid
     when (mode) {
-        MODE_RESTRICTED -> iDeviceIdleController.removePowerSaveWhitelistApp(packageName)
+        MODE_RESTRICTED -> {
+            iDeviceIdleController.removePowerSaveWhitelistApp(packageName)
+            updateProtectedPackages(context, packageName, false)
+        }
+
         MODE_UNRESTRICTED -> {
             iAppOpsManager.setMode(/*APP_OP_RUN_ANY_IN_BACKGROUND*/63,
                 uid,
@@ -400,6 +406,7 @@ fun setBatteryOptimization(context: Context, packageName: String, mode: Int) = t
                 MODE_ALLOWED
             )
             iDeviceIdleController.addPowerSaveWhitelistApp(packageName)
+            updateProtectedPackages(context, packageName, true)
         }
 
         MODE_OPTIMIZED -> {
@@ -409,11 +416,37 @@ fun setBatteryOptimization(context: Context, packageName: String, mode: Int) = t
                 MODE_ALLOWED
             )
             iDeviceIdleController.removePowerSaveWhitelistApp(packageName)
+            updateProtectedPackages(context, packageName, false)
         }
     }
     println("电池优化 packageName=${packageName},mode=${mode}")
 } catch (e: Exception) {
     e.printStackTrace()
+}
+
+private fun updateProtectedPackages(context: Context, packageName: String, protected: Boolean) {
+    synchronized(protectedPackagesLock) {
+        val resolver = context.contentResolver
+        val current = Settings.Global.getString(resolver, PROTECTED_PACKAGES_KEY).orEmpty()
+        val packages = current
+            .splitToSequence(',')
+            .map(String::trim)
+            .filter(String::isNotEmpty)
+            .toCollection(LinkedHashSet())
+
+        if (protected) {
+            packages.add(packageName)
+        } else {
+            packages.remove(packageName)
+        }
+
+        val updated = packages.joinToString(",")
+        if (updated != current &&
+            !Settings.Global.putString(resolver, PROTECTED_PACKAGES_KEY, updated)
+        ) {
+            throw IllegalStateException("Failed to update $PROTECTED_PACKAGES_KEY")
+        }
+    }
 }
 
 fun dumpAppOps(): String {
