@@ -1162,12 +1162,14 @@ Returns the battery optimization state for the given package: `MODE_UNRESTRICTED
 ### `setBatteryOptimization(context: Context, packageName: String, mode: Int)`
 
 > **Min API**: 23  
-> **Requires**: system signature / `IDeviceIdleController`
+> **Requires**: system signature / `IDeviceIdleController` / `WRITE_SECURE_SETTINGS`
 
 Sets the battery optimization state for the given package:
 - `MODE_UNRESTRICTED`: Add to whitelist, no background restrictions
 - `MODE_OPTIMIZED`: Remove from whitelist, allow background
 - `MODE_RESTRICTED`: Remove from whitelist, restrict background
+
+Also maintains the comma-separated package list in `Settings.Global` under `protected_packages`: `MODE_UNRESTRICTED` adds the package, while `MODE_OPTIMIZED` and `MODE_RESTRICTED` remove it. On systems that support this extension, the system layer refreshes its keep-alive list after a successful write.
 
 ### `getOpCode()`
 

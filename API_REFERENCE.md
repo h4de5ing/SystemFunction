@@ -1162,13 +1162,15 @@ Bitmap 扩展方法，将 Bitmap 缩放为 72x72。
 ### `setBatteryOptimization(context: Context, packageName: String, mode: Int)`
 
 > **最低 API**：23  
-> **权限**：系统签名 / `IDeviceIdleController`
+> **权限**：系统签名 / `IDeviceIdleController` / `WRITE_SECURE_SETTINGS`
 
 设置应用的电池优化状态：
 
 - `MODE_UNRESTRICTED`：加入白名单，不受后台限制
 - `MODE_OPTIMIZED`：从白名单移除，允许后台
 - `MODE_RESTRICTED`：从白名单移除，限制后台
+
+同时维护 `Settings.Global` 的 `protected_packages`（逗号分隔包名列表）：`MODE_UNRESTRICTED` 加入包名，`MODE_OPTIMIZED` 和 `MODE_RESTRICTED` 移除包名。写入成功后，支持该系统扩展的系统层会即时刷新保活列表。
 
 ### `getOpCode()`
 
