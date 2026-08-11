@@ -53,6 +53,7 @@ fun injectInit() {
 // Original InputLib.kt called SystemClock.uptimeMillis() for both downTime and eventTime
 // on every call, meaning each MOVE/UP got a fresh downTime — breaking drag gestures.
 private var touchDownTime = 0L
+private val androidKeyDownTimes = mutableMapOf<Int, Long>()
 
 /**
  * Inject a touch/mouse motion event.
@@ -178,6 +179,7 @@ fun injectScrollEvent(x: Float, y: Float, deltaY: Float, displayId: Int = -1) {
  */
 fun injectKeyEvent(action: Int, code: Int) {
     val androidKeyCode = JS_KEYCODE_TO_ANDROID[code]
+    Log.e(TAG,"injectKeyEvent: code=$code->$androidKeyCode")
     if (androidKeyCode == null) {
         Log.d(TAG, "No Android mapping for JS keyCode=$code")
         return
@@ -202,6 +204,36 @@ fun injectKeyEvent(action: Int, code: Int) {
     }
 }
 
+/** Inject one key action using an Android [KeyEvent] keycode without JS translation. */
+fun injectAndroidKeyEvent(action: Int, keyCode: Int, displayId: Int = -1) {
+    if (action != KeyEvent.ACTION_DOWN && action != KeyEvent.ACTION_UP) return
+    val now = SystemClock.uptimeMillis()
+    val downTime = synchronized(androidKeyDownTimes) {
+        when (action) {
+            KeyEvent.ACTION_DOWN -> androidKeyDownTimes.getOrPut(keyCode) { now }
+            else -> androidKeyDownTimes.remove(keyCode) ?: now
+        }
+    }
+    val event = KeyEvent(
+        downTime,
+        now,
+        action,
+        keyCode,
+        0,
+        0,
+        KeyCharacterMap.VIRTUAL_KEYBOARD,
+        0,
+        KeyEvent.FLAG_FROM_SYSTEM,
+        InputDevice.SOURCE_KEYBOARD
+    )
+    setDisplayId(event, displayId)
+    try {
+        iInput?.injectInputEvent(event, 0)
+    } catch (e: Exception) {
+        Log.e(TAG, "injectAndroidKeyEvent failed: action=$action keyCode=$keyCode", e)
+    }
+}
+
 /**
  * 根据Android keycode注入
  */
@@ -222,29 +254,8 @@ fun injectKeyEvent(keyCode: Int) {
  * Falls back to Instrumentation when IInputManager is unavailable.
  */
 fun injectKeyEventByAndroidCode(keyCode: Int, displayId: Int = -1) {
-    val now = SystemClock.uptimeMillis()
-    val im = iInput
-    if (im != null) {
-        for (action in intArrayOf(KeyEvent.ACTION_DOWN, KeyEvent.ACTION_UP)) {
-            val event = KeyEvent(
-                now,
-                now,
-                action,
-                keyCode,
-                0,
-                0,
-                KeyCharacterMap.VIRTUAL_KEYBOARD,
-                0,
-                KeyEvent.FLAG_FROM_SYSTEM,
-                InputDevice.SOURCE_KEYBOARD
-            )
-            setDisplayId(event, displayId)
-            try {
-                im.injectInputEvent(event, 0)
-            } catch (e: Exception) {
-                Log.e(TAG, "injectKeyEventByAndroidCode failed: keyCode=$keyCode", e)
-            }
-        }
+    for (action in intArrayOf(KeyEvent.ACTION_DOWN, KeyEvent.ACTION_UP)) {
+        injectAndroidKeyEvent(action, keyCode, displayId)
     }
 }
 
