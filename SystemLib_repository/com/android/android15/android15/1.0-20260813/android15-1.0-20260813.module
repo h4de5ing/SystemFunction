@@ -1,0 +1,103 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "com.android.android15",
+    "module": "android15",
+    "version": "1.0-20260813",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "9.7.0"
+    }
+  },
+  "variants": [
+    {
+      "name": "releaseVariantReleaseApiPublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-api"
+      },
+      "dependencies": [
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib",
+          "version": {
+            "requires": "2.2.10"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "android15-1.0-20260813.aar",
+          "url": "android15-1.0-20260813.aar",
+          "size": 2966,
+          "sha512": "b7ff05b6ef1e225dc8b14c54beaef118a269f5ec671afea55191714d2d4dbe4258f8e467972efb9c8dce7c75ccf84d6f8c0008a0928baa78e150d640852e3977",
+          "sha256": "e47a6fd85e3b1128960759c6d83d0199ca514970febd529272fc89f9b1f88144",
+          "sha1": "c4d78937d6b4117a33feda9d9e4f428644276ad0",
+          "md5": "ed05d9d24e193660169b6956be1ddf7c"
+        }
+      ]
+    },
+    {
+      "name": "releaseVariantReleaseRuntimePublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "androidx.core",
+          "module": "core-ktx",
+          "version": {
+            "requires": "1.19.0"
+          }
+        },
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib",
+          "version": {
+            "requires": "2.2.10"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "android15-1.0-20260813.aar",
+          "url": "android15-1.0-20260813.aar",
+          "size": 2966,
+          "sha512": "b7ff05b6ef1e225dc8b14c54beaef118a269f5ec671afea55191714d2d4dbe4258f8e467972efb9c8dce7c75ccf84d6f8c0008a0928baa78e150d640852e3977",
+          "sha256": "e47a6fd85e3b1128960759c6d83d0199ca514970febd529272fc89f9b1f88144",
+          "sha1": "c4d78937d6b4117a33feda9d9e4f428644276ad0",
+          "md5": "ed05d9d24e193660169b6956be1ddf7c"
+        }
+      ]
+    },
+    {
+      "name": "releaseVariantReleaseSourcePublication",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "sources",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "android15-1.0-20260813-sources.jar",
+          "url": "android15-1.0-20260813-sources.jar",
+          "size": 1581,
+          "sha512": "4f9573fdbe56efb1cd5f97abc9f6de7fff78ae324561bf991b5777791977c7ca1f48b56b624e4f99e434a3ff5d0a951016126619d87bb938e13160dd312ddfc3",
+          "sha256": "536325c085924b3a1337fe0778d1b30b649d7db06f826de7079dd70a33e6dbeb",
+          "sha1": "bb8523b063291d914745e8c7821cd83ac8b4e087",
+          "md5": "81be3dba4752e79c9985e4735e11dcd2"
+        }
+      ]
+    }
+  ]
+}
