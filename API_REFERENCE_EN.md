@@ -104,9 +104,9 @@ Sets the Home Activity via `IPackageManager`.
 | `DISABLE_NOTIFICATION_ICONS` | 0x00020000 | Hide notification icons |
 | `DISABLE_NOTIFICATION_ALERTS` | 0x00040000 | Suppress notification alerts |
 | `DISABLE_SYSTEM_INFO` | 0x00100000 | Hide WiFi/battery system icons |
-| `DISABLE_HOME` | 0x00200000 | Disable and hide Home button |
-| `DISABLE_RECENT` | 0x01000000 | Disable and hide Recents button |
-| `DISABLE_BACK` | 0x00400000 | Disable and hide Back button |
+| `SP_DISABLE_HOME` | 0x00200000 | Disable and hide Home button |
+| `SP_DISABLE_RECENT` | 0x01000000 | Disable and hide Recents button |
+| `SP_DISABLE_BACK` | 0x00400000 | Disable and hide Back button |
 | `DISABLE_CLOCK` | 0x00800000 | Hide status bar clock |
 | `STATUS_DISABLE_NAVIGATION` | BACK\|HOME\|RECENT | Disable entire navigation bar |
 

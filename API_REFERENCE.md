@@ -104,9 +104,9 @@
 | `DISABLE_NOTIFICATION_ICONS`  | 0x00020000         | 禁用通知图标          |
 | `DISABLE_NOTIFICATION_ALERTS` | 0x00040000         | 禁用通知提示          |
 | `DISABLE_SYSTEM_INFO`         | 0x00100000         | 禁用 WiFi/电池等系统图标 |
-| `DISABLE_HOME`                | 0x00200000         | 禁用并隐藏 Home 键    |
-| `DISABLE_RECENT`              | 0x01000000         | 禁用并隐藏 Recent 键  |
-| `DISABLE_BACK`                | 0x00400000         | 禁用并隐藏 Back 键    |
+| `SP_DISABLE_HOME`                | 0x00200000         | 禁用并隐藏 Home 键    |
+| `SP_DISABLE_RECENT`              | 0x01000000         | 禁用并隐藏 Recent 键  |
+| `SP_DISABLE_BACK`                | 0x00400000         | 禁用并隐藏 Back 键    |
 | `DISABLE_CLOCK`               | 0x00800000         | 禁用状态栏时钟         |
 | `STATUS_DISABLE_NAVIGATION`   | BACK\|HOME\|RECENT | 禁用整个导航栏         |
 
