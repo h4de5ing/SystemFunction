@@ -12,6 +12,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toDrawable
 import java.io.ByteArrayOutputStream
 import java.io.File
+import androidx.core.graphics.createBitmap
 
 /** Launcher 图标的目标像素尺寸 */
 private const val ICON_SIZE_PX = 72
@@ -49,7 +50,7 @@ fun drawable2Bitmap(icon: Drawable): Bitmap {
     val h = rawH.coerceAtMost(MAX_DECODE_SIZE)
     val config =
         if (icon.opacity == PixelFormat.OPAQUE) Bitmap.Config.RGB_565 else Bitmap.Config.ARGB_8888
-    val bitmap = Bitmap.createBitmap(w, h, config)
+    val bitmap = createBitmap(w, h, config)
     val canvas = Canvas(bitmap)
     icon.setBounds(0, 0, w, h)
     icon.draw(canvas)

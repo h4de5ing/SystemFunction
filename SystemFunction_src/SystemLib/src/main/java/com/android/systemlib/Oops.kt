@@ -12,7 +12,6 @@ import android.os.IDeviceIdleController
 import android.os.ServiceManager
 import android.provider.Settings
 import android.util.Log
-import androidx.annotation.RequiresApi
 import com.android.android12.grantNotificationListenerAccessGranted12
 import com.android.android14.setRuntimePermission14
 import com.android.android15.setRuntimePermission15
@@ -94,10 +93,8 @@ fun getDeclaredRuntimePermissions(
         ServiceManager.getService(Context.APP_OPS_SERVICE),
     )
 
-    return packageInfo.requestedPermissions.orEmpty()
-        .filter { isRuntimePermission(pm, it) }
-        .distinct()
-        .map { permission ->
+    return packageInfo.requestedPermissions.orEmpty().filter { isRuntimePermission(pm, it) }
+        .distinct().map { permission ->
             val appOp = AppOpsManager.permissionToOp(permission)
             val appOpMode = appOp?.let {
                 val opCode = appOpToCode(it)
@@ -146,20 +143,15 @@ fun setRuntimePermissionGranted(
         val packageManagerService =
             IPackageManager.Stub.asInterface(ServiceManager.getService("package"))
         when {
-            Build.VERSION.SDK_INT >= 36 ->
-                setRuntimePermission16(packageName, permission, granted)
+            Build.VERSION.SDK_INT >= 36 -> setRuntimePermission16(packageName, permission, granted)
 
-            Build.VERSION.SDK_INT >= 35 ->
-                setRuntimePermission15(packageName, permission, granted)
+            Build.VERSION.SDK_INT >= 35 -> setRuntimePermission15(packageName, permission, granted)
 
-            Build.VERSION.SDK_INT >= 34 ->
-                setRuntimePermission14(packageName, permission, granted)
+            Build.VERSION.SDK_INT >= 34 -> setRuntimePermission14(packageName, permission, granted)
 
-            granted ->
-                packageManagerService.grantRuntimePermission(packageName, permission, 0)
+            granted -> packageManagerService.grantRuntimePermission(packageName, permission, 0)
 
-            else ->
-                packageManagerService.revokeRuntimePermission(packageName, permission, 0)
+            else -> packageManagerService.revokeRuntimePermission(packageName, permission, 0)
         }
 
         AppOpsManager.permissionToOp(permission)?.let { op ->
@@ -335,8 +327,7 @@ fun grantPermission(context: Context, packageName: String) {
     val iPackageManager = IPackageManager.Stub.asInterface(ServiceManager.getService("package"))
     val pm: PackageManager = context.packageManager
     pm.getPackageInfo(
-        packageName,
-        PackageManager.GET_PERMISSIONS
+        packageName, PackageManager.GET_PERMISSIONS
     ).requestedPermissions?.forEach { permission ->
         try {
             if (isRuntimePermission(pm, permission)) {
@@ -428,10 +419,7 @@ private fun updateProtectedPackages(context: Context, packageName: String, prote
     synchronized(protectedPackagesLock) {
         val resolver = context.contentResolver
         val current = Settings.Global.getString(resolver, PROTECTED_PACKAGES_KEY).orEmpty()
-        val packages = current
-            .splitToSequence(',')
-            .map(String::trim)
-            .filter(String::isNotEmpty)
+        val packages = current.splitToSequence(',').map(String::trim).filter(String::isNotEmpty)
             .toCollection(LinkedHashSet())
 
         if (protected) {
@@ -441,8 +429,11 @@ private fun updateProtectedPackages(context: Context, packageName: String, prote
         }
 
         val updated = packages.joinToString(",")
-        if (updated != current &&
-            !Settings.Global.putString(resolver, PROTECTED_PACKAGES_KEY, updated)
+        if (updated != current && !Settings.Global.putString(
+                resolver,
+                PROTECTED_PACKAGES_KEY,
+                updated
+            )
         ) {
             throw IllegalStateException("Failed to update $PROTECTED_PACKAGES_KEY")
         }
@@ -453,8 +444,7 @@ fun dumpAppOps(): String {
     // 1. 从 AppProtoEnums 反射 APP_OP_ 常量：int值 -> 常量名
     val opIntToName = mutableMapOf<Int, String>()
     runCatching {
-        Class.forName("android.app.AppProtoEnums").declaredFields
-            .filter { it.name.startsWith("APP_OP_") }
+        Class.forName("android.app.AppProtoEnums").declaredFields.filter { it.name.startsWith("APP_OP_") }
             .forEach { field ->
                 field.isAccessible = true
                 val value = field.get(null) as? Int ?: return@forEach
@@ -465,8 +455,7 @@ fun dumpAppOps(): String {
     // 2. 从 AppOpsManager 反射 OPSTR_ 常量：string值 -> 常量名
     val opStrToName = mutableMapOf<String, String>()
     val opStrValues = mutableListOf<String>()
-    AppOpsManager::class.java.declaredFields
-        .filter { it.name.startsWith("OPSTR_") }
+    AppOpsManager::class.java.declaredFields.filter { it.name.startsWith("OPSTR_") }
         .forEach { field ->
             field.isAccessible = true
             val value = field.get(null) as? String ?: return@forEach

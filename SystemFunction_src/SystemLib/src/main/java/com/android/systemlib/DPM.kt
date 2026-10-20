@@ -13,7 +13,6 @@ import android.os.Build
 import android.os.ServiceManager
 import android.os.UserManager
 import android.text.TextUtils
-import androidx.annotation.RequiresApi
 import com.android.android12.getCredentialType12
 import com.android.android12.isDisableLockScreen12
 import com.android.android13.setLock
@@ -211,7 +210,6 @@ fun isDisableDMD(context: Context, key: String): Boolean {
     )
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
 fun setDelegatedScopes(
     context: Context, componentName: ComponentName, packageName: String
 ) {
@@ -292,7 +290,6 @@ fun isHiddenAPP(
  * 暂停应用，可以看到图标，但是不能使用
  */
 @Deprecated("调用不需要dpm权限的suspendedAPP方法", ReplaceWith(""), DeprecationLevel.WARNING)
-@RequiresApi(Build.VERSION_CODES.N)
 fun suspendedAPP(
     context: Context, componentName: ComponentName, packageName: String, isDisable: Boolean
 ) {
@@ -309,7 +306,6 @@ fun suspendedAPP(
  * 应用是否被暂停
  */
 @Deprecated("调用下面不需要dpm权限的isSuspendedAPP方法", ReplaceWith(""), DeprecationLevel.WARNING)
-@RequiresApi(Build.VERSION_CODES.N)
 fun isSuspendedAPP(
     context: Context,
     componentName: ComponentName,
@@ -384,7 +380,6 @@ fun getScreenCaptureDisabled(context: Context, componentName: ComponentName): Bo
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.M)
 fun setStatusBarDisabled(context: Context, componentName: ComponentName, isDisable: Boolean) {
     try {
         (context.applicationContext.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager).setStatusBarDisabled(

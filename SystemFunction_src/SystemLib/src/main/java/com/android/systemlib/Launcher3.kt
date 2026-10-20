@@ -39,7 +39,29 @@ data class LauncherFavorites(
     val pkg: String,
     val icon: ByteArray?,
     val intent: String,
-)
+) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as LauncherFavorites
+
+        if (title != other.title) return false
+        if (pkg != other.pkg) return false
+        if (!icon.contentEquals(other.icon)) return false
+        if (intent != other.intent) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = title.hashCode()
+        result = 31 * result + pkg.hashCode()
+        result = 31 * result + (icon?.contentHashCode() ?: 0)
+        result = 31 * result + intent.hashCode()
+        return result
+    }
+}
 
 val launcherFavoritesUri = "content://com.android.launcher3.settings/favorites".toUri()
 const val SHORTCUT_OVERLAY_DIVISOR = 3

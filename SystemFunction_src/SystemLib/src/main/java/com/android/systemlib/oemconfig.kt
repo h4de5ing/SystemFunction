@@ -83,9 +83,7 @@ private fun loadRestriction(
                         println("Child entry cannot be loaded for bundle restriction $key")
                     } else {
                         restrictionEntries.add(childEntry)
-                        if (restrictionType == RestrictionEntry.TYPE_BUNDLE_ARRAY && childEntry.type != RestrictionEntry.TYPE_BUNDLE) {
-                            println("bundle_array $key can only contain entries of type bundle")
-                        }
+                        println("bundle_array $key can only contain entries of type bundle")
                     }
                 }
                 restriction.restrictions = restrictionEntries.toTypedArray()
@@ -100,9 +98,7 @@ private fun loadRestriction(
                         println("Child entry cannot be loaded for bundle restriction $key")
                     } else {
                         restrictionEntries.add(childEntry)
-                        if (restrictionType == RestrictionEntry.TYPE_BUNDLE_ARRAY && childEntry.type != RestrictionEntry.TYPE_BUNDLE) {
-                            println("bundle_array $key can only contain entries of type bundle")
-                        }
+                        println("bundle_array $key can only contain entries of type bundle")
                     }
                 }
                 restriction.restrictions = restrictionEntries.toTypedArray()
