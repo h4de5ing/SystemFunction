@@ -321,7 +321,12 @@ class TzDataInstaller(context: Context) {
 
     private fun installWithRulesManager(distroFile: File, callbacks: Callbacks) {
         callbacks.onStatus("Using RulesManager.requestInstall()")
-        val result = ParcelFileDescriptor.open(distroFile, ParcelFileDescriptor.MODE_READ_ONLY).use { pfd ->
+        // 描述符经 binder 传给 system_server 时会做 SELinux 检查，system_server 不能读 sdcard 上的文件
+        // （avc: denied { read } ... tcontext=u:object_r:sdcardfs:s0），binder 传输失败表现为 DeadSystemException，
+        // 所以先拷贝到应用私有目录再打开
+        val localFile = TzDistroProvider.file(context)
+        if (distroFile.canonicalPath != localFile.canonicalPath) copyStream(FileInputStream(distroFile), localFile)
+        val result = ParcelFileDescriptor.open(localFile, ParcelFileDescriptor.MODE_READ_ONLY).use { pfd ->
             // RulesManagerService 在 binder 调用期间会 dup 这个描述符，调用返回后即可关闭
             awaitRulesManager { rulesManager().requestInstall(pfd, null, it) }
         }
