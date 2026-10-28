@@ -900,6 +900,26 @@ Reads a value from `Settings.Global`.
 
 Writes a value to `Settings.Global`.
 
+### `getSystemSystem(context: Context, key: String): String`
+
+Reads a value from `Settings.System`; returns `""` if it is missing or cannot be read.
+
+### `setSystemSystem(context: Context, key: String, value: String): Boolean`
+
+> **Requires**: `WRITE_SETTINGS`
+
+Writes a value to `Settings.System`.
+
+### `getSystemSecure(context: Context, key: String): String`
+
+Reads a value from `Settings.Secure`; returns `""` if it is missing or cannot be read.
+
+### `setSystemSecure(context: Context, key: String, value: String): Boolean`
+
+> **Requires**: `WRITE_SECURE_SETTINGS`
+
+Writes a value to `Settings.Secure`.
+
 ### `getAllSettings(context: Context): List<Pair<String, String>>`
 
 Enumerates all readable key-value pairs from `Settings.Global`, `Settings.System`, and `Settings.Secure`.

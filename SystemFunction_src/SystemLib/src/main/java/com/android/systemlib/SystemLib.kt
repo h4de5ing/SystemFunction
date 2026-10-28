@@ -303,7 +303,7 @@ fun getSDCard(): Triple<Long, Long, Long> {
         val file = Environment.getExternalStorageDirectory()
         val totalSize = file.totalSpace
         val availableSize = file.usableSpace
-        val usedSize = file.totalSpace - file.usableSpace
+        val usedSize = file.totalSpace - availableSize
         pair = Triple(usedSize, availableSize, totalSize)
     } catch (e: Exception) {
         e.printStackTrace()
@@ -351,11 +351,8 @@ fun clearApplicationUserData(packageName: String, onChange: ((String, Boolean) -
 fun isNetAvailable(context: Context): Boolean {
     var networkCapabilities: NetworkCapabilities? = null
     val manager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-    return if (manager.getNetworkCapabilities(manager.activeNetwork)
-            ?.also { networkCapabilities = it } == null
-    ) {
-        false
-    } else networkCapabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) == true
+    return manager.getNetworkCapabilities(manager.activeNetwork)
+        ?.also { networkCapabilities = it } != null && networkCapabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) == true
 }
 
 fun ping(): Int {

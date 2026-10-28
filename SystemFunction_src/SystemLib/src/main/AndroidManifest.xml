@@ -4,7 +4,7 @@
 
     <uses-permission android:name="android.permission.MANAGE_APP_OPS_MODES" />
 
-    <!-- TzDataInstaller：8.1 / 9 / 10 RulesManager 安装、10 查询状态、8.1 UPDATE_TZDATA 广播（均为 signature|privileged） -->
+    <!-- TzDataInstaller：10 RulesManager 安装和查询状态、8.1 UPDATE_TZDATA 广播（均为 signature|privileged） -->
     <uses-permission
         android:name="android.permission.UPDATE_TIME_ZONE_RULES"
         tools:ignore="ProtectedPermissions" />
@@ -16,10 +16,12 @@
         tools:ignore="ProtectedPermissions" />
 
     <application>
-        <!-- TzDataInstaller：Android 8.1 广播方式下给 system_server 读取 distro.zip -->
+        <!-- TzDataInstaller：Android 8.1 广播方式下给 system_server 读取 distro.zip。
+             默认禁用，只在 8.1 发送广播前由 TzDataInstaller 动态启用 -->
         <provider
             android:name="com.android.systemlib.TzDistroProvider"
             android:authorities="${applicationId}.systemlib.tzdistro"
+            android:enabled="false"
             android:exported="false"
             android:grantUriPermissions="true" />
     </application>

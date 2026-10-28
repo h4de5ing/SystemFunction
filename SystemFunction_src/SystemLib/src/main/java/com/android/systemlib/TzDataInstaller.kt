@@ -5,10 +5,13 @@ import android.app.timezone.RulesManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.content.res.Resources
 import android.net.Uri
 import android.os.Build
 import android.os.ParcelFileDescriptor
 import android.os.ServiceManager
+import android.util.TimeUtils
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileInputStream
@@ -22,16 +25,17 @@ import java.util.concurrent.atomic.AtomicBoolean
 import java.util.zip.ZipInputStream
 
 /**
- * 时区数据更新包（distro.zip）安装器，仅支持 Android 8.1 / 9 / 10（API 27 / 28 / 29）。
+ * 时区数据更新包（distro.zip）安装器，仅支持 Android 8.1 / 10（API 27 / 29）。
  *
- * - RulesManagerService 在运行时（需要 framework 配置 config_enableUpdateableTimeZoneRules=true）：
- *   走 RulesManager.requestInstall()，需要 UPDATE_TIME_ZONE_RULES 权限。
- * - 仅 Android 8.1：服务未开启时退回 UPDATE_TZDATA 广播 -> TzDataInstallReceiver，
- *   通过 [TzDistroProvider] 把文件交给 system_server 读取，需要 UPDATE_CONFIG 权限。
- *   Android 9 起系统已删除该接收器，只能走 RulesManager。
+ * - Android 8.1：一律走 UPDATE_TZDATA 广播 -> TzDataInstallReceiver，不依赖任何 framework 配置，
+ *   通过 [TzDistroProvider]（清单中默认禁用，此时才启用）把文件交给 system_server 读取，需要 UPDATE_CONFIG 权限。
+ * - Android 10：系统已没有该接收器，只能走 RulesManager.requestInstall()，需要 UPDATE_TIME_ZONE_RULES 权限；
+ *   RulesManagerService 只在 framework 配置 config_enableUpdateableTimeZoneRules=true 时启动，
+ *   为 false 时直接报错（需要通过 OTA 打开）。
  *
+ * 不处理 APEX：设备一旦由 tzdata APEX 机制负责更新，就不会使用本工具。
  * 两种方式都只是写入 /data/misc/zoneinfo/staged，重启后由 tzdatacheck 移到 current 生效。
- * 不同系统版本要求的包格式不同（8.1 = 1.x，9 = 2.x，10 = 3.x），不能混用。
+ * 不同系统版本要求的包格式不同（8.1 = 1.x，10 = 3.x），不能混用。
  */
 class TzDataInstaller(context: Context) {
     private val context = context.applicationContext
@@ -87,13 +91,16 @@ class TzDataInstaller(context: Context) {
         val supported: Boolean,
         /** 本机接受的包格式 (major, minor)，不支持的系统为 null */
         val requiredFormat: Pair<Int, Int>?,
-        /** 系统内置的规则版本，如 2020a；读取失败为 null */
-        val baseRules: String?,
+        /** 当前生效的规则版本（TimeUtils.getTimeZoneDatabaseVersion()），如 2020a */
+        val currentRules: String?,
         /** /data/misc/zoneinfo/current 中已生效的包 */
         val installed: DistroVersion?,
         /** /data/misc/zoneinfo/staged 中待重启生效的包 */
         val staged: DistroVersion?,
         val icuTzVersion: String?,
+        /** framework 配置 config_enableUpdateableTimeZoneRules，读取不到为 null */
+        val updateableRulesEnabled: Boolean?,
+        /** 仅 10 有意义 */
         val rulesManagerAvailable: Boolean,
         val rulesState: String?,
     ) {
@@ -103,11 +110,14 @@ class TzDataInstaller(context: Context) {
             append("Accepted distro format: ")
                 .append(requiredFormat?.let { "%03d.%03d".format(Locale.ROOT, it.first, it.second) } ?: "-")
                 .append('\n')
-            append("Base (system) rules: ").append(baseRules ?: "?").append('\n')
+            append("Rules in use: ").append(currentRules ?: "?").append('\n')
             append("Installed: ").append(installed ?: "none").append('\n')
             append("Staged (applies after reboot): ").append(staged ?: "none").append('\n')
             append("ICU tz version in use: ").append(icuTzVersion ?: "?").append('\n')
-            append("RulesManagerService: ").append(if (rulesManagerAvailable) "available" else "NOT running").append('\n')
+            append("config_enableUpdateableTimeZoneRules: ").append(updateableRulesEnabled ?: "?").append('\n')
+            if (sdkInt != 27) {
+                append("RulesManagerService: ").append(if (rulesManagerAvailable) "available" else "NOT running").append('\n')
+            }
             if (rulesState != null) append("RulesState: ").append(rulesState).append('\n')
         }
     }
@@ -117,7 +127,6 @@ class TzDataInstaller(context: Context) {
     /** 本机接受的包格式，major 必须完全一致，minor 不能低于要求 */
     fun requiredFormat(): Pair<Int, Int>? = when (Build.VERSION.SDK_INT) {
         27 -> 1 to 1
-        28 -> 2 to 1
         29 -> 3 to 1
         else -> null
     }
@@ -125,7 +134,6 @@ class TzDataInstaller(context: Context) {
     /** APK 内置包的文件名前缀：assets/<prefix>.zip 或 assets/<prefix>_*.zip */
     fun assetPrefix(): String? = when (Build.VERSION.SDK_INT) {
         27 -> "distro_android8"
-        28 -> "distro_android9"
         29 -> "distro_android10"
         else -> null
     }
@@ -136,28 +144,41 @@ class TzDataInstaller(context: Context) {
     fun stagedVersion(): DistroVersion? =
         DistroVersion.parse(readSmallFile("$ZONEINFO_DIR/staged/distro_version"))
 
-    /** 系统内置（只读分区 / APEX）数据的规则版本，如 2020a */
-    fun baseRulesVersion(): String? {
-        if (Build.VERSION.SDK_INT == 29) {
-            DistroVersion.parse(readSmallFile("$TZDATA_APEX_DIR/tz_version"))?.let { return it.rules }
-            return tzdataHeaderVersion("$TZDATA_APEX_DIR/tzdata")
-        }
-        return tzdataHeaderVersion("/system/usr/share/zoneinfo/tzdata")
-    }
+    /** 当前生效的规则版本，如 2020a（重启后才会反映新安装的包） */
+    fun currentRulesVersion(): String? = runCatching { TimeUtils.getTimeZoneDatabaseVersion() }.getOrNull()
+
+    /** framework 配置 config_enableUpdateableTimeZoneRules（RulesManagerService 的总开关），读取不到返回 null */
+    fun isUpdateableRulesEnabled(): Boolean? = runCatching {
+        val res = Resources.getSystem()
+        val id = res.getIdentifier("config_enableUpdateableTimeZoneRules", "bool", "android")
+        if (id == 0) null else res.getBoolean(id)
+    }.getOrNull()
 
     fun isRulesManagerAvailable(): Boolean =
         runCatching { ServiceManager.getService(TIME_ZONE_RULES_MANAGER_SERVICE) != null }.getOrDefault(false)
 
+    /** Android 10 走 RulesManager 前的开关校验，返回 null 表示通过，否则返回原因 */
+    fun checkRulesManager(): String? {
+        if (isUpdateableRulesEnabled() != true) {
+            return "config_enableUpdateableTimeZoneRules is not true on this device. Android 10 can only " +
+                    "install time zone updates through RulesManager, enable it in the framework config (OTA)."
+        }
+        if (!isRulesManagerAvailable()) return "RulesManagerService (\"timezone\") is not running"
+        return null
+    }
+
     fun getStatus(): Status {
-        val rm = isSupported() && isRulesManagerAvailable()
+        val sdk = Build.VERSION.SDK_INT
+        val rm = sdk == 29 && isRulesManagerAvailable()
         return Status(
-            sdkInt = Build.VERSION.SDK_INT,
+            sdkInt = sdk,
             supported = isSupported(),
             requiredFormat = requiredFormat(),
-            baseRules = baseRulesVersion(),
+            currentRules = currentRulesVersion(),
             installed = installedVersion(),
             staged = stagedVersion(),
             icuTzVersion = runCatching { android.icu.util.TimeZone.getTZDataVersion() }.getOrNull(),
+            updateableRulesEnabled = isUpdateableRulesEnabled(),
             rulesManagerAvailable = rm,
             rulesState = if (rm) runCatching { rulesManager().rulesState.toString() }.getOrNull() else null,
         )
@@ -170,16 +191,16 @@ class TzDataInstaller(context: Context) {
     fun precheck(dv: DistroVersion?, force: Boolean = false): String? {
         if (dv == null) return "distro_version missing/invalid"
         val fmt = requiredFormat()
-            ?: return "this Android version is not supported (API ${Build.VERSION.SDK_INT}), only 8.1 / 9 / 10"
+            ?: return "this Android version is not supported (API ${Build.VERSION.SDK_INT}), only 8.1 / 10"
         if (dv.formatMajor != fmt.first || dv.formatMinor < fmt.second) {
             return "distro format %03d.%03d does not fit this device (needs %03d.%03d) - wrong package for this Android version"
                 .format(Locale.ROOT, dv.formatMajor, dv.formatMinor, fmt.first, fmt.second)
         }
-        val base = baseRulesVersion()
-        if (base != null && base.length == 5 && dv.rules < base) {
-            return "rules ${dv.rules} are older than the system's $base"
-        }
         if (!force) {
+            val current = currentRulesVersion()
+            if (current != null && current.length == 5 && dv.rules < current) {
+                return "rules ${dv.rules} are older than the rules in use ($current) (use force to install anyway)"
+            }
             val newest = listOfNotNull(installedVersion(), stagedVersion()).maxWithOrNull { a, b -> a.compareRules(b) }
             if (newest != null && dv.compareRules(newest) <= 0) {
                 return "already installed/staged: $newest (use force to reinstall)"
@@ -191,7 +212,7 @@ class TzDataInstaller(context: Context) {
     /**
      * 异步安装 distro.zip，结果通过 [callbacks] 回调（在后台线程中调用）。
      *
-     * @param force 重新安装相同或更旧的版本（仍然不能低于系统内置版本）
+     * @param force 重新安装相同或更旧的版本（低于系统内置版本时仍会被系统拒绝）
      * @param configUpdateVersion 仅 8.1 广播方式：指定 VERSION，默认由版本号推出
      */
     fun install(
@@ -207,7 +228,7 @@ class TzDataInstaller(context: Context) {
         executor.execute {
             try {
                 if (!isSupported()) {
-                    callbacks.onError("This Android version is not supported (API ${Build.VERSION.SDK_INT}), only 8.1 / 9 / 10")
+                    callbacks.onError("This Android version is not supported (API ${Build.VERSION.SDK_INT}), only 8.1 / 10")
                     return@execute
                 }
                 val dv = try {
@@ -221,20 +242,19 @@ class TzDataInstaller(context: Context) {
                     callbacks.onError(it)
                     return@execute
                 }
-                when {
-                    isRulesManagerAvailable() -> installWithRulesManager(distroFile, callbacks)
-                    Build.VERSION.SDK_INT == 27 ->
-                        installWithConfigUpdate(distroFile, dv!!, configUpdateVersion, callbacks)
-
-                    else -> callbacks.onError(
-                        "RulesManagerService is not running on this device. It is only started when " +
-                                "framework config_enableUpdateableTimeZoneRules is true."
-                    )
+                if (Build.VERSION.SDK_INT == 27) {
+                    installWithConfigUpdate(distroFile, dv!!, configUpdateVersion, callbacks)
+                } else {
+                    checkRulesManager()?.let {
+                        callbacks.onError(it)
+                        return@execute
+                    }
+                    installWithRulesManager(distroFile, callbacks)
                 }
             } catch (e: SecurityException) {
                 callbacks.onError(
-                    "SecurityException: ${e.message}\nThe app must hold android.permission.UPDATE_TIME_ZONE_RULES " +
-                            "(and UPDATE_CONFIG on 8.1), i.e. be signed with the platform key."
+                    "SecurityException: ${e.message}\nThe app must hold android.permission.UPDATE_CONFIG (8.1) / " +
+                            "UPDATE_TIME_ZONE_RULES (10), i.e. be signed with the platform key."
                 )
             } catch (e: Exception) {
                 callbacks.onError(e.message ?: e.toString())
@@ -245,7 +265,7 @@ class TzDataInstaller(context: Context) {
     }
 
     /**
-     * 卸载已安装/待生效的包，重启后恢复系统内置数据。只能通过 RulesManager 完成
+     * 卸载已安装/待生效的包，重启后恢复系统内置数据。仅 Android 10，通过 RulesManager 完成
      * （8.1 广播方式没有卸载接口）。
      */
     fun uninstall(callbacks: Callbacks) {
@@ -255,8 +275,13 @@ class TzDataInstaller(context: Context) {
         }
         executor.execute {
             try {
-                if (!isSupported() || !isRulesManagerAvailable()) {
-                    callbacks.onError("Uninstall needs RulesManagerService (config_enableUpdateableTimeZoneRules=true)")
+                val sdk = Build.VERSION.SDK_INT
+                if (sdk != 29) {
+                    callbacks.onError("Uninstall is only supported on Android 10 (API $sdk)")
+                    return@execute
+                }
+                checkRulesManager()?.let {
+                    callbacks.onError(it)
                     return@execute
                 }
                 callbacks.onStatus("Using RulesManager.requestUninstall()")
@@ -338,6 +363,7 @@ class TzDataInstaller(context: Context) {
     ) {
         callbacks.onStatus("Using UPDATE_TZDATA broadcast -> TzDataInstallReceiver")
         copyStream(FileInputStream(distroFile), TzDistroProvider.file(context))
+        enableDistroProvider()
         val uri: Uri = TzDistroProvider.uri(context)
         context.grantUriPermission("android", uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
         val version = versionOverride ?: dv.configUpdateVersion
@@ -371,6 +397,20 @@ class TzDataInstaller(context: Context) {
     private fun rulesManager(): RulesManager =
         context.getSystemService(TIME_ZONE_RULES_MANAGER_SERVICE) as RulesManager
 
+    /** TzDistroProvider 在清单中默认禁用，只在 8.1 广播方式下启用（启用自己包内的组件不需要权限） */
+    private fun enableDistroProvider() {
+        val component = ComponentName(context, TzDistroProvider::class.java)
+        val pm = context.packageManager
+        if (pm.getComponentEnabledSetting(component) != PackageManager.COMPONENT_ENABLED_STATE_ENABLED) {
+            // DONT_KILL_APP：否则修改组件状态会导致宿主进程被杀
+            pm.setComponentEnabledSetting(
+                component,
+                PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+                PackageManager.DONT_KILL_APP,
+            )
+        }
+    }
+
     private fun workDir(): File = File(context.filesDir, TzDistroProvider.DIR).apply { mkdirs() }
 
     private fun readDistroVersion(input: InputStream): DistroVersion? {
@@ -382,12 +422,6 @@ class TzDataInstaller(context: Context) {
                 }
             }
         }
-    }
-
-    private fun tzdataHeaderVersion(path: String): String? {
-        // tzdata 文件头："tzdata2026e\0"
-        val hdr = readSmallFile(path, 12) ?: return null
-        return if (hdr.startsWith("tzdata") && hdr.length >= 11) hdr.substring(6, 11) else null
     }
 
     private fun readSmallFile(path: String, max: Int = 256): String? {
@@ -432,16 +466,15 @@ class TzDataInstaller(context: Context) {
     }
 
     companion object {
-        /** 8.1 / 9 / 10 */
-        val SUPPORTED_SDKS = setOf(27, 28, 29)
+        /** 8.1 / 10 */
+        val SUPPORTED_SDKS = setOf(27, 29)
 
         const val ZONEINFO_DIR = "/data/misc/zoneinfo"
-        private const val TZDATA_APEX_DIR = "/apex/com.android.tzdata/etc/tz"
 
         /** Context.TIME_ZONE_RULES_MANAGER_SERVICE（@hide） */
         private const val TIME_ZONE_RULES_MANAGER_SERVICE = "timezone"
 
-        // Android 8.1 的 TzDataInstallReceiver（Android 9 起已删除）
+        // Android 8.1 的 TzDataInstallReceiver（Android 10 上已不存在）
         private const val ACTION_UPDATE_TZDATA = "android.intent.action.UPDATE_TZDATA"
         private val TZDATA_RECEIVER =
             ComponentName("android", "com.android.server.updates.TzDataInstallReceiver")

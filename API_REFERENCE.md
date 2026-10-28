@@ -900,6 +900,26 @@ ping `www.baidu.com` 3 次，成功返回 `200`，失败返回 `404`。
 
 写入 `Settings.Global` 中的字符串值。
 
+### `getSystemSystem(context: Context, key: String): String`
+
+读取 `Settings.System` 中的字符串值，读取失败或不存在时返回 `""`。
+
+### `setSystemSystem(context: Context, key: String, value: String): Boolean`
+
+> **权限**：`WRITE_SETTINGS`
+
+写入 `Settings.System` 中的字符串值。
+
+### `getSystemSecure(context: Context, key: String): String`
+
+读取 `Settings.Secure` 中的字符串值，读取失败或不存在时返回 `""`。
+
+### `setSystemSecure(context: Context, key: String, value: String): Boolean`
+
+> **权限**：`WRITE_SECURE_SETTINGS`
+
+写入 `Settings.Secure` 中的字符串值。
+
 ### `getAllSettings(context: Context): List<Pair<String, String>>`
 
 枚举 `Settings.Global`、`Settings.System`、`Settings.Secure` 中所有可读的键值对。

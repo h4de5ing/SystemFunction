@@ -451,9 +451,8 @@ fun wakeUp(context: Context) {
  * 禁用设备个人热点
  */
 fun setHotSpotDisabled(isDisable: Boolean): Boolean =
-    if (isDisable) IWifiManager.Stub.asInterface(ServiceManager.getService(Context.WIFI_SERVICE))
+    isDisable && IWifiManager.Stub.asInterface(ServiceManager.getService(Context.WIFI_SERVICE))
         .stopSoftAp()
-    else false
 
 /**
  * 是否禁用设备个人热点
@@ -1106,6 +1105,40 @@ fun getSystemGlobal(context: Context, key: String): String {
  */
 fun setSystemGlobal(context: Context, key: String, value: String): Boolean =
     Settings.Global.putString(context.contentResolver, key, value)
+
+/**
+ * 获取 Settings.System 配置项
+ */
+fun getSystemSystem(context: Context, key: String): String {
+    return try {
+        Settings.System.getString(context.contentResolver, key)
+    } catch (_: Exception) {
+        ""
+    }
+}
+
+/**
+ * 写入到 Settings.System 里面去
+ */
+fun setSystemSystem(context: Context, key: String, value: String): Boolean =
+    Settings.System.putString(context.contentResolver, key, value)
+
+/**
+ * 获取 Settings.Secure 配置项
+ */
+fun getSystemSecure(context: Context, key: String): String {
+    return try {
+        Settings.Secure.getString(context.contentResolver, key)
+    } catch (_: Exception) {
+        ""
+    }
+}
+
+/**
+ * 写入到 Settings.Secure 里面去
+ */
+fun setSystemSecure(context: Context, key: String, value: String): Boolean =
+    Settings.Secure.putString(context.contentResolver, key, value)
 
 fun get_recent(context: Context) {
     try {
